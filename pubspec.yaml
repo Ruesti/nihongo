@@ -29,6 +29,7 @@ dependencies:
 
   # Network
   http: ^1.2.2
+  xml: ^6.5.0
 
   # UI
   lottie: ^3.3.1
