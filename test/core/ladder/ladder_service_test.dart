@@ -42,6 +42,7 @@ void main() {
       }
 
       expect(rung, 2);
+      expect(consecutive, 0);
     });
 
     test('rung 5 good does not exceed 5', () {
@@ -103,6 +104,7 @@ void main() {
         result: ReviewResult.again,
       );
       expect(r.newMasteryRung, 1);
+      expect(r.newConsecutiveCorrect, 0);
     });
   });
 
