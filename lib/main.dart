@@ -24,14 +24,18 @@ void main() async {
   final learningDb = LearningDb();
   final existingLangs = await learningDb.select(learningDb.languages).get();
   if (existingLangs.isEmpty) {
-    await seedJaPack(learningDb);
+    try {
+      await seedJaPack(learningDb);
+    } catch (e) {
+      debugPrint('Failed to seed JA pack: $e');
+    }
   }
 
   runApp(
     ProviderScope(
       overrides: [
         activeLanguageProvider.overrideWith((ref) => savedLang),
-        learningDbProvider.overrideWithValue(learningDb),
+        learningDbProvider.overrideWith((ref) => learningDb),
       ],
       child: const NihongoApp(),
     ),
