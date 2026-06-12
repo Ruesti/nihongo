@@ -63,4 +63,34 @@ void main() {
     );
     expect(p.hasToneSystem, isTrue);
   });
+
+  test('hasToneSystem true for vowelPoints', () {
+    const p = ScriptProfile(
+      id: 'sp_ar',
+      scriptType: ScriptType.abjad,
+      direction: Direction.rtl,
+      decomposability: Decomposability.baseDiacritics,
+      positionalForms: true,
+      toneSystem: ToneSystem.vowelPoints,
+      needsScriptTrack: true,
+      transliteration: 'none',
+      inputMethods: [InputMethod.keyboard],
+    );
+    expect(p.hasToneSystem, isTrue);
+  });
+
+  test('hasToneSystem false for pitchAccent', () {
+    const p = ScriptProfile(
+      id: 'sp_ja',
+      scriptType: ScriptType.syllabary,
+      direction: Direction.ltr,
+      decomposability: Decomposability.atomic,
+      positionalForms: false,
+      toneSystem: ToneSystem.pitchAccent,
+      needsScriptTrack: true,
+      transliteration: 'romaji',
+      inputMethods: [InputMethod.keyboard],
+    );
+    expect(p.hasToneSystem, isFalse);
+  });
 }
