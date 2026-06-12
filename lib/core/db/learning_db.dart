@@ -121,7 +121,7 @@ class LearningDb extends _$LearningDb {
 
       await into(reviewLog).insert(
         ReviewLogCompanion(
-          id: Value('${item.id}_${DateTime.now().millisecondsSinceEpoch}'),
+          id: Value('${item.id}_${DateTime.now().microsecondsSinceEpoch}'),
           learnItemId: Value(item.id),
           rung: Value(item.masteryRung),
           result: Value(reviewResult.name),
