@@ -4050,6 +4050,17 @@ class $LearnItemsTable extends LearnItems
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _consecutiveCorrectMeta =
+      const VerificationMeta('consecutiveCorrect');
+  @override
+  late final GeneratedColumn<int> consecutiveCorrect = GeneratedColumn<int>(
+    'consecutive_correct',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4062,6 +4073,7 @@ class $LearnItemsTable extends LearnItems
     dueAt,
     reps,
     lapses,
+    consecutiveCorrect,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4148,6 +4160,15 @@ class $LearnItemsTable extends LearnItems
         lapses.isAcceptableOrUnknown(data['lapses']!, _lapsesMeta),
       );
     }
+    if (data.containsKey('consecutive_correct')) {
+      context.handle(
+        _consecutiveCorrectMeta,
+        consecutiveCorrect.isAcceptableOrUnknown(
+          data['consecutive_correct']!,
+          _consecutiveCorrectMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4201,6 +4222,10 @@ class $LearnItemsTable extends LearnItems
         DriftSqlType.int,
         data['${effectivePrefix}lapses'],
       )!,
+      consecutiveCorrect: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}consecutive_correct'],
+      )!,
     );
   }
 
@@ -4221,6 +4246,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
   final DateTime dueAt;
   final int reps;
   final int lapses;
+  final int consecutiveCorrect;
   const LearnItem({
     required this.id,
     required this.languageId,
@@ -4232,6 +4258,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
     required this.dueAt,
     required this.reps,
     required this.lapses,
+    required this.consecutiveCorrect,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4246,6 +4273,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
     map['due_at'] = Variable<DateTime>(dueAt);
     map['reps'] = Variable<int>(reps);
     map['lapses'] = Variable<int>(lapses);
+    map['consecutive_correct'] = Variable<int>(consecutiveCorrect);
     return map;
   }
 
@@ -4261,6 +4289,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
       dueAt: Value(dueAt),
       reps: Value(reps),
       lapses: Value(lapses),
+      consecutiveCorrect: Value(consecutiveCorrect),
     );
   }
 
@@ -4280,6 +4309,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
       dueAt: serializer.fromJson<DateTime>(json['dueAt']),
       reps: serializer.fromJson<int>(json['reps']),
       lapses: serializer.fromJson<int>(json['lapses']),
+      consecutiveCorrect: serializer.fromJson<int>(json['consecutiveCorrect']),
     );
   }
   @override
@@ -4296,6 +4326,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
       'dueAt': serializer.toJson<DateTime>(dueAt),
       'reps': serializer.toJson<int>(reps),
       'lapses': serializer.toJson<int>(lapses),
+      'consecutiveCorrect': serializer.toJson<int>(consecutiveCorrect),
     };
   }
 
@@ -4310,6 +4341,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
     DateTime? dueAt,
     int? reps,
     int? lapses,
+    int? consecutiveCorrect,
   }) => LearnItem(
     id: id ?? this.id,
     languageId: languageId ?? this.languageId,
@@ -4321,6 +4353,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
     dueAt: dueAt ?? this.dueAt,
     reps: reps ?? this.reps,
     lapses: lapses ?? this.lapses,
+    consecutiveCorrect: consecutiveCorrect ?? this.consecutiveCorrect,
   );
   LearnItem copyWithCompanion(LearnItemsCompanion data) {
     return LearnItem(
@@ -4340,6 +4373,9 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
       dueAt: data.dueAt.present ? data.dueAt.value : this.dueAt,
       reps: data.reps.present ? data.reps.value : this.reps,
       lapses: data.lapses.present ? data.lapses.value : this.lapses,
+      consecutiveCorrect: data.consecutiveCorrect.present
+          ? data.consecutiveCorrect.value
+          : this.consecutiveCorrect,
     );
   }
 
@@ -4355,7 +4391,8 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
           ..write('intervalDays: $intervalDays, ')
           ..write('dueAt: $dueAt, ')
           ..write('reps: $reps, ')
-          ..write('lapses: $lapses')
+          ..write('lapses: $lapses, ')
+          ..write('consecutiveCorrect: $consecutiveCorrect')
           ..write(')'))
         .toString();
   }
@@ -4372,6 +4409,7 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
     dueAt,
     reps,
     lapses,
+    consecutiveCorrect,
   );
   @override
   bool operator ==(Object other) =>
@@ -4386,7 +4424,8 @@ class LearnItem extends DataClass implements Insertable<LearnItem> {
           other.intervalDays == this.intervalDays &&
           other.dueAt == this.dueAt &&
           other.reps == this.reps &&
-          other.lapses == this.lapses);
+          other.lapses == this.lapses &&
+          other.consecutiveCorrect == this.consecutiveCorrect);
 }
 
 class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
@@ -4400,6 +4439,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
   final Value<DateTime> dueAt;
   final Value<int> reps;
   final Value<int> lapses;
+  final Value<int> consecutiveCorrect;
   final Value<int> rowid;
   const LearnItemsCompanion({
     this.id = const Value.absent(),
@@ -4412,6 +4452,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
     this.dueAt = const Value.absent(),
     this.reps = const Value.absent(),
     this.lapses = const Value.absent(),
+    this.consecutiveCorrect = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LearnItemsCompanion.insert({
@@ -4425,6 +4466,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
     required DateTime dueAt,
     this.reps = const Value.absent(),
     this.lapses = const Value.absent(),
+    this.consecutiveCorrect = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        languageId = Value(languageId),
@@ -4442,6 +4484,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
     Expression<DateTime>? dueAt,
     Expression<int>? reps,
     Expression<int>? lapses,
+    Expression<int>? consecutiveCorrect,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4455,6 +4498,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
       if (dueAt != null) 'due_at': dueAt,
       if (reps != null) 'reps': reps,
       if (lapses != null) 'lapses': lapses,
+      if (consecutiveCorrect != null) 'consecutive_correct': consecutiveCorrect,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4470,6 +4514,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
     Value<DateTime>? dueAt,
     Value<int>? reps,
     Value<int>? lapses,
+    Value<int>? consecutiveCorrect,
     Value<int>? rowid,
   }) {
     return LearnItemsCompanion(
@@ -4483,6 +4528,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
       dueAt: dueAt ?? this.dueAt,
       reps: reps ?? this.reps,
       lapses: lapses ?? this.lapses,
+      consecutiveCorrect: consecutiveCorrect ?? this.consecutiveCorrect,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4520,6 +4566,9 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
     if (lapses.present) {
       map['lapses'] = Variable<int>(lapses.value);
     }
+    if (consecutiveCorrect.present) {
+      map['consecutive_correct'] = Variable<int>(consecutiveCorrect.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4539,6 +4588,7 @@ class LearnItemsCompanion extends UpdateCompanion<LearnItem> {
           ..write('dueAt: $dueAt, ')
           ..write('reps: $reps, ')
           ..write('lapses: $lapses, ')
+          ..write('consecutiveCorrect: $consecutiveCorrect, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9305,6 +9355,7 @@ typedef $$LearnItemsTableCreateCompanionBuilder =
       required DateTime dueAt,
       Value<int> reps,
       Value<int> lapses,
+      Value<int> consecutiveCorrect,
       Value<int> rowid,
     });
 typedef $$LearnItemsTableUpdateCompanionBuilder =
@@ -9319,6 +9370,7 @@ typedef $$LearnItemsTableUpdateCompanionBuilder =
       Value<DateTime> dueAt,
       Value<int> reps,
       Value<int> lapses,
+      Value<int> consecutiveCorrect,
       Value<int> rowid,
     });
 
@@ -9415,6 +9467,11 @@ class $$LearnItemsTableFilterComposer
 
   ColumnFilters<int> get lapses => $composableBuilder(
     column: $table.lapses,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get consecutiveCorrect => $composableBuilder(
+    column: $table.consecutiveCorrect,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9521,6 +9578,11 @@ class $$LearnItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get consecutiveCorrect => $composableBuilder(
+    column: $table.consecutiveCorrect,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$LanguagesTableOrderingComposer get languageId {
     final $$LanguagesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9584,6 +9646,11 @@ class $$LearnItemsTableAnnotationComposer
 
   GeneratedColumn<int> get lapses =>
       $composableBuilder(column: $table.lapses, builder: (column) => column);
+
+  GeneratedColumn<int> get consecutiveCorrect => $composableBuilder(
+    column: $table.consecutiveCorrect,
+    builder: (column) => column,
+  );
 
   $$LanguagesTableAnnotationComposer get languageId {
     final $$LanguagesTableAnnotationComposer composer = $composerBuilder(
@@ -9672,6 +9739,7 @@ class $$LearnItemsTableTableManager
                 Value<DateTime> dueAt = const Value.absent(),
                 Value<int> reps = const Value.absent(),
                 Value<int> lapses = const Value.absent(),
+                Value<int> consecutiveCorrect = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LearnItemsCompanion(
                 id: id,
@@ -9684,6 +9752,7 @@ class $$LearnItemsTableTableManager
                 dueAt: dueAt,
                 reps: reps,
                 lapses: lapses,
+                consecutiveCorrect: consecutiveCorrect,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -9698,6 +9767,7 @@ class $$LearnItemsTableTableManager
                 required DateTime dueAt,
                 Value<int> reps = const Value.absent(),
                 Value<int> lapses = const Value.absent(),
+                Value<int> consecutiveCorrect = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LearnItemsCompanion.insert(
                 id: id,
@@ -9710,6 +9780,7 @@ class $$LearnItemsTableTableManager
                 dueAt: dueAt,
                 reps: reps,
                 lapses: lapses,
+                consecutiveCorrect: consecutiveCorrect,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

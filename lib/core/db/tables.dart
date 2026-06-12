@@ -152,6 +152,8 @@ class LearnItems extends Table {
   DateTimeColumn get dueAt => dateTime()();
   IntColumn get reps => integer().withDefault(const Constant(0))();
   IntColumn get lapses => integer().withDefault(const Constant(0))();
+  IntColumn get consecutiveCorrect =>
+      integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
