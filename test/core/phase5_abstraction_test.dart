@@ -15,6 +15,7 @@ import 'package:nihongo_app/core/script_profile.dart';
 import 'package:nihongo_app/packs/es/es_seed.dart';
 import 'package:nihongo_app/packs/ja/ja_seed.dart';
 import 'package:nihongo_app/packs/ko/ko_seed.dart';
+import 'package:nihongo_app/packs/zh/zh_seed.dart';
 
 const _jaProfile = ScriptProfile(
   id: 'sp_ja_kana',
@@ -52,6 +53,18 @@ const _koProfile = ScriptProfile(
   inputMethods: [InputMethod.keyboard],
 );
 
+const _zhProfile = ScriptProfile(
+  id: 'sp_zh',
+  scriptType: ScriptType.logographic,
+  direction: Direction.ltr,
+  decomposability: Decomposability.radicals,
+  positionalForms: false,
+  toneSystem: ToneSystem.tonal,
+  needsScriptTrack: true,
+  transliteration: 'pinyin',
+  inputMethods: [InputMethod.ime, InputMethod.keyboard],
+);
+
 void main() {
   group('I5 — game availability driven purely by ScriptProfile flags', () {
     test('JA kana: 3 games (readingBlitz, writeTrace, wordBuild)', () {
@@ -80,12 +93,27 @@ void main() {
       expect(specs.any((s) => s.type == GameType.kanjiCompound), isFalse);
     });
 
-    test('all 3 profiles differ in game count (I5: no language-specific code)', () {
+    test('ZH logographic/tonal: 6 games', () {
+      final specs = gameAvailability(_zhProfile);
+      expect(specs, hasLength(6));
+      // tonal → toneVowelMatch
+      expect(specs.any((s) => s.type == GameType.toneVowelMatch), isTrue);
+      // logographic → kanjiCompound at rung 5 (not wordBuild)
+      expect(specs.any((s) => s.type == GameType.kanjiCompound && s.rung == 5), isTrue);
+      expect(specs.any((s) => s.type == GameType.wordBuild), isFalse);
+      // radicals → componentBuild
+      expect(specs.any((s) => s.type == GameType.componentBuild && s.rung == 3), isTrue);
+      // no positional forms
+      expect(specs.any((s) => s.type == GameType.positionalForm), isFalse);
+    });
+
+    test('all 4 profiles have unique game counts (I5: no language-specific code)', () {
       final ja = gameAvailability(_jaProfile).length;
       final es = gameAvailability(_esProfile).length;
       final ko = gameAvailability(_koProfile).length;
-      // JA=3, ES=4, KO=5 — all different, driven by profile flags alone
-      expect({ja, es, ko}.length, 3);
+      final zh = gameAvailability(_zhProfile).length;
+      // JA=3, ES=4, KO=5, ZH=6 — all different, driven by profile flags alone
+      expect({ja, es, ko, zh}.length, 4);
     });
   });
 
@@ -98,6 +126,7 @@ void main() {
       await seedJaPack(db);
       await seedEsPack(db);
       await seedKoPack(db);
+      await seedZhPack(db);
       loader = ExerciseLoader(db);
     });
 
@@ -166,6 +195,35 @@ void main() {
       final trace = content as WriteTraceContent;
       expect(trace.glyph, '가');
     });
+
+    test('ZH rung1 → RecognitionContent with hanzi glyph', () async {
+      await db.addLearnItemAtRung('lang_zh', RefType.character, 'char_zh_ming', rung: 1);
+      final item = (await (db.select(db.learnItems)
+                ..where((t) => t.languageId.equals('lang_zh')))
+              .get())
+          .first;
+
+      final content = await loader.load(item, _zhProfile);
+
+      expect(content, isA<RecognitionContent>());
+      final rec = content as RecognitionContent;
+      expect(rec.displayForm, '明');
+      expect(rec.answer, 'bright / clear');
+    });
+
+    test('ZH rung4 → WriteTraceContent with hanzi glyph', () async {
+      await db.addLearnItemAtRung('lang_zh', RefType.character, 'char_zh_ming', rung: 4);
+      final item = (await (db.select(db.learnItems)
+                ..where((t) => t.languageId.equals('lang_zh')))
+              .get())
+          .first;
+
+      final content = await loader.load(item, _zhProfile);
+
+      expect(content, isA<WriteTraceContent>());
+      final trace = content as WriteTraceContent;
+      expect(trace.glyph, '明');
+    });
   });
 
   group('I8 — ConversationService.onError is language-blind', () {
@@ -176,6 +234,7 @@ void main() {
       db = LearningDb.forTesting();
       await seedEsPack(db);
       await seedKoPack(db);
+      await seedZhPack(db);
       service = ConversationService(db);
     });
 
@@ -222,6 +281,20 @@ void main() {
       expect(items, hasLength(2));
       expect(items.map((i) => i.languageId).toSet(), {'lang_es', 'lang_ko'});
     });
+
+    test('onError creates ZH character item (logographic pack)', () async {
+      await service.onError(const ErrorSpan(
+        languageId: 'lang_zh',
+        refType: RefType.character,
+        refId: 'char_zh_ming',
+      ));
+
+      final items = await db.select(db.learnItems).get();
+      expect(items, hasLength(1));
+      expect(items.first.languageId, 'lang_zh');
+      expect(items.first.refType, 'character');
+      expect(items.first.refId, 'char_zh_ming');
+    });
   });
 
   group('I8 — GameQueue is language-blind', () {
@@ -233,6 +306,7 @@ void main() {
       await seedJaPack(db);
       await seedEsPack(db);
       await seedKoPack(db);
+      await seedZhPack(db);
       queue = GameQueue(db);
     });
 
@@ -254,6 +328,18 @@ void main() {
       expect(jaItems.first.languageId, 'lang_ja');
       expect(esItems.first.languageId, 'lang_es');
       expect(koItems.first.languageId, 'lang_ko');
+    });
+
+    test('ZH getDue isolates hanzi items by languageId', () async {
+      await db.addLearnItemAtRung('lang_zh', RefType.character, 'char_zh_ming', rung: 2);
+
+      const spec = (type: GameType.readingBlitz, rung: 2);
+      final zhItems = await queue.getDue(spec, 'lang_zh');
+      final jaItems = await queue.getDue(spec, 'lang_ja');
+
+      expect(zhItems, hasLength(1));
+      expect(zhItems.first.languageId, 'lang_zh');
+      expect(jaItems, isEmpty);
     });
   });
 }
