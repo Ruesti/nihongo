@@ -98,6 +98,26 @@ class LearningDb extends _$LearningDb {
         .get();
   }
 
+  // --- Sentence DAOs (Graded Input) ---
+
+  Future<List<Sentence>> getSentences(
+    String langId, {
+    String? cefrBand,
+    double? minCoverage,
+  }) {
+    return (select(sentences)
+          ..where((t) {
+            Expression<bool> cond = t.languageId.equals(langId);
+            if (cefrBand != null) cond = cond & t.cefrBand.equals(cefrBand);
+            if (minCoverage != null) {
+              cond = cond & t.knownCoverage.isBiggerOrEqualValue(minCoverage);
+            }
+            return cond;
+          })
+          ..orderBy([(t) => OrderingTerm.desc(t.knownCoverage)]))
+        .get();
+  }
+
   Future<void> applyReviewResult(
     LearnItem item,
     LadderResult ladderResult,
