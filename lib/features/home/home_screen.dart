@@ -3,31 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 
-import '../../core/db/learning_db.dart';
 import '../../core/feature_gate.dart';
 import '../../core/progress/progress_service.dart';
 import '../../core/theme.dart';
 import '../../data/lessons.dart';
 import '../../models/lesson.dart';
 import '../../models/mascot_state.dart';
-import '../../widgets/progress_bar.dart';
 import 'home_providers.dart';
 import 'lesson_grid.dart';
 import 'mascot_widget.dart';
-
-// ── providers ──────────────────────────────────────────────────────────────────
-
-final _masteryProvider = FutureProvider.family<MasteryStats, String>(
-  (ref, lang) => ref.read(progressServiceProvider).masteryStats('lang_$lang'),
-);
-
-final _dueCountProvider = FutureProvider.family<int, String>(
-  (ref, lang) async {
-    final db = ref.read(learningDbProvider);
-    final items = await db.getDueItems('lang_$lang');
-    return items.length;
-  },
-);
 
 // ── screen ─────────────────────────────────────────────────────────────────────
 
@@ -38,9 +22,9 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final masteryAsync = ref.watch(_masteryProvider(lang));
+    final masteryAsync = ref.watch(masteryStatsProvider(lang));
     final statusAsync = ref.watch(lessonStatusProvider(lang));
-    final dueAsync = ref.watch(_dueCountProvider(lang));
+    final dueAsync = ref.watch(dueCountProvider(lang));
 
     return Scaffold(
       body: CustomScrollView(
