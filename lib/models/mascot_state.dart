@@ -1,3 +1,11 @@
+TamagoState tamagoStateFromMastery(double fraction) {
+  if (fraction >= 0.8) return TamagoState.hatched;
+  if (fraction >= 0.5) return TamagoState.halfOut;
+  if (fraction >= 0.25) return TamagoState.peeking;
+  if (fraction >= 0.1) return TamagoState.cracking;
+  return TamagoState.egg;
+}
+
 enum TamagoState {
   egg,
   cracking,

@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme.dart';
 import '../../models/mascot_state.dart';
-import '../../models/progress.dart';
 
 class MascotWidget extends StatefulWidget {
-  final UserProgress progress;
+  final TamagoState state;
   final double size;
   final bool animate;
 
   const MascotWidget({
     super.key,
-    required this.progress,
+    required this.state,
     this.size = 64,
     this.animate = false,
   });
@@ -58,7 +57,7 @@ class _MascotWidgetState extends State<MascotWidget>
 
   @override
   Widget build(BuildContext context) {
-    final state = widget.progress.tamagoState;
+    final state = widget.state;
     return AnimatedBuilder(
       animation: _ctrl,
       builder: (_, child) {
@@ -227,44 +226,13 @@ class _TamagoPainter extends CustomPainter {
       old.state != state || old.size != size;
 }
 
-// Compact version for use in lesson complete screen
 class MascotReward extends StatelessWidget {
-  final UserProgress progress;
-  final int xpGained;
+  final TamagoState state;
 
-  const MascotReward({
-    super.key,
-    required this.progress,
-    required this.xpGained,
-  });
+  const MascotReward({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        MascotWidget(
-          progress: progress,
-          size: 100,
-          animate: true,
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColors.amber.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.amber.withOpacity(0.3)),
-          ),
-          child: Text(
-            '+$xpGained XP',
-            style: const TextStyle(
-              color: AppColors.amber,
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-            ),
-          ),
-        ),
-      ],
-    );
+    return MascotWidget(state: state, size: 100, animate: true);
   }
 }
