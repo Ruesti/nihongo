@@ -7,7 +7,7 @@ import '../../core/database.dart';
 import '../../core/theme.dart';
 import '../../core/tts_service.dart';
 import '../../models/conversation.dart';
-import '../home/home_screen.dart';
+import '../home/home_providers.dart';
 import 'conversation_review.dart';
 
 class ConversationScreen extends ConsumerStatefulWidget {

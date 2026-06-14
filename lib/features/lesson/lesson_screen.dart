@@ -6,6 +6,7 @@ import '../../core/theme.dart';
 import '../../data/lessons.dart';
 import '../../data/vocab_800.dart';
 import '../../models/lesson.dart';
+import '../../models/mascot_state.dart';
 import '../../models/srs_card.dart';
 import '../../widgets/furigana_text.dart';
 import '../../widgets/progress_bar.dart';
@@ -71,15 +72,13 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
   Future<void> _saveLessonProgress() async {
     final db = ref.read(dbProvider);
     final accuracy = _total > 0 ? (_correct * 100 / _total).round() : 0;
-    final xp = _lesson!.xpReward;
     await db.setLessonStatus(
       widget.lessonId,
       3, // completed
       accuracy: accuracy,
-      xp: xp,
+      xp: 0,
       lang: widget.lang,
     );
-    await db.addXp(xp, lang: widget.lang);
     // Unlock next lesson if accuracy >= 70%
     if (accuracy >= 70) {
       final nextId = widget.lessonId + 1;
@@ -352,7 +351,7 @@ class _LessonCompleteScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(userProgressProvider(lang));
+    final masteryAsync = ref.watch(masteryStatsProvider(lang));
     final accuracy = total > 0 ? (correct * 100 / total).round() : 0;
 
     return Scaffold(
@@ -363,8 +362,10 @@ class _LessonCompleteScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                progressAsync.when(
-                  data: (p) => MascotReward(state: p.tamagoState),
+                masteryAsync.when(
+                  data: (stats) => MascotReward(
+                    state: tamagoStateFromMastery(stats.masteryFraction),
+                  ),
                   loading: () => const SizedBox(height: 100),
                   error: (_, _) => const SizedBox(height: 100),
                 ),
