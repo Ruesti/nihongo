@@ -3,54 +3,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 
-import '../../core/database.dart';
+import '../../core/db/learning_db.dart';
 import '../../core/feature_gate.dart';
+import '../../core/progress/progress_service.dart';
 import '../../core/theme.dart';
 import '../../data/lessons.dart';
 import '../../models/lesson.dart';
 import '../../models/mascot_state.dart';
-import '../../models/progress.dart';
 import '../../widgets/progress_bar.dart';
+import 'home_providers.dart';
 import 'lesson_grid.dart';
 import 'mascot_widget.dart';
 
-final userProgressProvider = FutureProvider.family<UserProgress, String>(
+// ── providers ──────────────────────────────────────────────────────────────────
+
+final _masteryProvider = FutureProvider.family<MasteryStats, String>(
+  (ref, lang) => ref.read(progressServiceProvider).masteryStats('lang_$lang'),
+);
+
+final _dueCountProvider = FutureProvider.family<int, String>(
   (ref, lang) async {
-    final db = ref.read(dbProvider);
-    final stats = await db.getUserStats(lang: lang);
-    final lessonProgress = await db.getAllLessonProgress(lang: lang);
-    final completed = lessonProgress.where((p) => p.status == 3).length;
-    return UserProgress(
-      languageCode: lang,
-      totalXp: stats?.totalXp ?? 0,
-      totalCardsLearned: stats?.totalCardsLearned ?? 0,
-      completedLessons: completed,
-      conversationSessions: stats?.conversationSessions ?? 0,
-    );
+    final db = ref.read(learningDbProvider);
+    final items = await db.getDueItems('lang_$lang');
+    return items.length;
   },
 );
 
-final lessonStatusProvider = FutureProvider.family<Map<int, int>, String>(
-  (ref, lang) async {
-    final db = ref.read(dbProvider);
-    final all = await db.getAllLessonProgress(lang: lang);
-    final map = <int, int>{};
-    for (final p in all) {
-      map[p.lessonId] = p.status;
-    }
-    // Ensure lesson 1 is always unlocked
-    if (!map.containsKey(1)) map[1] = 1;
-    return map;
-  },
-);
-
-final dueCardsProvider = FutureProvider.family<int, String>(
-  (ref, lang) async {
-    final db = ref.read(dbProvider);
-    final cards = await db.getDueCards(lang: lang);
-    return cards.length;
-  },
-);
+// ── screen ─────────────────────────────────────────────────────────────────────
 
 class HomeScreen extends ConsumerWidget {
   final String lang;
@@ -59,9 +38,9 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(userProgressProvider(lang));
+    final masteryAsync = ref.watch(_masteryProvider(lang));
     final statusAsync = ref.watch(lessonStatusProvider(lang));
-    final dueAsync = ref.watch(dueCardsProvider(lang));
+    final dueAsync = ref.watch(_dueCountProvider(lang));
 
     return Scaffold(
       body: CustomScrollView(
@@ -71,23 +50,23 @@ class HomeScreen extends ConsumerWidget {
             floating: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                '日本語',
+                _langTitle(lang),
                 style: AppTheme.jpSmall.copyWith(fontSize: 20),
               ),
               titlePadding: const EdgeInsets.only(left: 16, bottom: 12),
             ),
             actions: [
-              progressAsync.when(
-                data: (p) => Padding(
+              masteryAsync.when(
+                data: (stats) => Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: MascotWidget(
-                    progress: p,
+                    state: tamagoStateFromMastery(stats.masteryFraction),
                     size: 44,
                     animate: true,
                   ),
                 ),
                 loading: () => const SizedBox(width: 56),
-                error: (_, __) => const SizedBox(width: 56),
+                error: (_, _) => const SizedBox(width: 56),
               ),
             ],
           ),
@@ -95,27 +74,23 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // XP bar and due cards
+                // Mastery bar
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: progressAsync.when(
-                    data: (p) => XpProgressBar(
-                      xp: p.totalXp,
-                      nextXp: p.xpToNextStage,
-                      label: p.tamagoState.label,
-                    ),
+                  child: masteryAsync.when(
+                    data: (stats) => _MasteryBar(stats: stats),
                     loading: () => const LinearProgressIndicator(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Due cards banner
+                // Due items banner
                 dueAsync.when(
                   data: (count) => count > 0
-                      ? _DueBanner(count: count)
+                      ? _DueBanner(count: count, lang: lang)
                       : const SizedBox.shrink(),
                   loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 16),
                 Padding(
@@ -128,22 +103,21 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 statusAsync.when(
                   data: (statusMap) {
-                    final accuracy = <int, int>{};
                     return LessonGrid(
                       lessons: lessons,
                       statusMap: statusMap,
-                      accuracyMap: accuracy,
+                      accuracyMap: const {},
                       onTap: (lesson) =>
                           _openLesson(context, lesson, statusMap),
                     );
                   },
                   loading: () => const Center(
-                      child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(),
-                  )),
-                  error: (e, _) =>
-                      Center(child: Text('Fehler: $e')),
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                  error: (e, _) => Center(child: Text('Fehler: $e')),
                 ),
                 const SizedBox(height: 8),
                 Padding(
@@ -200,6 +174,24 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
+  String _langTitle(String code) {
+    switch (code) {
+      case 'ko':
+        return '한국어';
+      case 'es':
+        return 'Español';
+      case 'fr':
+        return 'Français';
+      case 'it':
+        return 'Italiano';
+      case 'zh':
+        return '中文';
+      case 'ja':
+      default:
+        return '日本語';
+    }
+  }
+
   String _langDisplayName(String code) {
     switch (code) {
       case 'ko':
@@ -219,10 +211,59 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+// ── mastery bar ────────────────────────────────────────────────────────────────
+
+class _MasteryBar extends StatelessWidget {
+  final MasteryStats stats;
+
+  const _MasteryBar({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${stats.totalItems} gelernt',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.ink2),
+            ),
+            Text(
+              '${stats.mastered} gemeistert',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.green, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: LinearProgressIndicator(
+            value: stats.masteryFraction,
+            minHeight: 6,
+            backgroundColor: AppColors.border,
+            color: AppColors.green,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── due banner ─────────────────────────────────────────────────────────────────
+
 class _DueBanner extends StatelessWidget {
   final int count;
+  final String lang;
 
-  const _DueBanner({required this.count});
+  const _DueBanner({required this.count, required this.lang});
 
   @override
   Widget build(BuildContext context) {
@@ -236,8 +277,7 @@ class _DueBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.refresh_outlined,
-              size: 18, color: AppColors.amber),
+          const Icon(Icons.refresh_outlined, size: 18, color: AppColors.amber),
           const SizedBox(width: 8),
           Text(
             '$count Karten zur Wiederholung',
@@ -249,7 +289,7 @@ class _DueBanner extends StatelessWidget {
           ),
           const Spacer(),
           InkWell(
-            onTap: () => context.push('/review'),
+            onTap: () => context.push('/review/$lang'),
             child: const Text(
               'Jetzt',
               style: TextStyle(
@@ -264,6 +304,8 @@ class _DueBanner extends StatelessWidget {
     );
   }
 }
+
+// ── travel banner ──────────────────────────────────────────────────────────────
 
 class _TravelBanner extends StatelessWidget {
   @override

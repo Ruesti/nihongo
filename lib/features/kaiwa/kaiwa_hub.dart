@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/feature_gate.dart';
 import '../../core/theme.dart';
 import '../../models/conversation.dart';
-import '../home/home_screen.dart';
+import '../home/home_providers.dart';
 import 'conversation_screen.dart';
 import 'shadowing_screen.dart';
 

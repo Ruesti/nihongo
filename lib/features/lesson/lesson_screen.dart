@@ -9,7 +9,7 @@ import '../../models/lesson.dart';
 import '../../models/srs_card.dart';
 import '../../widgets/furigana_text.dart';
 import '../../widgets/progress_bar.dart';
-import '../home/home_screen.dart';
+import '../home/home_providers.dart';
 import '../home/mascot_widget.dart';
 import 'exercise_factory.dart';
 import 'exercises/exercise_base.dart';
@@ -364,12 +364,9 @@ class _LessonCompleteScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 progressAsync.when(
-                  data: (p) => MascotReward(
-                    progress: p,
-                    xpGained: lesson.xpReward,
-                  ),
+                  data: (p) => MascotReward(state: p.tamagoState),
                   loading: () => const SizedBox(height: 100),
-                  error: (_, __) => const SizedBox(height: 100),
+                  error: (_, _) => const SizedBox(height: 100),
                 ),
                 const SizedBox(height: 24),
                 Text(

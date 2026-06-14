@@ -3,20 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database.dart';
 import '../../core/theme.dart';
-import '../home/home_screen.dart';
 import 'blitz/blitz_screen.dart';
 import 'kanji_data.dart';
 import 'memory/memory_screen.dart';
 import 'quiz/kanji_quiz_screen.dart';
 import 'trace/trace_screen.dart';
 
-class GamesHub extends ConsumerWidget {
+class GamesHub extends StatelessWidget {
   const GamesHub({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(userProgressProvider('ja'));
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('遊  Kanji-Spiele'),
@@ -24,11 +21,7 @@ class GamesHub extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          progressAsync.when(
-            data: (p) => _TamagoGreeting(totalXp: p.totalXp),
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
+          const _TamagoGreeting(),
           const SizedBox(height: 16),
           GridView.count(
             crossAxisCount: 2,
@@ -106,9 +99,7 @@ class GamesHub extends ConsumerWidget {
 }
 
 class _TamagoGreeting extends StatelessWidget {
-  final int totalXp;
-
-  const _TamagoGreeting({required this.totalXp});
+  const _TamagoGreeting();
 
   @override
   Widget build(BuildContext context) {
