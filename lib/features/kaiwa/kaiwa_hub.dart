@@ -13,22 +13,18 @@ class KaiwaHub extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(userProgressProvider('ja'));
+    final statusAsync = ref.watch(lessonStatusProvider('ja'));
 
     return Scaffold(
       appBar: AppBar(title: const Text('会話 — Gespräche')),
-      body: progressAsync.when(
-        data: (progress) {
-          final unlocked = FeatureGate.isKaiwaUnlocked(
-            progress.completedLessons,
-            progress.totalCardsLearned,
-          );
+      body: statusAsync.when(
+        data: (statusMap) {
+          final completedLessons =
+              statusMap.values.where((s) => s == 3).length;
+          final unlocked = FeatureGate.isKaiwaUnlocked(completedLessons);
 
           if (!unlocked) {
-            return _LockedView(
-              completedLessons: progress.completedLessons,
-              totalCards: progress.totalCardsLearned,
-            );
+            return _LockedView(completedLessons: completedLessons);
           }
 
           return ListView(
@@ -37,7 +33,7 @@ class KaiwaHub extends ConsumerWidget {
               _sectionLabel(context, 'SHADOWING'),
               const SizedBox(height: 8),
               ...shadowingClips
-                  .where((c) => c.minLevel <= (progress.completedLessons + 1))
+                  .where((c) => c.minLevel <= (completedLessons + 1))
                   .map((c) => _ClipCard(
                         clip: c,
                         onTap: () => Navigator.of(context).push(
@@ -46,10 +42,10 @@ class KaiwaHub extends ConsumerWidget {
                           ),
                         ),
                       )),
-              if (shadowingClips.every(
-                  (c) => c.minLevel > (progress.completedLessons + 1)))
-                _lockedHint(
-                    context, 'Shadowing ab Lektion ${shadowingClips.first.minLevel}'),
+              if (shadowingClips
+                  .every((c) => c.minLevel > (completedLessons + 1)))
+                _lockedHint(context,
+                    'Shadowing ab Lektion ${shadowingClips.first.minLevel}'),
               const SizedBox(height: 24),
               _InfoBanner(),
               const SizedBox(height: 16),
@@ -66,8 +62,7 @@ class KaiwaHub extends ConsumerWidget {
             ],
           );
         },
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => const SizedBox.shrink(),
       ),
     );
@@ -244,12 +239,8 @@ class _ScenarioCard extends StatelessWidget {
 
 class _LockedView extends StatelessWidget {
   final int completedLessons;
-  final int totalCards;
 
-  const _LockedView({
-    required this.completedLessons,
-    required this.totalCards,
-  });
+  const _LockedView({required this.completedLessons});
 
   @override
   Widget build(BuildContext context) {
@@ -275,20 +266,10 @@ class _LockedView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Column(
-                children: [
-                  _Requirement(
-                    label: 'Lektionen abgeschlossen',
-                    current: completedLessons,
-                    required_: 25,
-                  ),
-                  const SizedBox(height: 8),
-                  _Requirement(
-                    label: 'Karten gelernt',
-                    current: totalCards,
-                    required_: 250,
-                  ),
-                ],
+              child: _Requirement(
+                label: 'Lektionen abgeschlossen',
+                current: completedLessons,
+                required_: 25,
               ),
             ),
           ],
