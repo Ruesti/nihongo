@@ -66,7 +66,7 @@ class GamesHub extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          _HighscoreSection(ref: ref),
+          const _HighscoreSection(),
         ],
       ),
     );
@@ -205,13 +205,11 @@ class _GameCard extends StatelessWidget {
   }
 }
 
-class _HighscoreSection extends StatelessWidget {
-  final WidgetRef ref;
-
-  const _HighscoreSection({required this.ref});
+class _HighscoreSection extends ConsumerWidget {
+  const _HighscoreSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.read(dbProvider);
     return FutureBuilder<List<BlitzHighscore>>(
       future: db.getBlitzHighscores(limit: 5),

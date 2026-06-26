@@ -6,7 +6,6 @@ class FeatureGate {
   static const _freeLessonMax = 15;
   static const _freeTravelCountries = ['jp', 'es', 'fr'];
   static const _kaiwaMinLesson = 25;
-  static const _kaiwaMinCards = 250;
   static const _phoneMinLesson = 40;
   static const _phoneMinConversations = 10;
 
@@ -36,9 +35,8 @@ class FeatureGate {
     return ApiKeyService.hasKey();
   }
 
-  static bool isKaiwaUnlocked(int completedLessons, int totalCards) =>
-      completedLessons >= _kaiwaMinLesson &&
-      totalCards >= _kaiwaMinCards;
+  static bool isKaiwaUnlocked(int completedLessons) =>
+      completedLessons >= _kaiwaMinLesson;
 
   static bool isPhoneUnlocked(
           int completedLessons, int conversationSessions) =>
