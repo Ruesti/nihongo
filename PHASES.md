@@ -1,5 +1,7 @@
 # Phasenmodell — Nihongo App
 
+> **SUPERSEDED (2026-07-20):** Ersetzt durch den Phasenplan in `SPEC_MINING_PIPELINE.md` §10. Nur noch als historische Referenz relevant.
+
 Entwicklungsplan auf Basis von CLAUDE.md. Jede Phase ist eigenständig lieferbar.
 Status: `[ ]` offen · `[x]` fertig · `[~]` in Arbeit
 

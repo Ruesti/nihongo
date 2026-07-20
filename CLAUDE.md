@@ -1,4 +1,7 @@
 # CLAUDE.md — Softbrew Sprachlern-App
+
+> **SUPERSEDED (2026-07-20):** Dieses Dokument und `PHASES.md` beschreiben die alte Tamago-chan/Lektionen-Architektur. Sie wird durch `SPEC_MINING_PIPELINE.md` (Datum / Immersion-Mining-App) vollständig ersetzt, siehe deren Status-Zeile. Nur noch als historische Referenz relevant.
+
 *(Arbeitstitel: TBD · Implementierungs-Brief für Claude Code)*
 
 Mehrsprachige Sprachlern-App, **local-first**, mit dauerhaftem Lernen über eine Abruf-Leiter + SM-2, generischer Schrift-Unterstützung, produktiven Schrift-Spielen und KI-Gesprächspartner. Pädagogische Quelle der Wahrheit: **Methode-Spec v0.2** (`Lernmethode_Asset-System_v0.2.md`). Diese Datei übersetzt sie in Architektur und Code-Regeln.
