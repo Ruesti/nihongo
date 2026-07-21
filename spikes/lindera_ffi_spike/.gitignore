@@ -1,0 +1,6 @@
+/dict/
+/rust/target/
+/harness/build/
+/harness/android/app/src/main/jniLibs/
+/harness/.dart_tool/
+*.apk
