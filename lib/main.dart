@@ -4,10 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/db/learning_db.dart';
+import 'core/db/seed_all.dart';
 import 'core/purchases_service.dart';
 import 'core/tts_service.dart';
 import 'features/language_select/language_select_screen.dart';
-import 'packs/ja/ja_seed.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,9 +25,9 @@ void main() async {
   final existingLangs = await learningDb.select(learningDb.languages).get();
   if (existingLangs.isEmpty) {
     try {
-      await seedJaPack(learningDb);
+      await seedAllPacks(learningDb);
     } catch (e) {
-      debugPrint('Failed to seed JA pack: $e');
+      debugPrint('Failed to seed language packs: $e');
     }
   }
 
@@ -47,6 +47,8 @@ String _ttsLocaleForCode(String code) {
     case 'ko': return 'ko-KR';
     case 'es': return 'es-ES';
     case 'zh': return 'zh-CN';
+    case 'ar': return 'ar-SA';
+    case 'hi': return 'hi-IN';
     default: return 'ja-JP';
   }
 }

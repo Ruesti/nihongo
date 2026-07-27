@@ -2,11 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/language_module.dart';
+import '../../core/db/learning_db.dart';
 import '../../core/theme.dart';
 import '../../core/tts_service.dart';
+import 'language_options.dart';
 
 final activeLanguageProvider = StateProvider<String>((ref) => 'ja');
+
+final availableLanguagesProvider = FutureProvider<List<LanguageOption>>(
+  (ref) => loadAvailableLanguages(ref.watch(learningDbProvider)),
+);
+
+const _nameDE = {
+  'ja': 'Japanisch',
+  'es': 'Spanisch',
+  'ko': 'Koreanisch',
+  'ar': 'Arabisch',
+  'hi': 'Hindi',
+  'zh': 'Chinesisch',
+};
+
+const _flagEmoji = {
+  'ja': '🇯🇵',
+  'es': '🇪🇸',
+  'ko': '🇰🇷',
+  'ar': '🇸🇦',
+  'hi': '🇮🇳',
+  'zh': '🇨🇳',
+};
 
 class LanguageSelectScreen extends ConsumerWidget {
   const LanguageSelectScreen({super.key});
@@ -14,6 +37,7 @@ class LanguageSelectScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = ref.watch(activeLanguageProvider);
+    final languagesAsync = ref.watch(availableLanguagesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sprache wählen')),
@@ -43,17 +67,29 @@ class LanguageSelectScreen extends ConsumerWidget {
                 ),
           ),
           const SizedBox(height: 8),
-          ...allModules.map((m) => _LanguageCard(
-                module: m,
-                isActive: m.code == active,
-                onSelect: () async {
-                  ref.read(activeLanguageProvider.notifier).state = m.code;
-                  TtsService.instance.setLocale(m.ttsLocale);
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setString('active_language', m.code);
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-              )),
+          languagesAsync.when(
+            data: (options) => Column(
+              children: options
+                  .map((o) => _LanguageCard(
+                        option: o,
+                        isActive: o.code == active,
+                        onSelect: () async {
+                          ref.read(activeLanguageProvider.notifier).state =
+                              o.code;
+                          TtsService.instance.setLocale(o.ttsVoice);
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('active_language', o.code);
+                          if (context.mounted) Navigator.of(context).pop();
+                        },
+                      ))
+                  .toList(),
+            ),
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (_, _) => const Text('Sprachen konnten nicht geladen werden.'),
+          ),
           const SizedBox(height: 16),
           Text(
             'BALD VERFÜGBAR',
@@ -73,12 +109,12 @@ class LanguageSelectScreen extends ConsumerWidget {
 }
 
 class _LanguageCard extends StatelessWidget {
-  final LanguageModule module;
+  final LanguageOption option;
   final bool isActive;
   final VoidCallback onSelect;
 
   const _LanguageCard({
-    required this.module,
+    required this.option,
     required this.isActive,
     required this.onSelect,
   });
@@ -94,7 +130,7 @@ class _LanguageCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Text(module.flagEmoji, style: const TextStyle(fontSize: 28)),
+              Text(_flagEmoji[option.code] ?? '🏳️', style: const TextStyle(fontSize: 28)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -103,7 +139,7 @@ class _LanguageCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          module.nameDE,
+                          _nameDE[option.code] ?? option.code,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
@@ -111,7 +147,7 @@ class _LanguageCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          module.nameNative,
+                          option.nameNative,
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -123,15 +159,9 @@ class _LanguageCard extends StatelessWidget {
                     Wrap(
                       spacing: 4,
                       children: [
-                        if (module.hasScript)
-                          _Tag('Schrift'),
-                        if (module.hasToneSystem)
-                          _Tag('Töne'),
-                        if (module.hasGender)
-                          _Tag('Genus'),
-                        if (module.hasConjugation)
-                          _Tag('Konjugation'),
-                        _Tag('${module.curriculum.length} Lektionen'),
+                        if (option.needsScriptTrack) _Tag('Schrift'),
+                        if (option.toneSystem != 'none') _Tag('Töne'),
+                        if (option.isRtl) _Tag('RTL'),
                       ],
                     ),
                   ],
