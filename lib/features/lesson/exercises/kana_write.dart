@@ -5,7 +5,7 @@ import '../../../core/tts_service.dart';
 import '../../../data/kana_data.dart';
 import 'exercise_base.dart';
 
-/// User hears romaji pronunciation, selects the correct kana
+/// User hears the kana's pronunciation, selects the correct kana
 class KanaWriteExercise extends StatefulWidget {
   final KanaEntry kana;
   final List<KanaEntry> distractors;
@@ -31,9 +31,8 @@ class _KanaWriteExerciseState extends State<KanaWriteExercise> {
   void initState() {
     super.initState();
     _options = [widget.kana, ...widget.distractors]..shuffle();
-    // Auto-play the romaji via TTS
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      TtsService.instance.speak(widget.kana.romaji);
+      TtsService.instance.speak(widget.kana.kana);
     });
   }
 
