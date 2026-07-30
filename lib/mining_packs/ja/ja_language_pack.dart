@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../core/language_pack/language_pack.dart';
 import 'jmdict_db.dart';
+import 'native_tokenizer.dart';
 
 /// The `Tokenizer`/`Dictionary`/`FrequencyList`/`ReadingProvider` seam
 /// signatures (SPEC_MINING_PIPELINE.md §2.2) are synchronous — the
@@ -33,7 +34,13 @@ class JaLanguagePack implements LanguagePack {
     required this.readings,
   });
 
-  static Future<JaLanguagePack> load(JmdictDb db) async {
+  /// [tokenizerOverride] exists for tests that don't want to depend on
+  /// the native library being built (e.g. dictionary-only tests) —
+  /// production callers should omit it and get [NativeJaTokenizer].
+  static Future<JaLanguagePack> load(
+    JmdictDb db, {
+    Tokenizer? tokenizerOverride,
+  }) async {
     final lemmas = await db.select(db.jmdictLemmas).get();
     final senses = await db.select(db.jmdictSenses).get();
 
@@ -64,32 +71,10 @@ class JaLanguagePack implements LanguagePack {
     }
 
     return JaLanguagePack._(
-      tokenizer: const _JaTokenizerPendingIntegration(),
+      tokenizer: tokenizerOverride ?? NativeJaTokenizer(),
       dictionary: _JaDictionary(formToEntryIds, entrySenses),
       frequency: const _JaFrequencyListNotYetImported(),
       readings: _JaReadingProvider(kanjiToReading),
-    );
-  }
-}
-
-/// The JA tokenizer seam. Lindera 4.0.0 + embedded IPADIC via
-/// `flutter_rust_bridge` was proven viable on a physical Android device
-/// in Phase 1 (BERICHT_1_lindera-spike.md: 785ms cold start, p99
-/// 0.259ms/sentence) — that FFI plumbing lives at
-/// `spike/lindera_spike/` and is not yet wired into `nihongo_app`'s own
-/// Android build. Deliberately throwing rather than faking a
-/// lower-quality fallback (e.g. naive character splitting): a silently
-/// wrong tokenizer would corrupt every downstream stage (§3 scoring,
-/// §2.4 sentence re-election) without anyone noticing until much later.
-class _JaTokenizerPendingIntegration implements Tokenizer {
-  const _JaTokenizerPendingIntegration();
-
-  @override
-  List<Token> tokenize(String text) {
-    throw UnimplementedError(
-      'JA tokenizer FFI is proven (Phase 1, BERICHT_1_lindera-spike.md) '
-      'but not yet wired into nihongo_app\'s Android build — deferred to '
-      'the Phase 3 pipeline-stages work.',
     );
   }
 }
