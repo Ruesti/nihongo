@@ -2366,16 +2366,7 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('learning'),
-  );
-  static const VerificationMeta _stepMeta = const VerificationMeta('step');
-  @override
-  late final GeneratedColumn<int> step = GeneratedColumn<int>(
-    'step',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
+    defaultValue: const Constant('newState'),
   );
   static const VerificationMeta _stabilityMeta = const VerificationMeta(
     'stability',
@@ -2384,9 +2375,10 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
   late final GeneratedColumn<double> stability = GeneratedColumn<double>(
     'stability',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _difficultyMeta = const VerificationMeta(
     'difficulty',
@@ -2395,9 +2387,54 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
   late final GeneratedColumn<double> difficulty = GeneratedColumn<double>(
     'difficulty',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _elapsedDaysMeta = const VerificationMeta(
+    'elapsedDays',
+  );
+  @override
+  late final GeneratedColumn<int> elapsedDays = GeneratedColumn<int>(
+    'elapsed_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _scheduledDaysMeta = const VerificationMeta(
+    'scheduledDays',
+  );
+  @override
+  late final GeneratedColumn<int> scheduledDays = GeneratedColumn<int>(
+    'scheduled_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _repsMeta = const VerificationMeta('reps');
+  @override
+  late final GeneratedColumn<int> reps = GeneratedColumn<int>(
+    'reps',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lapsesMeta = const VerificationMeta('lapses');
+  @override
+  late final GeneratedColumn<int> lapses = GeneratedColumn<int>(
+    'lapses',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _dueMeta = const VerificationMeta('due');
   @override
@@ -2415,9 +2452,9 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
   late final GeneratedColumn<DateTime> lastReview = GeneratedColumn<DateTime>(
     'last_review',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -2425,9 +2462,12 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
     vocabItemId,
     contextTextSpanId,
     state,
-    step,
     stability,
     difficulty,
+    elapsedDays,
+    scheduledDays,
+    reps,
+    lapses,
     due,
     lastReview,
   ];
@@ -2474,12 +2514,6 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
         state.isAcceptableOrUnknown(data['state']!, _stateMeta),
       );
     }
-    if (data.containsKey('step')) {
-      context.handle(
-        _stepMeta,
-        step.isAcceptableOrUnknown(data['step']!, _stepMeta),
-      );
-    }
     if (data.containsKey('stability')) {
       context.handle(
         _stabilityMeta,
@@ -2490,6 +2524,36 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
       context.handle(
         _difficultyMeta,
         difficulty.isAcceptableOrUnknown(data['difficulty']!, _difficultyMeta),
+      );
+    }
+    if (data.containsKey('elapsed_days')) {
+      context.handle(
+        _elapsedDaysMeta,
+        elapsedDays.isAcceptableOrUnknown(
+          data['elapsed_days']!,
+          _elapsedDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scheduled_days')) {
+      context.handle(
+        _scheduledDaysMeta,
+        scheduledDays.isAcceptableOrUnknown(
+          data['scheduled_days']!,
+          _scheduledDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reps')) {
+      context.handle(
+        _repsMeta,
+        reps.isAcceptableOrUnknown(data['reps']!, _repsMeta),
+      );
+    }
+    if (data.containsKey('lapses')) {
+      context.handle(
+        _lapsesMeta,
+        lapses.isAcceptableOrUnknown(data['lapses']!, _lapsesMeta),
       );
     }
     if (data.containsKey('due')) {
@@ -2505,6 +2569,8 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
         _lastReviewMeta,
         lastReview.isAcceptableOrUnknown(data['last_review']!, _lastReviewMeta),
       );
+    } else if (isInserting) {
+      context.missing(_lastReviewMeta);
     }
     return context;
   }
@@ -2531,18 +2597,30 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
         DriftSqlType.string,
         data['${effectivePrefix}state'],
       )!,
-      step: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}step'],
-      ),
       stability: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}stability'],
-      ),
+      )!,
       difficulty: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}difficulty'],
-      ),
+      )!,
+      elapsedDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}elapsed_days'],
+      )!,
+      scheduledDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}scheduled_days'],
+      )!,
+      reps: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}reps'],
+      )!,
+      lapses: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}lapses'],
+      )!,
       due: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}due'],
@@ -2550,7 +2628,7 @@ class $CardsTable extends Cards with TableInfo<$CardsTable, Card> {
       lastReview: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_review'],
-      ),
+      )!,
     );
   }
 
@@ -2565,21 +2643,27 @@ class Card extends DataClass implements Insertable<Card> {
   final String vocabItemId;
   final String? contextTextSpanId;
   final String state;
-  final int? step;
-  final double? stability;
-  final double? difficulty;
+  final double stability;
+  final double difficulty;
+  final int elapsedDays;
+  final int scheduledDays;
+  final int reps;
+  final int lapses;
   final DateTime due;
-  final DateTime? lastReview;
+  final DateTime lastReview;
   const Card({
     required this.id,
     required this.vocabItemId,
     this.contextTextSpanId,
     required this.state,
-    this.step,
-    this.stability,
-    this.difficulty,
+    required this.stability,
+    required this.difficulty,
+    required this.elapsedDays,
+    required this.scheduledDays,
+    required this.reps,
+    required this.lapses,
     required this.due,
-    this.lastReview,
+    required this.lastReview,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2590,19 +2674,14 @@ class Card extends DataClass implements Insertable<Card> {
       map['context_text_span_id'] = Variable<String>(contextTextSpanId);
     }
     map['state'] = Variable<String>(state);
-    if (!nullToAbsent || step != null) {
-      map['step'] = Variable<int>(step);
-    }
-    if (!nullToAbsent || stability != null) {
-      map['stability'] = Variable<double>(stability);
-    }
-    if (!nullToAbsent || difficulty != null) {
-      map['difficulty'] = Variable<double>(difficulty);
-    }
+    map['stability'] = Variable<double>(stability);
+    map['difficulty'] = Variable<double>(difficulty);
+    map['elapsed_days'] = Variable<int>(elapsedDays);
+    map['scheduled_days'] = Variable<int>(scheduledDays);
+    map['reps'] = Variable<int>(reps);
+    map['lapses'] = Variable<int>(lapses);
     map['due'] = Variable<DateTime>(due);
-    if (!nullToAbsent || lastReview != null) {
-      map['last_review'] = Variable<DateTime>(lastReview);
-    }
+    map['last_review'] = Variable<DateTime>(lastReview);
     return map;
   }
 
@@ -2614,17 +2693,14 @@ class Card extends DataClass implements Insertable<Card> {
           ? const Value.absent()
           : Value(contextTextSpanId),
       state: Value(state),
-      step: step == null && nullToAbsent ? const Value.absent() : Value(step),
-      stability: stability == null && nullToAbsent
-          ? const Value.absent()
-          : Value(stability),
-      difficulty: difficulty == null && nullToAbsent
-          ? const Value.absent()
-          : Value(difficulty),
+      stability: Value(stability),
+      difficulty: Value(difficulty),
+      elapsedDays: Value(elapsedDays),
+      scheduledDays: Value(scheduledDays),
+      reps: Value(reps),
+      lapses: Value(lapses),
       due: Value(due),
-      lastReview: lastReview == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastReview),
+      lastReview: Value(lastReview),
     );
   }
 
@@ -2640,11 +2716,14 @@ class Card extends DataClass implements Insertable<Card> {
         json['contextTextSpanId'],
       ),
       state: serializer.fromJson<String>(json['state']),
-      step: serializer.fromJson<int?>(json['step']),
-      stability: serializer.fromJson<double?>(json['stability']),
-      difficulty: serializer.fromJson<double?>(json['difficulty']),
+      stability: serializer.fromJson<double>(json['stability']),
+      difficulty: serializer.fromJson<double>(json['difficulty']),
+      elapsedDays: serializer.fromJson<int>(json['elapsedDays']),
+      scheduledDays: serializer.fromJson<int>(json['scheduledDays']),
+      reps: serializer.fromJson<int>(json['reps']),
+      lapses: serializer.fromJson<int>(json['lapses']),
       due: serializer.fromJson<DateTime>(json['due']),
-      lastReview: serializer.fromJson<DateTime?>(json['lastReview']),
+      lastReview: serializer.fromJson<DateTime>(json['lastReview']),
     );
   }
   @override
@@ -2655,11 +2734,14 @@ class Card extends DataClass implements Insertable<Card> {
       'vocabItemId': serializer.toJson<String>(vocabItemId),
       'contextTextSpanId': serializer.toJson<String?>(contextTextSpanId),
       'state': serializer.toJson<String>(state),
-      'step': serializer.toJson<int?>(step),
-      'stability': serializer.toJson<double?>(stability),
-      'difficulty': serializer.toJson<double?>(difficulty),
+      'stability': serializer.toJson<double>(stability),
+      'difficulty': serializer.toJson<double>(difficulty),
+      'elapsedDays': serializer.toJson<int>(elapsedDays),
+      'scheduledDays': serializer.toJson<int>(scheduledDays),
+      'reps': serializer.toJson<int>(reps),
+      'lapses': serializer.toJson<int>(lapses),
       'due': serializer.toJson<DateTime>(due),
-      'lastReview': serializer.toJson<DateTime?>(lastReview),
+      'lastReview': serializer.toJson<DateTime>(lastReview),
     };
   }
 
@@ -2668,11 +2750,14 @@ class Card extends DataClass implements Insertable<Card> {
     String? vocabItemId,
     Value<String?> contextTextSpanId = const Value.absent(),
     String? state,
-    Value<int?> step = const Value.absent(),
-    Value<double?> stability = const Value.absent(),
-    Value<double?> difficulty = const Value.absent(),
+    double? stability,
+    double? difficulty,
+    int? elapsedDays,
+    int? scheduledDays,
+    int? reps,
+    int? lapses,
     DateTime? due,
-    Value<DateTime?> lastReview = const Value.absent(),
+    DateTime? lastReview,
   }) => Card(
     id: id ?? this.id,
     vocabItemId: vocabItemId ?? this.vocabItemId,
@@ -2680,11 +2765,14 @@ class Card extends DataClass implements Insertable<Card> {
         ? contextTextSpanId.value
         : this.contextTextSpanId,
     state: state ?? this.state,
-    step: step.present ? step.value : this.step,
-    stability: stability.present ? stability.value : this.stability,
-    difficulty: difficulty.present ? difficulty.value : this.difficulty,
+    stability: stability ?? this.stability,
+    difficulty: difficulty ?? this.difficulty,
+    elapsedDays: elapsedDays ?? this.elapsedDays,
+    scheduledDays: scheduledDays ?? this.scheduledDays,
+    reps: reps ?? this.reps,
+    lapses: lapses ?? this.lapses,
     due: due ?? this.due,
-    lastReview: lastReview.present ? lastReview.value : this.lastReview,
+    lastReview: lastReview ?? this.lastReview,
   );
   Card copyWithCompanion(CardsCompanion data) {
     return Card(
@@ -2696,11 +2784,18 @@ class Card extends DataClass implements Insertable<Card> {
           ? data.contextTextSpanId.value
           : this.contextTextSpanId,
       state: data.state.present ? data.state.value : this.state,
-      step: data.step.present ? data.step.value : this.step,
       stability: data.stability.present ? data.stability.value : this.stability,
       difficulty: data.difficulty.present
           ? data.difficulty.value
           : this.difficulty,
+      elapsedDays: data.elapsedDays.present
+          ? data.elapsedDays.value
+          : this.elapsedDays,
+      scheduledDays: data.scheduledDays.present
+          ? data.scheduledDays.value
+          : this.scheduledDays,
+      reps: data.reps.present ? data.reps.value : this.reps,
+      lapses: data.lapses.present ? data.lapses.value : this.lapses,
       due: data.due.present ? data.due.value : this.due,
       lastReview: data.lastReview.present
           ? data.lastReview.value
@@ -2715,9 +2810,12 @@ class Card extends DataClass implements Insertable<Card> {
           ..write('vocabItemId: $vocabItemId, ')
           ..write('contextTextSpanId: $contextTextSpanId, ')
           ..write('state: $state, ')
-          ..write('step: $step, ')
           ..write('stability: $stability, ')
           ..write('difficulty: $difficulty, ')
+          ..write('elapsedDays: $elapsedDays, ')
+          ..write('scheduledDays: $scheduledDays, ')
+          ..write('reps: $reps, ')
+          ..write('lapses: $lapses, ')
           ..write('due: $due, ')
           ..write('lastReview: $lastReview')
           ..write(')'))
@@ -2730,9 +2828,12 @@ class Card extends DataClass implements Insertable<Card> {
     vocabItemId,
     contextTextSpanId,
     state,
-    step,
     stability,
     difficulty,
+    elapsedDays,
+    scheduledDays,
+    reps,
+    lapses,
     due,
     lastReview,
   );
@@ -2744,9 +2845,12 @@ class Card extends DataClass implements Insertable<Card> {
           other.vocabItemId == this.vocabItemId &&
           other.contextTextSpanId == this.contextTextSpanId &&
           other.state == this.state &&
-          other.step == this.step &&
           other.stability == this.stability &&
           other.difficulty == this.difficulty &&
+          other.elapsedDays == this.elapsedDays &&
+          other.scheduledDays == this.scheduledDays &&
+          other.reps == this.reps &&
+          other.lapses == this.lapses &&
           other.due == this.due &&
           other.lastReview == this.lastReview);
 }
@@ -2756,20 +2860,26 @@ class CardsCompanion extends UpdateCompanion<Card> {
   final Value<String> vocabItemId;
   final Value<String?> contextTextSpanId;
   final Value<String> state;
-  final Value<int?> step;
-  final Value<double?> stability;
-  final Value<double?> difficulty;
+  final Value<double> stability;
+  final Value<double> difficulty;
+  final Value<int> elapsedDays;
+  final Value<int> scheduledDays;
+  final Value<int> reps;
+  final Value<int> lapses;
   final Value<DateTime> due;
-  final Value<DateTime?> lastReview;
+  final Value<DateTime> lastReview;
   final Value<int> rowid;
   const CardsCompanion({
     this.id = const Value.absent(),
     this.vocabItemId = const Value.absent(),
     this.contextTextSpanId = const Value.absent(),
     this.state = const Value.absent(),
-    this.step = const Value.absent(),
     this.stability = const Value.absent(),
     this.difficulty = const Value.absent(),
+    this.elapsedDays = const Value.absent(),
+    this.scheduledDays = const Value.absent(),
+    this.reps = const Value.absent(),
+    this.lapses = const Value.absent(),
     this.due = const Value.absent(),
     this.lastReview = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2779,23 +2889,30 @@ class CardsCompanion extends UpdateCompanion<Card> {
     required String vocabItemId,
     this.contextTextSpanId = const Value.absent(),
     this.state = const Value.absent(),
-    this.step = const Value.absent(),
     this.stability = const Value.absent(),
     this.difficulty = const Value.absent(),
+    this.elapsedDays = const Value.absent(),
+    this.scheduledDays = const Value.absent(),
+    this.reps = const Value.absent(),
+    this.lapses = const Value.absent(),
     required DateTime due,
-    this.lastReview = const Value.absent(),
+    required DateTime lastReview,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        vocabItemId = Value(vocabItemId),
-       due = Value(due);
+       due = Value(due),
+       lastReview = Value(lastReview);
   static Insertable<Card> custom({
     Expression<String>? id,
     Expression<String>? vocabItemId,
     Expression<String>? contextTextSpanId,
     Expression<String>? state,
-    Expression<int>? step,
     Expression<double>? stability,
     Expression<double>? difficulty,
+    Expression<int>? elapsedDays,
+    Expression<int>? scheduledDays,
+    Expression<int>? reps,
+    Expression<int>? lapses,
     Expression<DateTime>? due,
     Expression<DateTime>? lastReview,
     Expression<int>? rowid,
@@ -2805,9 +2922,12 @@ class CardsCompanion extends UpdateCompanion<Card> {
       if (vocabItemId != null) 'vocab_item_id': vocabItemId,
       if (contextTextSpanId != null) 'context_text_span_id': contextTextSpanId,
       if (state != null) 'state': state,
-      if (step != null) 'step': step,
       if (stability != null) 'stability': stability,
       if (difficulty != null) 'difficulty': difficulty,
+      if (elapsedDays != null) 'elapsed_days': elapsedDays,
+      if (scheduledDays != null) 'scheduled_days': scheduledDays,
+      if (reps != null) 'reps': reps,
+      if (lapses != null) 'lapses': lapses,
       if (due != null) 'due': due,
       if (lastReview != null) 'last_review': lastReview,
       if (rowid != null) 'rowid': rowid,
@@ -2819,11 +2939,14 @@ class CardsCompanion extends UpdateCompanion<Card> {
     Value<String>? vocabItemId,
     Value<String?>? contextTextSpanId,
     Value<String>? state,
-    Value<int?>? step,
-    Value<double?>? stability,
-    Value<double?>? difficulty,
+    Value<double>? stability,
+    Value<double>? difficulty,
+    Value<int>? elapsedDays,
+    Value<int>? scheduledDays,
+    Value<int>? reps,
+    Value<int>? lapses,
     Value<DateTime>? due,
-    Value<DateTime?>? lastReview,
+    Value<DateTime>? lastReview,
     Value<int>? rowid,
   }) {
     return CardsCompanion(
@@ -2831,9 +2954,12 @@ class CardsCompanion extends UpdateCompanion<Card> {
       vocabItemId: vocabItemId ?? this.vocabItemId,
       contextTextSpanId: contextTextSpanId ?? this.contextTextSpanId,
       state: state ?? this.state,
-      step: step ?? this.step,
       stability: stability ?? this.stability,
       difficulty: difficulty ?? this.difficulty,
+      elapsedDays: elapsedDays ?? this.elapsedDays,
+      scheduledDays: scheduledDays ?? this.scheduledDays,
+      reps: reps ?? this.reps,
+      lapses: lapses ?? this.lapses,
       due: due ?? this.due,
       lastReview: lastReview ?? this.lastReview,
       rowid: rowid ?? this.rowid,
@@ -2855,14 +2981,23 @@ class CardsCompanion extends UpdateCompanion<Card> {
     if (state.present) {
       map['state'] = Variable<String>(state.value);
     }
-    if (step.present) {
-      map['step'] = Variable<int>(step.value);
-    }
     if (stability.present) {
       map['stability'] = Variable<double>(stability.value);
     }
     if (difficulty.present) {
       map['difficulty'] = Variable<double>(difficulty.value);
+    }
+    if (elapsedDays.present) {
+      map['elapsed_days'] = Variable<int>(elapsedDays.value);
+    }
+    if (scheduledDays.present) {
+      map['scheduled_days'] = Variable<int>(scheduledDays.value);
+    }
+    if (reps.present) {
+      map['reps'] = Variable<int>(reps.value);
+    }
+    if (lapses.present) {
+      map['lapses'] = Variable<int>(lapses.value);
     }
     if (due.present) {
       map['due'] = Variable<DateTime>(due.value);
@@ -2883,9 +3018,12 @@ class CardsCompanion extends UpdateCompanion<Card> {
           ..write('vocabItemId: $vocabItemId, ')
           ..write('contextTextSpanId: $contextTextSpanId, ')
           ..write('state: $state, ')
-          ..write('step: $step, ')
           ..write('stability: $stability, ')
           ..write('difficulty: $difficulty, ')
+          ..write('elapsedDays: $elapsedDays, ')
+          ..write('scheduledDays: $scheduledDays, ')
+          ..write('reps: $reps, ')
+          ..write('lapses: $lapses, ')
           ..write('due: $due, ')
           ..write('lastReview: $lastReview, ')
           ..write('rowid: $rowid')
@@ -7749,11 +7887,14 @@ typedef $$CardsTableCreateCompanionBuilder =
       required String vocabItemId,
       Value<String?> contextTextSpanId,
       Value<String> state,
-      Value<int?> step,
-      Value<double?> stability,
-      Value<double?> difficulty,
+      Value<double> stability,
+      Value<double> difficulty,
+      Value<int> elapsedDays,
+      Value<int> scheduledDays,
+      Value<int> reps,
+      Value<int> lapses,
       required DateTime due,
-      Value<DateTime?> lastReview,
+      required DateTime lastReview,
       Value<int> rowid,
     });
 typedef $$CardsTableUpdateCompanionBuilder =
@@ -7762,11 +7903,14 @@ typedef $$CardsTableUpdateCompanionBuilder =
       Value<String> vocabItemId,
       Value<String?> contextTextSpanId,
       Value<String> state,
-      Value<int?> step,
-      Value<double?> stability,
-      Value<double?> difficulty,
+      Value<double> stability,
+      Value<double> difficulty,
+      Value<int> elapsedDays,
+      Value<int> scheduledDays,
+      Value<int> reps,
+      Value<int> lapses,
       Value<DateTime> due,
-      Value<DateTime?> lastReview,
+      Value<DateTime> lastReview,
       Value<int> rowid,
     });
 
@@ -7849,11 +7993,6 @@ class $$CardsTableFilterComposer extends Composer<_$MiningDb, $CardsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get step => $composableBuilder(
-    column: $table.step,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<double> get stability => $composableBuilder(
     column: $table.stability,
     builder: (column) => ColumnFilters(column),
@@ -7861,6 +8000,26 @@ class $$CardsTableFilterComposer extends Composer<_$MiningDb, $CardsTable> {
 
   ColumnFilters<double> get difficulty => $composableBuilder(
     column: $table.difficulty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get elapsedDays => $composableBuilder(
+    column: $table.elapsedDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get scheduledDays => $composableBuilder(
+    column: $table.scheduledDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get reps => $composableBuilder(
+    column: $table.reps,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lapses => $composableBuilder(
+    column: $table.lapses,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7964,11 +8123,6 @@ class $$CardsTableOrderingComposer extends Composer<_$MiningDb, $CardsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get step => $composableBuilder(
-    column: $table.step,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<double> get stability => $composableBuilder(
     column: $table.stability,
     builder: (column) => ColumnOrderings(column),
@@ -7976,6 +8130,26 @@ class $$CardsTableOrderingComposer extends Composer<_$MiningDb, $CardsTable> {
 
   ColumnOrderings<double> get difficulty => $composableBuilder(
     column: $table.difficulty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get elapsedDays => $composableBuilder(
+    column: $table.elapsedDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get scheduledDays => $composableBuilder(
+    column: $table.scheduledDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get reps => $composableBuilder(
+    column: $table.reps,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lapses => $composableBuilder(
+    column: $table.lapses,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8050,9 +8224,6 @@ class $$CardsTableAnnotationComposer extends Composer<_$MiningDb, $CardsTable> {
   GeneratedColumn<String> get state =>
       $composableBuilder(column: $table.state, builder: (column) => column);
 
-  GeneratedColumn<int> get step =>
-      $composableBuilder(column: $table.step, builder: (column) => column);
-
   GeneratedColumn<double> get stability =>
       $composableBuilder(column: $table.stability, builder: (column) => column);
 
@@ -8060,6 +8231,22 @@ class $$CardsTableAnnotationComposer extends Composer<_$MiningDb, $CardsTable> {
     column: $table.difficulty,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get elapsedDays => $composableBuilder(
+    column: $table.elapsedDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get scheduledDays => $composableBuilder(
+    column: $table.scheduledDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get reps =>
+      $composableBuilder(column: $table.reps, builder: (column) => column);
+
+  GeneratedColumn<int> get lapses =>
+      $composableBuilder(column: $table.lapses, builder: (column) => column);
 
   GeneratedColumn<DateTime> get due =>
       $composableBuilder(column: $table.due, builder: (column) => column);
@@ -8177,20 +8364,26 @@ class $$CardsTableTableManager
                 Value<String> vocabItemId = const Value.absent(),
                 Value<String?> contextTextSpanId = const Value.absent(),
                 Value<String> state = const Value.absent(),
-                Value<int?> step = const Value.absent(),
-                Value<double?> stability = const Value.absent(),
-                Value<double?> difficulty = const Value.absent(),
+                Value<double> stability = const Value.absent(),
+                Value<double> difficulty = const Value.absent(),
+                Value<int> elapsedDays = const Value.absent(),
+                Value<int> scheduledDays = const Value.absent(),
+                Value<int> reps = const Value.absent(),
+                Value<int> lapses = const Value.absent(),
                 Value<DateTime> due = const Value.absent(),
-                Value<DateTime?> lastReview = const Value.absent(),
+                Value<DateTime> lastReview = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CardsCompanion(
                 id: id,
                 vocabItemId: vocabItemId,
                 contextTextSpanId: contextTextSpanId,
                 state: state,
-                step: step,
                 stability: stability,
                 difficulty: difficulty,
+                elapsedDays: elapsedDays,
+                scheduledDays: scheduledDays,
+                reps: reps,
+                lapses: lapses,
                 due: due,
                 lastReview: lastReview,
                 rowid: rowid,
@@ -8201,20 +8394,26 @@ class $$CardsTableTableManager
                 required String vocabItemId,
                 Value<String?> contextTextSpanId = const Value.absent(),
                 Value<String> state = const Value.absent(),
-                Value<int?> step = const Value.absent(),
-                Value<double?> stability = const Value.absent(),
-                Value<double?> difficulty = const Value.absent(),
+                Value<double> stability = const Value.absent(),
+                Value<double> difficulty = const Value.absent(),
+                Value<int> elapsedDays = const Value.absent(),
+                Value<int> scheduledDays = const Value.absent(),
+                Value<int> reps = const Value.absent(),
+                Value<int> lapses = const Value.absent(),
                 required DateTime due,
-                Value<DateTime?> lastReview = const Value.absent(),
+                required DateTime lastReview,
                 Value<int> rowid = const Value.absent(),
               }) => CardsCompanion.insert(
                 id: id,
                 vocabItemId: vocabItemId,
                 contextTextSpanId: contextTextSpanId,
                 state: state,
-                step: step,
                 stability: stability,
                 difficulty: difficulty,
+                elapsedDays: elapsedDays,
+                scheduledDays: scheduledDays,
+                reps: reps,
+                lapses: lapses,
                 due: due,
                 lastReview: lastReview,
                 rowid: rowid,

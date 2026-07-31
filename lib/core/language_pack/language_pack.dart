@@ -61,6 +61,13 @@ abstract interface class Dictionary {
 abstract interface class FrequencyList {
   /// Lower rank = more common. `null` if the lemma isn't in the list.
   int? rank(String lemma);
+
+  /// The [n] most common lemmas, most common first. Added in Phase 4
+  /// for knowledge-bootstrap import (§0.4.14: "mark first N of
+  /// frequency list as known") — a single lemma lookup can't answer
+  /// "what are the N most common words," so the seam needed this to
+  /// support that decided bootstrap path.
+  List<String> topLemmas(int n);
 }
 
 abstract interface class ReadingProvider {

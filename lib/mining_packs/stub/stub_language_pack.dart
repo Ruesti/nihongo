@@ -62,4 +62,7 @@ class _EmptyFrequencyList implements FrequencyList {
 
   @override
   int? rank(String lemma) => null;
+
+  @override
+  List<String> topLemmas(int n) => const [];
 }
