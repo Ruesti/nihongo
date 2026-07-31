@@ -2,24 +2,24 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import 'mining_tables.dart';
 
 part 'mining_db.g.dart';
 
-final miningDbProvider = Provider<MiningDb>((ref) {
-  final db = MiningDb();
-  ref.onDispose(db.close);
-  return db;
-});
-
 /// Schema for the immersion-mining pipeline (SPEC_MINING_PIPELINE.md §4,
 /// §9). Deliberately a separate database from [LearningDb] — the entity
 /// model is lemma-centric and mined, not curriculum-centric and
 /// hand-authored, and the two don't share identity.
+///
+/// Deliberately has no `path_provider`/`flutter_riverpod` dependency
+/// (see `jmdict_db.dart`'s doc comment for the same reasoning): the
+/// Phase 3 gate CLI tool needs this to compile and run under plain
+/// `dart run`. Nothing in the app wires up a real on-device instance
+/// yet (only `.forTesting()`/`.at()` are used so far) — add a
+/// `path_provider`-based provider in the app's composition root
+/// (`lib/app.dart` or similar) when that's actually needed, rather
+/// than importing Flutter here.
 @DriftDatabase(tables: [
   Works,
   Sources,
@@ -35,7 +35,7 @@ final miningDbProvider = Provider<MiningDb>((ref) {
   Observations,
 ])
 class MiningDb extends _$MiningDb {
-  MiningDb() : super(_openConnection());
+  MiningDb.at(File file) : super(NativeDatabase(file));
 
   MiningDb.forTesting() : super(NativeDatabase.memory());
 
@@ -62,12 +62,4 @@ class MiningDb extends _$MiningDb {
 
   Future<List<LanguagePackRow>> installedLanguagePacks() =>
       select(languagePacks).get();
-}
-
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'mining.db'));
-    return NativeDatabase.createInBackground(file);
-  });
 }
