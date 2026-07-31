@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/language_pack/language_pack.dart';
+import 'package:nihongo_app/mining_packs/ja/frequency_db.dart';
 import 'package:nihongo_app/mining_packs/ja/ja_language_pack.dart';
 import 'package:nihongo_app/mining_packs/ja/jmdict_db.dart';
 import 'package:nihongo_app/mining_packs/ja/jmdict_importer.dart';
@@ -91,8 +92,26 @@ void main() {
     expect(pack.readings.reading(token)?.text, 'にほんご');
   });
 
-  test('frequency has no imported corpus yet', () {
+  test('frequency has no imported corpus yet (no frequencyDb passed)', () {
     expect(pack.frequency.rank('日本語'), isNull);
+  });
+
+  test('frequency resolves rank once a frequencyDb is passed', () async {
+    final frequencyDb = FrequencyDb.forTesting();
+    await frequencyDb.into(frequencyDb.frequencyEntries).insert(
+          FrequencyEntriesCompanion.insert(lemma: '日本語', count: 42, rank: 1),
+        );
+
+    final packWithFrequency = await JaLanguagePack.load(
+      db,
+      frequencyDb: frequencyDb,
+      tokenizerOverride: const _UnusedTokenizer(),
+    );
+
+    expect(packWithFrequency.frequency.rank('日本語'), 1);
+    expect(packWithFrequency.frequency.rank('未知の単語'), isNull);
+
+    await frequencyDb.close();
   });
 
   test('load() without an override wires up the real native tokenizer',

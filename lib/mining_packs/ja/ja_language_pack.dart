@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../core/language_pack/language_pack.dart';
+import 'frequency_db.dart';
 import 'jmdict_db.dart';
 import 'native_tokenizer.dart';
 
@@ -37,8 +38,12 @@ class JaLanguagePack implements LanguagePack {
   /// [tokenizerOverride] exists for tests that don't want to depend on
   /// the native library being built (e.g. dictionary-only tests) —
   /// production callers should omit it and get [NativeJaTokenizer].
+  /// [frequencyDb] is optional: without it (or if it has no rows yet),
+  /// [FrequencyList.rank] returns `null` for everything, same as before
+  /// any corpus was imported.
   static Future<JaLanguagePack> load(
     JmdictDb db, {
+    FrequencyDb? frequencyDb,
     Tokenizer? tokenizerOverride,
   }) async {
     final lemmas = await db.select(db.jmdictLemmas).get();
@@ -70,10 +75,16 @@ class JaLanguagePack implements LanguagePack {
           .add(Sense(pos: s.pos, glosses: glosses));
     }
 
+    var rankByLemma = const <String, int>{};
+    if (frequencyDb != null) {
+      final entries = await frequencyDb.select(frequencyDb.frequencyEntries).get();
+      rankByLemma = {for (final e in entries) e.lemma: e.rank};
+    }
+
     return JaLanguagePack._(
       tokenizer: tokenizerOverride ?? NativeJaTokenizer(),
       dictionary: _JaDictionary(formToEntryIds, entrySenses),
-      frequency: const _JaFrequencyListNotYetImported(),
+      frequency: _JaFrequencyList(rankByLemma),
       readings: _JaReadingProvider(kanjiToReading),
     );
   }
@@ -113,14 +124,16 @@ class _JaReadingProvider implements ReadingProvider {
   }
 }
 
-/// No frequency corpus (BCCWJ/JPDB/subtitle-derived, per §2.2) has been
-/// imported yet — that's separate acquisition work, not part of the
-/// Phase 2 gate (JMdict import + lemma lookup). Returning `null`
-/// unconditionally is the documented, correct behaviour for "not in
-/// the list" per the seam's own contract, not a silent placeholder.
-class _JaFrequencyListNotYetImported implements FrequencyList {
-  const _JaFrequencyListNotYetImported();
+/// Backed by an in-memory `lemma -> rank` map loaded once from
+/// [FrequencyDb] (see `frequency_importer.dart` for how it's
+/// populated) — same synchronous-seam reasoning as [_JaDictionary].
+/// `null` for a lemma outside the imported corpus is a real,
+/// meaningful answer ("not in the list"), not a placeholder.
+class _JaFrequencyList implements FrequencyList {
+  final Map<String, int> _rankByLemma;
+
+  const _JaFrequencyList(this._rankByLemma);
 
   @override
-  int? rank(String lemma) => null;
+  int? rank(String lemma) => _rankByLemma[lemma];
 }
