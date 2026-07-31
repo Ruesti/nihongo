@@ -1,0 +1,18 @@
+[package]
+name = "ja_tokenizer"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# cdylib for the shared library Dart's dart:ffi loads; lib for cargo
+# test to run against the same code without going through the FFI
+# boundary.
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+# Pinned per BERICHT_1_lindera-spike.md: lindera-dictionary 4.0.1's
+# embed-ipadic build is broken upstream (lindera/lindera#835), 4.0.0
+# resolves working builder code.
+lindera = { version = "=4.0.0", features = ["embed-ipadic"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

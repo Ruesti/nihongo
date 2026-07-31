@@ -24,6 +24,18 @@ const _fixtureXml = '''
 </JMdict>
 ''';
 
+// This file covers Dictionary/ReadingProvider/FrequencyList only — the
+// real tokenizer (native/ja_tokenizer) has its own dedicated test file
+// (native_tokenizer_test.dart) since it needs the compiled native
+// library. Overriding it here with a trivial fake keeps these tests
+// independent of that build step.
+class _UnusedTokenizer implements Tokenizer {
+  const _UnusedTokenizer();
+
+  @override
+  List<Token> tokenize(String text) => const [];
+}
+
 void main() {
   late JmdictDb db;
   late Directory tempDir;
@@ -35,7 +47,10 @@ void main() {
     final fixtureFile = File('${tempDir.path}/fixture.xml')
       ..writeAsStringSync(_fixtureXml);
     await importJmdict(db, fixtureFile);
-    pack = await JaLanguagePack.load(db);
+    pack = await JaLanguagePack.load(
+      db,
+      tokenizerOverride: const _UnusedTokenizer(),
+    );
   });
 
   tearDown(() async {
@@ -76,12 +91,16 @@ void main() {
     expect(pack.readings.reading(token)?.text, 'にほんご');
   });
 
-  test('tokenizer is a documented stub pending Android FFI integration',
-      () {
-    expect(() => pack.tokenizer.tokenize('日本語'), throwsUnimplementedError);
-  });
-
   test('frequency has no imported corpus yet', () {
     expect(pack.frequency.rank('日本語'), isNull);
+  });
+
+  test('load() without an override wires up the real native tokenizer',
+      () async {
+    final realPack = await JaLanguagePack.load(db);
+
+    final tokens = realPack.tokenizer.tokenize('日本語');
+
+    expect(tokens.single.surface, '日本語');
   });
 }
