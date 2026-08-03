@@ -208,6 +208,11 @@ class PassageSnapshots extends Table {
 /// source of truth. Every fact an emitted line interpolates must trace
 /// back to a real record elsewhere — enforced by the Phase 9 test gate,
 /// not by this table.
+///
+/// Row type is [ObservationRow], not `Observation` — that name is the
+/// in-memory domain type in `core/datum/observation.dart` (§6.3), same
+/// convention as [LanguagePackRow]/[ScriptProfileRow].
+@DataClassName('ObservationRow')
 class Observations extends Table {
   TextColumn get id => text()();
   TextColumn get kind =>

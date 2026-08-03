@@ -5061,7 +5061,7 @@ class PassageSnapshotsCompanion extends UpdateCompanion<PassageSnapshot> {
 }
 
 class $ObservationsTable extends Observations
-    with TableInfo<$ObservationsTable, Observation> {
+    with TableInfo<$ObservationsTable, ObservationRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -5115,7 +5115,7 @@ class $ObservationsTable extends Observations
   static const String $name = 'observations';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Observation> instance, {
+    Insertable<ObservationRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -5155,9 +5155,9 @@ class $ObservationsTable extends Observations
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Observation map(Map<String, dynamic> data, {String? tablePrefix}) {
+  ObservationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Observation(
+    return ObservationRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -5183,12 +5183,12 @@ class $ObservationsTable extends Observations
   }
 }
 
-class Observation extends DataClass implements Insertable<Observation> {
+class ObservationRow extends DataClass implements Insertable<ObservationRow> {
   final String id;
   final String kind;
   final String factsJson;
   final DateTime createdAt;
-  const Observation({
+  const ObservationRow({
     required this.id,
     required this.kind,
     required this.factsJson,
@@ -5213,12 +5213,12 @@ class Observation extends DataClass implements Insertable<Observation> {
     );
   }
 
-  factory Observation.fromJson(
+  factory ObservationRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Observation(
+    return ObservationRow(
       id: serializer.fromJson<String>(json['id']),
       kind: serializer.fromJson<String>(json['kind']),
       factsJson: serializer.fromJson<String>(json['factsJson']),
@@ -5236,19 +5236,19 @@ class Observation extends DataClass implements Insertable<Observation> {
     };
   }
 
-  Observation copyWith({
+  ObservationRow copyWith({
     String? id,
     String? kind,
     String? factsJson,
     DateTime? createdAt,
-  }) => Observation(
+  }) => ObservationRow(
     id: id ?? this.id,
     kind: kind ?? this.kind,
     factsJson: factsJson ?? this.factsJson,
     createdAt: createdAt ?? this.createdAt,
   );
-  Observation copyWithCompanion(ObservationsCompanion data) {
-    return Observation(
+  ObservationRow copyWithCompanion(ObservationsCompanion data) {
+    return ObservationRow(
       id: data.id.present ? data.id.value : this.id,
       kind: data.kind.present ? data.kind.value : this.kind,
       factsJson: data.factsJson.present ? data.factsJson.value : this.factsJson,
@@ -5258,7 +5258,7 @@ class Observation extends DataClass implements Insertable<Observation> {
 
   @override
   String toString() {
-    return (StringBuffer('Observation(')
+    return (StringBuffer('ObservationRow(')
           ..write('id: $id, ')
           ..write('kind: $kind, ')
           ..write('factsJson: $factsJson, ')
@@ -5272,14 +5272,14 @@ class Observation extends DataClass implements Insertable<Observation> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Observation &&
+      (other is ObservationRow &&
           other.id == this.id &&
           other.kind == this.kind &&
           other.factsJson == this.factsJson &&
           other.createdAt == this.createdAt);
 }
 
-class ObservationsCompanion extends UpdateCompanion<Observation> {
+class ObservationsCompanion extends UpdateCompanion<ObservationRow> {
   final Value<String> id;
   final Value<String> kind;
   final Value<String> factsJson;
@@ -5302,7 +5302,7 @@ class ObservationsCompanion extends UpdateCompanion<Observation> {
        kind = Value(kind),
        factsJson = Value(factsJson),
        createdAt = Value(createdAt);
-  static Insertable<Observation> custom({
+  static Insertable<ObservationRow> custom({
     Expression<String>? id,
     Expression<String>? kind,
     Expression<String>? factsJson,
@@ -10071,17 +10071,17 @@ class $$ObservationsTableTableManager
         RootTableManager<
           _$MiningDb,
           $ObservationsTable,
-          Observation,
+          ObservationRow,
           $$ObservationsTableFilterComposer,
           $$ObservationsTableOrderingComposer,
           $$ObservationsTableAnnotationComposer,
           $$ObservationsTableCreateCompanionBuilder,
           $$ObservationsTableUpdateCompanionBuilder,
           (
-            Observation,
-            BaseReferences<_$MiningDb, $ObservationsTable, Observation>,
+            ObservationRow,
+            BaseReferences<_$MiningDb, $ObservationsTable, ObservationRow>,
           ),
-          Observation,
+          ObservationRow,
           PrefetchHooks Function()
         > {
   $$ObservationsTableTableManager(_$MiningDb db, $ObservationsTable table)
@@ -10135,17 +10135,17 @@ typedef $$ObservationsTableProcessedTableManager =
     ProcessedTableManager<
       _$MiningDb,
       $ObservationsTable,
-      Observation,
+      ObservationRow,
       $$ObservationsTableFilterComposer,
       $$ObservationsTableOrderingComposer,
       $$ObservationsTableAnnotationComposer,
       $$ObservationsTableCreateCompanionBuilder,
       $$ObservationsTableUpdateCompanionBuilder,
       (
-        Observation,
-        BaseReferences<_$MiningDb, $ObservationsTable, Observation>,
+        ObservationRow,
+        BaseReferences<_$MiningDb, $ObservationsTable, ObservationRow>,
       ),
-      Observation,
+      ObservationRow,
       PrefetchHooks Function()
     >;
 
