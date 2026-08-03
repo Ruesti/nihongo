@@ -72,6 +72,10 @@ class DatumRegistry {
         DatumTemplate(ObservationKind.loadWarning,
             '{unknown_count} unbekannte Wörter in diesem Satz. Ich würde weiterlesen.'),
       ],
+      ObservationKind.firstReading: const [
+        DatumTemplate(ObservationKind.firstReading,
+            '{chapter} einmal gelesen. Noch kein Vergleich möglich.'),
+      ],
     },
   };
 }
