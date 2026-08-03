@@ -28,7 +28,12 @@ typedef KnowledgeSource = Knowledge Function(String lemma);
 // own doc comment states.
 final _punctuationOnlyPattern = RegExp(r'^[\p{P}\p{S}]+$', unicode: true);
 
-bool _isContentToken(Token t) => !_punctuationOnlyPattern.hasMatch(t.surface);
+/// True for a token that carries vocabulary (not a punctuation/symbol
+/// mark). Public because the passage-snapshot metric (Phase 8) computes
+/// unknown-token *ratio* over the same content-token notion — reusing
+/// this keeps the two definitions from diverging, and it's already
+/// covered by the punctuation-exclusion tests here.
+bool isContentToken(Token t) => !_punctuationOnlyPattern.hasMatch(t.surface);
 
 /// One scored segment: §2.3's `ScoredSegment`, built from a
 /// [TextSpan] (this repo's name for §2.3's `Segment` — see
@@ -50,7 +55,7 @@ class ScoredSegment {
   /// token is the unknown one" from [tokens] — that list still
   /// includes punctuation (kept for rendering), so re-filtering it
   /// without also excluding punctuation is an easy way to reintroduce
-  /// exactly the bug [_isContentToken] exists to prevent.
+  /// exactly the bug [isContentToken] exists to prevent.
   final String? targetLemma;
 
   const ScoredSegment({
@@ -68,7 +73,7 @@ class ScoredSegment {
 /// unknownCount = |{t : knowledge(t.lemma) == unknown}|
 /// knownRatio   = |{t : knowledge == known}| / |tokens|
 /// ```
-/// Punctuation-only tokens (see [_isContentToken]) are excluded from
+/// Punctuation-only tokens (see [isContentToken]) are excluded from
 /// both counts — they're still present in [ScoredSegment.tokens]
 /// (needed for furigana/highlight rendering, §2.3), just not counted
 /// as vocabulary.
@@ -79,7 +84,7 @@ ScoredSegment scoreSegment(
   KnowledgeSource knowledgeOf,
 ) {
   final tokens = tokenizer.tokenize(segment.content);
-  final contentTokens = tokens.where(_isContentToken).toList();
+  final contentTokens = tokens.where(isContentToken).toList();
   final states = contentTokens.map((t) => knowledgeOf(t.lemma)).toList();
 
   final unknownCount = states.where((k) => k == Knowledge.unknown).length;
