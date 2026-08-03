@@ -17,6 +17,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   shared_preferences: ^2.3.5
+  fsrs: ^1.0.0
 
   # State Management & Navigation
   flutter_riverpod: ^2.6.1

@@ -131,9 +131,15 @@ class _JaReadingProvider implements ReadingProvider {
 /// meaningful answer ("not in the list"), not a placeholder.
 class _JaFrequencyList implements FrequencyList {
   final Map<String, int> _rankByLemma;
+  final List<String> _byRankAscending;
 
-  const _JaFrequencyList(this._rankByLemma);
+  _JaFrequencyList(this._rankByLemma)
+      : _byRankAscending = _rankByLemma.keys.toList()
+          ..sort((a, b) => _rankByLemma[a]!.compareTo(_rankByLemma[b]!));
 
   @override
   int? rank(String lemma) => _rankByLemma[lemma];
+
+  @override
+  List<String> topLemmas(int n) => _byRankAscending.take(n).toList();
 }

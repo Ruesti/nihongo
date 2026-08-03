@@ -296,6 +296,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
+  fsrs:
+    dependency: "direct main"
+    description:
+      name: fsrs
+      sha256: "0d4e8bb762fb2fbf2ff65a662d61929ec95e5b4a1d695c23cf7869bcdfc87052"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   glob:
     dependency: transitive
     description:

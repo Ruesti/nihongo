@@ -105,13 +105,21 @@ class Cards extends Table {
   TextColumn get contextTextSpanId =>
       text().nullable().references(TextSpans, #id)();
 
+  // Field names/shape mirror the `fsrs` package's `Card` class (v1.x,
+  // confirmed against the actual installed source — pub.dev's docs
+  // page for this package showed a different, newer-looking API that
+  // doesn't match what `fsrs: ^1.0.0` actually resolves to) so DB rows
+  // round-trip through it directly (§0.4.12).
   TextColumn get state =>
-      text().withDefault(const Constant('learning'))(); // learning|review|relearning
-  IntColumn get step => integer().nullable()();
-  RealColumn get stability => real().nullable()();
-  RealColumn get difficulty => real().nullable()();
+      text().withDefault(const Constant('newState'))(); // newState|learning|review|relearning
+  RealColumn get stability => real().withDefault(const Constant(0))();
+  RealColumn get difficulty => real().withDefault(const Constant(0))();
+  IntColumn get elapsedDays => integer().withDefault(const Constant(0))();
+  IntColumn get scheduledDays => integer().withDefault(const Constant(0))();
+  IntColumn get reps => integer().withDefault(const Constant(0))();
+  IntColumn get lapses => integer().withDefault(const Constant(0))();
   DateTimeColumn get due => dateTime()();
-  DateTimeColumn get lastReview => dateTime().nullable()();
+  DateTimeColumn get lastReview => dateTime()();
 
   @override
   Set<Column> get primaryKey => {id};

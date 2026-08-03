@@ -9,6 +9,13 @@ class _FixedFrequency implements FrequencyList {
 
   @override
   int? rank(String lemma) => ranks[lemma];
+
+  @override
+  List<String> topLemmas(int n) {
+    final sorted = ranks.keys.toList()
+      ..sort((a, b) => ranks[a]!.compareTo(ranks[b]!));
+    return sorted.take(n).toList();
+  }
 }
 
 void main() {
