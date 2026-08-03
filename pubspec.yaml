@@ -38,6 +38,10 @@ dependencies:
   # Media content hashing (Phase 5 — MediaBlobs)
   crypto: ^3.0.5
 
+  # EPUB source adapter (Phase 6 — ZIP container + tolerant XHTML parsing)
+  archive: ^4.0.0
+  html: ^0.15.5
+
   # UI
   lottie: ^3.3.1
   flutter_svg: ^2.0.17
