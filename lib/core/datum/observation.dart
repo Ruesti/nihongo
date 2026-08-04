@@ -8,13 +8,19 @@ enum ObservationKind {
   reencounter,
   predictionMiss,
   deltaMeasured,
-  loadWarning;
+  loadWarning,
+
+  /// A passage read once but not yet re-read — no delta exists. The
+  /// opening screen's graceful empty state (§8) uses this to have Datum
+  /// "say so plainly" instead of inventing a comparison.
+  firstReading;
 
   String get wireName => switch (this) {
         ObservationKind.reencounter => 'reencounter',
         ObservationKind.predictionMiss => 'prediction_miss',
         ObservationKind.deltaMeasured => 'delta_measured',
         ObservationKind.loadWarning => 'load_warning',
+        ObservationKind.firstReading => 'first_reading',
       };
 
   static ObservationKind fromWire(String s) => switch (s) {
@@ -22,6 +28,7 @@ enum ObservationKind {
         'prediction_miss' => ObservationKind.predictionMiss,
         'delta_measured' => ObservationKind.deltaMeasured,
         'load_warning' => ObservationKind.loadWarning,
+        'first_reading' => ObservationKind.firstReading,
         _ => throw ArgumentError('Unknown ObservationKind "$s"'),
       };
 }
