@@ -29,13 +29,6 @@ import 'package:nihongo_app/mining_packs/ja/jmdict_db.dart';
 import 'package:nihongo_app/mining_packs/ja/jmdict_importer.dart';
 import 'package:nihongo_app/mining_packs/ja/native_tokenizer.dart';
 
-extension on File {
-  File deleteIfExists() {
-    if (existsSync()) deleteSync();
-    return this;
-  }
-}
-
 Future<void> main(List<String> args) async {
   if (args.length < 2) {
     stderr.writeln('Usage: dart run tool/phase12_manga_ocr.dart <page.png> <JMdict_e>');
@@ -50,8 +43,10 @@ Future<void> main(List<String> args) async {
     }
   }
 
-  final tmp = Directory.systemTemp.path;
-  final jmdictDb = JmdictDb.at(File('$tmp/phase12_jmdict.db')..deleteIfExists());
+  // A unique temp dir per run: two overlapping invocations must never
+  // share a JMdict file (a shared path caused sqlite "database is locked").
+  final tmpDir = Directory.systemTemp.createTempSync('phase12_');
+  final jmdictDb = JmdictDb.at(File('${tmpDir.path}/jmdict.db'));
   final miningDb = MiningDb.forTesting();
 
   print('=== Setup ===');
@@ -114,6 +109,6 @@ Future<void> main(List<String> args) async {
 
   await jmdictDb.close();
   await miningDb.close();
-  File('$tmp/phase12_jmdict.db').deleteIfExists();
+  tmpDir.deleteSync(recursive: true);
   print('=== ${gatePass ? "PASS" : "FAIL"} ===');
 }
