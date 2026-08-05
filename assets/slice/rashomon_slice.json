@@ -1,0 +1,6622 @@
+{
+  "workTitle": "羅生門 (Auszug)",
+  "languageCode": "ja",
+  "passages": [
+    {
+      "passageRef": "Absatz 1",
+      "content": "一人の下人が、羅生門の下で雨やみを待っていた。",
+      "tokens": [
+        {
+          "surface": "一",
+          "lemma": "一",
+          "reading": "イチ",
+          "pos": "名詞,数,*,*",
+          "charStart": 0,
+          "charEnd": 1
+        },
+        {
+          "surface": "人",
+          "lemma": "人",
+          "reading": "ニン",
+          "pos": "名詞,接尾,助数詞,*",
+          "charStart": 1,
+          "charEnd": 2
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 2,
+          "charEnd": 3
+        },
+        {
+          "surface": "下人",
+          "lemma": "下人",
+          "reading": "ゲニン",
+          "pos": "名詞,一般,*,*",
+          "charStart": 3,
+          "charEnd": 5
+        },
+        {
+          "surface": "が",
+          "lemma": "が",
+          "reading": "ガ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 5,
+          "charEnd": 6
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 6,
+          "charEnd": 7
+        },
+        {
+          "surface": "羅生門",
+          "lemma": "羅生門",
+          "reading": "ラショウモン",
+          "pos": "名詞,固有名詞,一般,*",
+          "charStart": 7,
+          "charEnd": 10
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 10,
+          "charEnd": 11
+        },
+        {
+          "surface": "下",
+          "lemma": "下",
+          "reading": "シタ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 11,
+          "charEnd": 12
+        },
+        {
+          "surface": "で",
+          "lemma": "で",
+          "reading": "デ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 12,
+          "charEnd": 13
+        },
+        {
+          "surface": "雨",
+          "lemma": "雨",
+          "reading": "アメ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 13,
+          "charEnd": 14
+        },
+        {
+          "surface": "やみ",
+          "lemma": "やみ",
+          "reading": "ヤミ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 14,
+          "charEnd": 16
+        },
+        {
+          "surface": "を",
+          "lemma": "を",
+          "reading": "ヲ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 16,
+          "charEnd": 17
+        },
+        {
+          "surface": "待っ",
+          "lemma": "待つ",
+          "reading": "マッ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 17,
+          "charEnd": 19
+        },
+        {
+          "surface": "て",
+          "lemma": "て",
+          "reading": "テ",
+          "pos": "助詞,接続助詞,*,*",
+          "charStart": 19,
+          "charEnd": 20
+        },
+        {
+          "surface": "い",
+          "lemma": "いる",
+          "reading": "イ",
+          "pos": "動詞,非自立,*,*",
+          "charStart": 20,
+          "charEnd": 21
+        },
+        {
+          "surface": "た",
+          "lemma": "た",
+          "reading": "タ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 21,
+          "charEnd": 22
+        },
+        {
+          "surface": "。",
+          "lemma": "。",
+          "reading": "。",
+          "pos": "記号,句点,*,*",
+          "charStart": 22,
+          "charEnd": 23
+        }
+      ],
+      "furigana": {
+        "0": "いち",
+        "1": "じん",
+        "3": "げにん",
+        "7": "らしょうもん",
+        "11": "した",
+        "13": "あめ",
+        "17": "まつ"
+      }
+    },
+    {
+      "passageRef": "Absatz 2",
+      "content": "広い門 の下には、この男の外に誰もいない。",
+      "tokens": [
+        {
+          "surface": "広い",
+          "lemma": "広い",
+          "reading": "ヒロイ",
+          "pos": "形容詞,自立,*,*",
+          "charStart": 0,
+          "charEnd": 2
+        },
+        {
+          "surface": "門",
+          "lemma": "門",
+          "reading": "モン",
+          "pos": "名詞,一般,*,*",
+          "charStart": 2,
+          "charEnd": 3
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 4,
+          "charEnd": 5
+        },
+        {
+          "surface": "下",
+          "lemma": "下",
+          "reading": "シタ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 5,
+          "charEnd": 6
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 6,
+          "charEnd": 7
+        },
+        {
+          "surface": "は",
+          "lemma": "は",
+          "reading": "ハ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 7,
+          "charEnd": 8
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 8,
+          "charEnd": 9
+        },
+        {
+          "surface": "この",
+          "lemma": "この",
+          "reading": "コノ",
+          "pos": "連体詞,*,*,*",
+          "charStart": 9,
+          "charEnd": 11
+        },
+        {
+          "surface": "男",
+          "lemma": "男",
+          "reading": "オトコ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 11,
+          "charEnd": 12
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 12,
+          "charEnd": 13
+        },
+        {
+          "surface": "外",
+          "lemma": "外",
+          "reading": "ソト",
+          "pos": "名詞,一般,*,*",
+          "charStart": 13,
+          "charEnd": 14
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 14,
+          "charEnd": 15
+        },
+        {
+          "surface": "誰",
+          "lemma": "誰",
+          "reading": "ダレ",
+          "pos": "名詞,代名詞,一般,*",
+          "charStart": 15,
+          "charEnd": 16
+        },
+        {
+          "surface": "も",
+          "lemma": "も",
+          "reading": "モ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 16,
+          "charEnd": 17
+        },
+        {
+          "surface": "い",
+          "lemma": "いる",
+          "reading": "イ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 17,
+          "charEnd": 18
+        },
+        {
+          "surface": "ない",
+          "lemma": "ない",
+          "reading": "ナイ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 18,
+          "charEnd": 20
+        },
+        {
+          "surface": "。",
+          "lemma": "。",
+          "reading": "。",
+          "pos": "記号,句点,*,*",
+          "charStart": 20,
+          "charEnd": 21
+        }
+      ],
+      "furigana": {
+        "0": "ひろい",
+        "2": "と",
+        "5": "した",
+        "11": "おとこ",
+        "13": "そと",
+        "15": "だれ"
+      }
+    },
+    {
+      "passageRef": "Absatz 3",
+      "content": "ただ、所々丹塗の剥げた、大きな円柱に、きりぎ りすが一匹とまっている。",
+      "tokens": [
+        {
+          "surface": "ただ",
+          "lemma": "ただ",
+          "reading": "タダ",
+          "pos": "接続詞,*,*,*",
+          "charStart": 0,
+          "charEnd": 2
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 2,
+          "charEnd": 3
+        },
+        {
+          "surface": "所々",
+          "lemma": "所々",
+          "reading": "トコロドコロ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 3,
+          "charEnd": 5
+        },
+        {
+          "surface": "丹塗",
+          "lemma": "丹塗",
+          "reading": "ニヌリ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 5,
+          "charEnd": 7
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 7,
+          "charEnd": 8
+        },
+        {
+          "surface": "剥げ",
+          "lemma": "剥げる",
+          "reading": "ハゲ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 8,
+          "charEnd": 10
+        },
+        {
+          "surface": "た",
+          "lemma": "た",
+          "reading": "タ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 10,
+          "charEnd": 11
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 11,
+          "charEnd": 12
+        },
+        {
+          "surface": "大きな",
+          "lemma": "大きな",
+          "reading": "オオキナ",
+          "pos": "連体詞,*,*,*",
+          "charStart": 12,
+          "charEnd": 15
+        },
+        {
+          "surface": "円柱",
+          "lemma": "円柱",
+          "reading": "エンチュウ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 15,
+          "charEnd": 17
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 17,
+          "charEnd": 18
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 18,
+          "charEnd": 19
+        },
+        {
+          "surface": "きり",
+          "lemma": "きり",
+          "reading": "キリ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 19,
+          "charEnd": 21
+        },
+        {
+          "surface": "ぎ",
+          "lemma": "ぎ",
+          "reading": null,
+          "pos": "名詞,一般,*,*",
+          "charStart": 21,
+          "charEnd": 22
+        },
+        {
+          "surface": "りす",
+          "lemma": "りす",
+          "reading": "リス",
+          "pos": "名詞,一般,*,*",
+          "charStart": 23,
+          "charEnd": 25
+        },
+        {
+          "surface": "が",
+          "lemma": "が",
+          "reading": "ガ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 25,
+          "charEnd": 26
+        },
+        {
+          "surface": "一",
+          "lemma": "一",
+          "reading": "イチ",
+          "pos": "名詞,数,*,*",
+          "charStart": 26,
+          "charEnd": 27
+        },
+        {
+          "surface": "匹",
+          "lemma": "匹",
+          "reading": "ヒキ",
+          "pos": "名詞,接尾,助数詞,*",
+          "charStart": 27,
+          "charEnd": 28
+        },
+        {
+          "surface": "とまっ",
+          "lemma": "とまる",
+          "reading": "トマッ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 28,
+          "charEnd": 31
+        },
+        {
+          "surface": "て",
+          "lemma": "て",
+          "reading": "テ",
+          "pos": "助詞,接続助詞,*,*",
+          "charStart": 31,
+          "charEnd": 32
+        },
+        {
+          "surface": "いる",
+          "lemma": "いる",
+          "reading": "イル",
+          "pos": "動詞,非自立,*,*",
+          "charStart": 32,
+          "charEnd": 34
+        },
+        {
+          "surface": "。",
+          "lemma": "。",
+          "reading": "。",
+          "pos": "記号,句点,*,*",
+          "charStart": 34,
+          "charEnd": 35
+        }
+      ],
+      "furigana": {
+        "3": "ところどころ",
+        "5": "にぬり",
+        "8": "はげる",
+        "12": "おおきな",
+        "15": "えんちゅう",
+        "26": "いち",
+        "27": "ひき"
+      }
+    },
+    {
+      "passageRef": "Absatz 4",
+      "content": "羅生門が、朱雀大路にある以上は、この男の外にも、雨やみ をする市女笠や揉烏帽子が、もう二三人はありそうなものである。",
+      "tokens": [
+        {
+          "surface": "羅生門",
+          "lemma": "羅生門",
+          "reading": "ラショウモン",
+          "pos": "名詞,固有名詞,一般,*",
+          "charStart": 0,
+          "charEnd": 3
+        },
+        {
+          "surface": "が",
+          "lemma": "が",
+          "reading": "ガ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 3,
+          "charEnd": 4
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 4,
+          "charEnd": 5
+        },
+        {
+          "surface": "朱雀",
+          "lemma": "朱雀",
+          "reading": "スジャク",
+          "pos": "名詞,固有名詞,地域,一般",
+          "charStart": 5,
+          "charEnd": 7
+        },
+        {
+          "surface": "大路",
+          "lemma": "大路",
+          "reading": "オオジ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 7,
+          "charEnd": 9
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 9,
+          "charEnd": 10
+        },
+        {
+          "surface": "ある",
+          "lemma": "ある",
+          "reading": "アル",
+          "pos": "動詞,自立,*,*",
+          "charStart": 10,
+          "charEnd": 12
+        },
+        {
+          "surface": "以上",
+          "lemma": "以上",
+          "reading": "イジョウ",
+          "pos": "名詞,非自立,副詞可能,*",
+          "charStart": 12,
+          "charEnd": 14
+        },
+        {
+          "surface": "は",
+          "lemma": "は",
+          "reading": "ハ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 14,
+          "charEnd": 15
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 15,
+          "charEnd": 16
+        },
+        {
+          "surface": "この",
+          "lemma": "この",
+          "reading": "コノ",
+          "pos": "連体詞,*,*,*",
+          "charStart": 16,
+          "charEnd": 18
+        },
+        {
+          "surface": "男",
+          "lemma": "男",
+          "reading": "オトコ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 18,
+          "charEnd": 19
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 19,
+          "charEnd": 20
+        },
+        {
+          "surface": "外",
+          "lemma": "外",
+          "reading": "ソト",
+          "pos": "名詞,一般,*,*",
+          "charStart": 20,
+          "charEnd": 21
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 21,
+          "charEnd": 22
+        },
+        {
+          "surface": "も",
+          "lemma": "も",
+          "reading": "モ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 22,
+          "charEnd": 23
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 23,
+          "charEnd": 24
+        },
+        {
+          "surface": "雨",
+          "lemma": "雨",
+          "reading": "アメ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 24,
+          "charEnd": 25
+        },
+        {
+          "surface": "やみ",
+          "lemma": "やみ",
+          "reading": "ヤミ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 25,
+          "charEnd": 27
+        },
+        {
+          "surface": "を",
+          "lemma": "を",
+          "reading": "ヲ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 28,
+          "charEnd": 29
+        },
+        {
+          "surface": "する",
+          "lemma": "する",
+          "reading": "スル",
+          "pos": "動詞,自立,*,*",
+          "charStart": 29,
+          "charEnd": 31
+        },
+        {
+          "surface": "市",
+          "lemma": "市",
+          "reading": "シ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 31,
+          "charEnd": 32
+        },
+        {
+          "surface": "女",
+          "lemma": "女",
+          "reading": "オンナ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 32,
+          "charEnd": 33
+        },
+        {
+          "surface": "笠",
+          "lemma": "笠",
+          "reading": "カサ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 33,
+          "charEnd": 34
+        },
+        {
+          "surface": "や",
+          "lemma": "や",
+          "reading": "ヤ",
+          "pos": "助詞,並立助詞,*,*",
+          "charStart": 34,
+          "charEnd": 35
+        },
+        {
+          "surface": "揉",
+          "lemma": "揉",
+          "reading": null,
+          "pos": "名詞,一般,*,*",
+          "charStart": 35,
+          "charEnd": 36
+        },
+        {
+          "surface": "烏帽子",
+          "lemma": "烏帽子",
+          "reading": "エボシ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 36,
+          "charEnd": 39
+        },
+        {
+          "surface": "が",
+          "lemma": "が",
+          "reading": "ガ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 39,
+          "charEnd": 40
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 40,
+          "charEnd": 41
+        },
+        {
+          "surface": "もう",
+          "lemma": "もう",
+          "reading": "モウ",
+          "pos": "副詞,一般,*,*",
+          "charStart": 41,
+          "charEnd": 43
+        },
+        {
+          "surface": "二",
+          "lemma": "二",
+          "reading": "ニ",
+          "pos": "名詞,数,*,*",
+          "charStart": 43,
+          "charEnd": 44
+        },
+        {
+          "surface": "三",
+          "lemma": "三",
+          "reading": "サン",
+          "pos": "名詞,数,*,*",
+          "charStart": 44,
+          "charEnd": 45
+        },
+        {
+          "surface": "人",
+          "lemma": "人",
+          "reading": "ニン",
+          "pos": "名詞,接尾,助数詞,*",
+          "charStart": 45,
+          "charEnd": 46
+        },
+        {
+          "surface": "は",
+          "lemma": "は",
+          "reading": "ハ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 46,
+          "charEnd": 47
+        },
+        {
+          "surface": "あり",
+          "lemma": "ある",
+          "reading": "アリ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 47,
+          "charEnd": 49
+        },
+        {
+          "surface": "そう",
+          "lemma": "そう",
+          "reading": "ソウ",
+          "pos": "名詞,接尾,助動詞語幹,*",
+          "charStart": 49,
+          "charEnd": 51
+        },
+        {
+          "surface": "な",
+          "lemma": "だ",
+          "reading": "ナ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 51,
+          "charEnd": 52
+        },
+        {
+          "surface": "もの",
+          "lemma": "もの",
+          "reading": "モノ",
+          "pos": "名詞,非自立,一般,*",
+          "charStart": 52,
+          "charEnd": 54
+        },
+        {
+          "surface": "で",
+          "lemma": "だ",
+          "reading": "デ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 54,
+          "charEnd": 55
+        },
+        {
+          "surface": "ある",
+          "lemma": "ある",
+          "reading": "アル",
+          "pos": "助動詞,*,*,*",
+          "charStart": 55,
+          "charEnd": 57
+        },
+        {
+          "surface": "。",
+          "lemma": "。",
+          "reading": "。",
+          "pos": "記号,句点,*,*",
+          "charStart": 57,
+          "charEnd": 58
+        }
+      ],
+      "furigana": {
+        "0": "らしょうもん",
+        "5": "すざく",
+        "7": "おおじ",
+        "12": "いじょう",
+        "18": "おとこ",
+        "20": "そと",
+        "24": "あめ",
+        "31": "いち",
+        "32": "すけ",
+        "33": "かさ",
+        "36": "えぼし",
+        "43": "に",
+        "44": "さん",
+        "45": "じん"
+      }
+    },
+    {
+      "passageRef": "Absatz 5",
+      "content": "それが、この男の外 に誰もいない。",
+      "tokens": [
+        {
+          "surface": "それ",
+          "lemma": "それ",
+          "reading": "ソレ",
+          "pos": "名詞,代名詞,一般,*",
+          "charStart": 0,
+          "charEnd": 2
+        },
+        {
+          "surface": "が",
+          "lemma": "が",
+          "reading": "ガ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 2,
+          "charEnd": 3
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 3,
+          "charEnd": 4
+        },
+        {
+          "surface": "この",
+          "lemma": "この",
+          "reading": "コノ",
+          "pos": "連体詞,*,*,*",
+          "charStart": 4,
+          "charEnd": 6
+        },
+        {
+          "surface": "男",
+          "lemma": "男",
+          "reading": "オトコ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 6,
+          "charEnd": 7
+        },
+        {
+          "surface": "の",
+          "lemma": "の",
+          "reading": "ノ",
+          "pos": "助詞,連体化,*,*",
+          "charStart": 7,
+          "charEnd": 8
+        },
+        {
+          "surface": "外",
+          "lemma": "外",
+          "reading": "ソト",
+          "pos": "名詞,一般,*,*",
+          "charStart": 8,
+          "charEnd": 9
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 10,
+          "charEnd": 11
+        },
+        {
+          "surface": "誰",
+          "lemma": "誰",
+          "reading": "ダレ",
+          "pos": "名詞,代名詞,一般,*",
+          "charStart": 11,
+          "charEnd": 12
+        },
+        {
+          "surface": "も",
+          "lemma": "も",
+          "reading": "モ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 12,
+          "charEnd": 13
+        },
+        {
+          "surface": "い",
+          "lemma": "いる",
+          "reading": "イ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 13,
+          "charEnd": 14
+        },
+        {
+          "surface": "ない",
+          "lemma": "ない",
+          "reading": "ナイ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 14,
+          "charEnd": 16
+        },
+        {
+          "surface": "。",
+          "lemma": "。",
+          "reading": "。",
+          "pos": "記号,句点,*,*",
+          "charStart": 16,
+          "charEnd": 17
+        }
+      ],
+      "furigana": {
+        "6": "おとこ",
+        "8": "そと",
+        "11": "だれ"
+      }
+    },
+    {
+      "passageRef": "Absatz 6",
+      "content": "何故かと云うと、この二三年、京都には、地震とか辻風とか火事とか饑饉とか云う災 いがつづいて起こった。",
+      "tokens": [
+        {
+          "surface": "何故",
+          "lemma": "何故",
+          "reading": "ナゼ",
+          "pos": "副詞,助詞類接続,*,*",
+          "charStart": 0,
+          "charEnd": 2
+        },
+        {
+          "surface": "か",
+          "lemma": "か",
+          "reading": "カ",
+          "pos": "助詞,副助詞／並立助詞／終助詞,*,*",
+          "charStart": 2,
+          "charEnd": 3
+        },
+        {
+          "surface": "と",
+          "lemma": "と",
+          "reading": "ト",
+          "pos": "助詞,格助詞,引用,*",
+          "charStart": 3,
+          "charEnd": 4
+        },
+        {
+          "surface": "云う",
+          "lemma": "云う",
+          "reading": "イウ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 4,
+          "charEnd": 6
+        },
+        {
+          "surface": "と",
+          "lemma": "と",
+          "reading": "ト",
+          "pos": "助詞,接続助詞,*,*",
+          "charStart": 6,
+          "charEnd": 7
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 7,
+          "charEnd": 8
+        },
+        {
+          "surface": "この",
+          "lemma": "この",
+          "reading": "コノ",
+          "pos": "連体詞,*,*,*",
+          "charStart": 8,
+          "charEnd": 10
+        },
+        {
+          "surface": "二",
+          "lemma": "二",
+          "reading": "ニ",
+          "pos": "名詞,数,*,*",
+          "charStart": 10,
+          "charEnd": 11
+        },
+        {
+          "surface": "三",
+          "lemma": "三",
+          "reading": "サン",
+          "pos": "名詞,数,*,*",
+          "charStart": 11,
+          "charEnd": 12
+        },
+        {
+          "surface": "年",
+          "lemma": "年",
+          "reading": "ネン",
+          "pos": "名詞,接尾,助数詞,*",
+          "charStart": 12,
+          "charEnd": 13
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 13,
+          "charEnd": 14
+        },
+        {
+          "surface": "京都",
+          "lemma": "京都",
+          "reading": "キョウト",
+          "pos": "名詞,固有名詞,地域,一般",
+          "charStart": 14,
+          "charEnd": 16
+        },
+        {
+          "surface": "に",
+          "lemma": "に",
+          "reading": "ニ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 16,
+          "charEnd": 17
+        },
+        {
+          "surface": "は",
+          "lemma": "は",
+          "reading": "ハ",
+          "pos": "助詞,係助詞,*,*",
+          "charStart": 17,
+          "charEnd": 18
+        },
+        {
+          "surface": "、",
+          "lemma": "、",
+          "reading": "、",
+          "pos": "記号,読点,*,*",
+          "charStart": 18,
+          "charEnd": 19
+        },
+        {
+          "surface": "地震",
+          "lemma": "地震",
+          "reading": "ジシン",
+          "pos": "名詞,一般,*,*",
+          "charStart": 19,
+          "charEnd": 21
+        },
+        {
+          "surface": "とか",
+          "lemma": "とか",
+          "reading": "トカ",
+          "pos": "助詞,並立助詞,*,*",
+          "charStart": 21,
+          "charEnd": 23
+        },
+        {
+          "surface": "辻",
+          "lemma": "辻",
+          "reading": "ツジ",
+          "pos": "名詞,固有名詞,人名,姓",
+          "charStart": 23,
+          "charEnd": 24
+        },
+        {
+          "surface": "風",
+          "lemma": "風",
+          "reading": "フウ",
+          "pos": "名詞,接尾,一般,*",
+          "charStart": 24,
+          "charEnd": 25
+        },
+        {
+          "surface": "とか",
+          "lemma": "とか",
+          "reading": "トカ",
+          "pos": "助詞,並立助詞,*,*",
+          "charStart": 25,
+          "charEnd": 27
+        },
+        {
+          "surface": "火事",
+          "lemma": "火事",
+          "reading": "カジ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 27,
+          "charEnd": 29
+        },
+        {
+          "surface": "とか",
+          "lemma": "とか",
+          "reading": "トカ",
+          "pos": "助詞,並立助詞,*,*",
+          "charStart": 29,
+          "charEnd": 31
+        },
+        {
+          "surface": "饑饉",
+          "lemma": "饑饉",
+          "reading": "キキン",
+          "pos": "名詞,一般,*,*",
+          "charStart": 31,
+          "charEnd": 33
+        },
+        {
+          "surface": "とか",
+          "lemma": "とか",
+          "reading": "トカ",
+          "pos": "助詞,並立助詞,*,*",
+          "charStart": 33,
+          "charEnd": 35
+        },
+        {
+          "surface": "云う",
+          "lemma": "云う",
+          "reading": "イウ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 35,
+          "charEnd": 37
+        },
+        {
+          "surface": "災",
+          "lemma": "災",
+          "reading": "ワザワイ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 37,
+          "charEnd": 38
+        },
+        {
+          "surface": "い",
+          "lemma": "い",
+          "reading": "イ",
+          "pos": "名詞,一般,*,*",
+          "charStart": 39,
+          "charEnd": 40
+        },
+        {
+          "surface": "が",
+          "lemma": "が",
+          "reading": "ガ",
+          "pos": "助詞,格助詞,一般,*",
+          "charStart": 40,
+          "charEnd": 41
+        },
+        {
+          "surface": "つづい",
+          "lemma": "つづく",
+          "reading": "ツヅイ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 41,
+          "charEnd": 44
+        },
+        {
+          "surface": "て",
+          "lemma": "て",
+          "reading": "テ",
+          "pos": "助詞,接続助詞,*,*",
+          "charStart": 44,
+          "charEnd": 45
+        },
+        {
+          "surface": "起こっ",
+          "lemma": "起こる",
+          "reading": "オコッ",
+          "pos": "動詞,自立,*,*",
+          "charStart": 45,
+          "charEnd": 48
+        },
+        {
+          "surface": "た",
+          "lemma": "た",
+          "reading": "タ",
+          "pos": "助動詞,*,*,*",
+          "charStart": 48,
+          "charEnd": 49
+        },
+        {
+          "surface": "。",
+          "lemma": "。",
+          "reading": "。",
+          "pos": "記号,句点,*,*",
+          "charStart": 49,
+          "charEnd": 50
+        }
+      ],
+      "furigana": {
+        "0": "なぜ",
+        "4": "いう",
+        "10": "に",
+        "11": "さん",
+        "12": "とし",
+        "14": "きょうと",
+        "19": "じしん",
+        "23": "つじ",
+        "24": "ふり",
+        "27": "かじ",
+        "31": "ききん",
+        "35": "いう",
+        "45": "おこる"
+      }
+    }
+  ],
+  "dictionary": {
+    "一": [
+      {
+        "pos": "num,pref",
+        "glosses": [
+          "one",
+          "1"
+        ]
+      },
+      {
+        "pos": "adj-no,suf",
+        "glosses": [
+          "best"
+        ]
+      },
+      {
+        "pos": "adj-no",
+        "glosses": [
+          "first",
+          "foremost"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "beginning",
+          "start"
+        ]
+      },
+      {
+        "pos": "n-pref",
+        "glosses": [
+          "a (single)",
+          "one (of many)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "ace"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "bottom string (on a shamisen, etc.)"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "one"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "for one thing"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "only"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "(not) even"
+        ]
+      },
+      {
+        "pos": "n,adv",
+        "glosses": [
+          "just (e.g. \"just try it\")"
+        ]
+      },
+      {
+        "pos": "adj-no",
+        "glosses": [
+          "some kind of",
+          "one type of"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "one"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "most",
+          "best"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "one"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "one"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "one"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "same (mind, path, etc.)"
+        ]
+      }
+    ],
+    "人": [
+      {
+        "pos": "suf",
+        "glosses": [
+          "-ian (e.g. Italian)",
+          "-ite (e.g. Tokyoite)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "-er (e.g. performer, etc.)",
+          "person working with ..."
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "man",
+          "person",
+          "people"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "person"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "person",
+          "someone",
+          "somebody"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "human beings",
+          "mankind",
+          "man",
+          "people",
+          "humans"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "human (Homo sapiens)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "(other) people",
+          "others"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "character",
+          "personality",
+          "nature"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "capable person",
+          "competent person",
+          "suitable person",
+          "right person"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "adult",
+          "grown-up"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "I",
+          "me",
+          "one"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for people"
+        ]
+      }
+    ],
+    "の": [
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates possessive"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "nominalizes verbs and adjectives"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "substitutes for \"ga\" in subordinate phrases"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates a confident conclusion"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates emotional emphasis"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates question"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "field",
+          "plain"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hidden interior part (of a structure or object)"
+        ]
+      },
+      {
+        "pos": "n-pref",
+        "glosses": [
+          "wild (of an animal or plant)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "shaft (of an arrow; made of bamboo)"
+        ]
+      },
+      {
+        "pos": "n,n-suf,ctr",
+        "glosses": [
+          "unit of measurement for cloth breadth (30-38 cm)"
+        ]
+      }
+    ],
+    "下人": [
+      {
+        "pos": "n",
+        "glosses": [
+          "low-rank person",
+          "menial"
+        ]
+      }
+    ],
+    "が": [
+      {
+        "pos": "n",
+        "glosses": [
+          "moth"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "picture",
+          "drawing",
+          "painting",
+          "sketch"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "image (TV, film, etc.)",
+          "picture",
+          "footage"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates the subject of a sentence"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates possession"
+        ]
+      },
+      {
+        "pos": "conj,prt",
+        "glosses": [
+          "but",
+          "however",
+          "(and) yet",
+          "though",
+          "although",
+          "while"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "and"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "used after an introductory remark or explanation"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "regardless of ...",
+          "whether ... (or not)",
+          "no matter ..."
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates a desire or hope"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "softens a statement"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates doubt"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates scorn"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "obstinacy"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "atman",
+          "the self",
+          "the ego"
+        ]
+      },
+      {
+        "pos": "n,adj-na",
+        "glosses": [
+          "elegance",
+          "grace"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "festal song (genre of the Shi Jing)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "congratulation",
+          "celebration"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "vehicle",
+          "horse-drawn carriage"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "partial equivalent of the \"no\" particle"
+        ]
+      }
+    ],
+    "羅生門": [
+      {
+        "pos": "n",
+        "glosses": [
+          "Rashōmon (gate in old Kyoto)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Rashōmon (story by Akutagawa, film by Kurosawa)"
+        ]
+      }
+    ],
+    "下": [
+      {
+        "pos": "n",
+        "glosses": [
+          "below",
+          "down",
+          "under",
+          "younger (e.g. daughter)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "bottom"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "beneath",
+          "underneath"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "just after",
+          "right after"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "inferiority",
+          "one's inferior (i.e. one's junior)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "trade-in"
+        ]
+      },
+      {
+        "pos": "n-pref",
+        "glosses": [
+          "preliminary",
+          "preparatory"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "under (guidance, supervision, rules, the law, etc.)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "under (a flag, the sun, etc.)",
+          "beneath"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "with (e.g. one blow)",
+          "on (the promise, condition, assumption, etc. that ...)",
+          "in (e.g. the name of ...)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "(someone's) side",
+          "(someone's) location"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "lowness (of degree, value, etc.)",
+          "inferiority"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "second volume (of two)",
+          "third volume (of three)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "lower reaches (of a river)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "bottom",
+          "lower part"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "lower half (of the body, esp. the privates)",
+          "feces (faeces)",
+          "urine",
+          "menses"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "end",
+          "far from the imperial palace (i.e. far from Kyoto, esp. of western Japan)"
+        ]
+      },
+      {
+        "pos": "adj-no",
+        "glosses": [
+          "dirty (e.g. dirty jokes, etc.)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "under (influence, control, conditions, etc. of)",
+          "during (war, occupation, etc.)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "below",
+          "south of"
+        ]
+      }
+    ],
+    "で": [
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "coming out",
+          "going out",
+          "outflow",
+          "efflux",
+          "rising (of the Sun or the Moon)"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "attending (work)",
+          "appearing (on stage)",
+          "one's turn to go on"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "start",
+          "beginning"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "origins",
+          "background",
+          "person (or item) originating from ...",
+          "graduate of ...",
+          "native of ...",
+          "member of ... (lineage)"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "architectural member that projects outward"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "highest point of the stern of a ship"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "amount (comprising something)",
+          "amount of time or effort required to do something"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "at",
+          "in"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "at",
+          "when"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "by",
+          "with"
+        ]
+      },
+      {
+        "pos": "conj",
+        "glosses": [
+          "so",
+          "therefore",
+          "(and) then",
+          "accordingly"
+        ]
+      },
+      {
+        "pos": "conj",
+        "glosses": [
+          "by the way",
+          "incidentally",
+          "now then",
+          "well"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "and"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "(and) then"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "because (of)",
+          "so",
+          "since"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "through (that)",
+          "by"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "although",
+          "but",
+          "(and) yet"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "particle used to connect to auxiliary verbs"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "particle used to form compound verbs"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "please (do)"
+        ]
+      },
+      {
+        "pos": "conj,aux",
+        "glosses": [
+          "without doing ..."
+        ]
+      }
+    ],
+    "雨": [
+      {
+        "pos": "n",
+        "glosses": [
+          "rain"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "rainy day",
+          "rainy weather"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "the November suit (in hanafuda)"
+        ]
+      }
+    ],
+    "やみ": [
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "darkness",
+          "the dark"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "bewilderment",
+          "despair",
+          "hopelessness"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hidden place",
+          "secrecy",
+          "oblivion"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "black market",
+          "shady trading",
+          "underhand transactions",
+          "illegal channels"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "gamy taste"
+        ]
+      }
+    ],
+    "を": [
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates direct object of action"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates subject of causative expression"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates an area traversed"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates time (period) over which action takes place"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates point of departure or separation of action"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates object of desire, like, hate, etc."
+        ]
+      }
+    ],
+    "待つ": [
+      {
+        "pos": "v5t,vt,vi",
+        "glosses": [
+          "to wait"
+        ]
+      },
+      {
+        "pos": "v5t,vt,vi",
+        "glosses": [
+          "to await",
+          "to look forward to",
+          "to anticipate"
+        ]
+      },
+      {
+        "pos": "v5t,vt,vi",
+        "glosses": [
+          "to depend on",
+          "to need"
+        ]
+      }
+    ],
+    "て": [
+      {
+        "pos": "n",
+        "glosses": [
+          "hand",
+          "arm"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "forepaw",
+          "foreleg"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "handle"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hand",
+          "worker",
+          "help"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "trouble",
+          "care",
+          "effort"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "means",
+          "way",
+          "trick",
+          "move",
+          "technique",
+          "workmanship"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hand",
+          "handwriting"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "kind",
+          "type",
+          "sort"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "one's hands",
+          "one's possession"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "ability to cope"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hand (of cards)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "direction"
+        ]
+      },
+      {
+        "pos": "n,n-suf,ctr",
+        "glosses": [
+          "move (in go, shogi, etc.)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "you said",
+          "he said",
+          "she said",
+          "they said"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "even if"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "do you seriously think that"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "I already told you",
+          "you should know by now that",
+          "of course"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "the said ...",
+          "said ..."
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "says that ..."
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "I hear that ..."
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "as for the term ..."
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "as for ..."
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "and"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "(and) then"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "because (of)",
+          "so",
+          "since"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "through (that)",
+          "by"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "although",
+          "but",
+          "(and) yet"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "particle used to connect to auxiliary verbs"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "particle used to form compound verbs"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "please (do)"
+        ]
+      }
+    ],
+    "いる": [
+      {
+        "pos": "v1,vt",
+        "glosses": [
+          "to shoot (arrow, bolt, dart)"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to roast",
+          "to parch",
+          "to toast",
+          "to boil down"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to enter",
+          "to go in",
+          "to get in",
+          "to come in"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to set (of the sun or moon)",
+          "to sink",
+          "to go down"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to attain (nirvana, enlightenment, etc.)",
+          "to achieve",
+          "to reach (e.g. a climax)"
+        ]
+      },
+      {
+        "pos": "suf,v5r",
+        "glosses": [
+          "to do fully",
+          "to do intently",
+          "to do sincerely",
+          "to do deeply",
+          "to feel keenly"
+        ]
+      },
+      {
+        "pos": "suf,v5r",
+        "glosses": [
+          "to (reach a state) completely"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to be needed",
+          "to be necessary",
+          "to be required",
+          "to be wanted",
+          "to need",
+          "to want"
+        ]
+      },
+      {
+        "pos": "v1,vi",
+        "glosses": [
+          "to be (of animate objects)",
+          "to exist"
+        ]
+      },
+      {
+        "pos": "v1,vi",
+        "glosses": [
+          "to stay"
+        ]
+      },
+      {
+        "pos": "aux-v,v1",
+        "glosses": [
+          "to be ...-ing"
+        ]
+      },
+      {
+        "pos": "aux-v,v1",
+        "glosses": [
+          "to have ...-ed",
+          "to be ...-ed"
+        ]
+      },
+      {
+        "pos": "v1,vt",
+        "glosses": [
+          "to cast",
+          "to mint",
+          "to coin"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to set (of the sun)"
+        ]
+      },
+      {
+        "pos": "v1,vi",
+        "glosses": [
+          "to calm down"
+        ]
+      },
+      {
+        "pos": "v1,vt",
+        "glosses": [
+          "to pour",
+          "to dash (water) over",
+          "to douse with"
+        ]
+      },
+      {
+        "pos": "v1,vt",
+        "glosses": [
+          "to lead",
+          "to spearhead",
+          "to command"
+        ]
+      },
+      {
+        "pos": "v1,vt",
+        "glosses": [
+          "to carry",
+          "to take"
+        ]
+      }
+    ],
+    "た": [
+      {
+        "pos": "n,pref",
+        "glosses": [
+          "multi-"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "rice field"
+        ]
+      },
+      {
+        "pos": "adv,n,adj-no",
+        "glosses": [
+          "other (esp. people and abstract matters)"
+        ]
+      },
+      {
+        "pos": "n,n-suf,ctr",
+        "glosses": [
+          "distance between outstretched thumb and middle finger (approx. 18 cm)"
+        ]
+      },
+      {
+        "pos": "aux-v",
+        "glosses": [
+          "did",
+          "(have) done"
+        ]
+      },
+      {
+        "pos": "aux-v",
+        "glosses": [
+          "(please) do"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "indicates word or phrase being defined"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "used for quoting (thoughts, speech, etc.)"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "with"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "(not) as much as",
+          "(not) so much as"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "the fact that",
+          "to think that",
+          "such a thing as"
+        ]
+      }
+    ],
+    "広い": [
+      {
+        "pos": "adj-i",
+        "glosses": [
+          "spacious",
+          "vast",
+          "wide"
+        ]
+      }
+    ],
+    "門": [
+      {
+        "pos": "n",
+        "glosses": [
+          "door (esp. Japanese-style)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "shutter",
+          "window shutter"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "entrance (to a home)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "narrows"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "gate"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "branch of learning based on the teachings of a single master",
+          "school"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "phylum",
+          "division"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for cannons"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "gate",
+          "door"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "house",
+          "family"
+        ]
+      }
+    ],
+    "に": [
+      {
+        "pos": "n",
+        "glosses": [
+          "load",
+          "baggage",
+          "cargo",
+          "freight",
+          "goods"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "burden",
+          "responsibility"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "looking like (someone)",
+          "taking after (either of one's parents)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "red earth (i.e. containing cinnabar or minium)",
+          "vermilion"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "two",
+          "2"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "at (place, time)",
+          "in",
+          "on",
+          "during"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "to (direction, state)",
+          "toward",
+          "into"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "for (purpose)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "because of (reason)",
+          "for",
+          "with"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "by",
+          "from"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "as (i.e. in the role of)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "per",
+          "in",
+          "for",
+          "a (e.g. \"once a month\")"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "and",
+          "in addition to"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "if",
+          "although"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "bhikkhuni (fully ordained nun)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Indonesia"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "soil (esp. reddish soil)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "simmered with",
+          "cooked with"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "boiling",
+          "boiled dish"
+        ]
+      }
+    ],
+    "は": [
+      {
+        "pos": "n",
+        "glosses": [
+          "feather",
+          "plume",
+          "down"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "wing"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "blade (of a fan, propeller, etc.)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "shuttlecock (in badminton)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "shuttlecock (in hanetsuki)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "arrow feathers"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "tooth",
+          "teeth"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "tooth (of a comb, saw, etc.)",
+          "cog"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "support (of a geta)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "edge (of a knife or sword)",
+          "blade"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "prong (of an electrical plug)"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "group",
+          "faction",
+          "clique",
+          "coterie"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "(political) faction",
+          "wing",
+          "camp"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "school (of thought, painting, etc.)"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "sect",
+          "denomination"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "leaf",
+          "blade (of grass)",
+          "(pine) needle",
+          "frond",
+          "foliage"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates sentence topic"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates contrast with another option (stated or unstated)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "adds emphasis"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "yes",
+          "indeed",
+          "well"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "ha!"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "what?",
+          "huh?"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "sigh"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "large fan-shaped object held by an attendant and used to conceal the face of a noble, etc."
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "middle section of a song (in gagaku or noh)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "supremacy (over a nation)",
+          "hegemony",
+          "domination",
+          "leadership"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "championship",
+          "victory"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for waves (of a repeated occurrence)"
+        ]
+      }
+    ],
+    "この": [
+      {
+        "pos": "num",
+        "glosses": [
+          "nine",
+          "9"
+        ]
+      },
+      {
+        "pos": "adj-pn",
+        "glosses": [
+          "this"
+        ]
+      },
+      {
+        "pos": "adj-pn",
+        "glosses": [
+          "last (couple of years, etc.)",
+          "these",
+          "past",
+          "this"
+        ]
+      },
+      {
+        "pos": "adj-pn",
+        "glosses": [
+          "you (as in \"you liar\")"
+        ]
+      }
+    ],
+    "男": [
+      {
+        "pos": "n,n-pref",
+        "glosses": [
+          "man",
+          "male"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fellow",
+          "guy",
+          "chap",
+          "bloke"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "male lover",
+          "boyfriend",
+          "man"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "manliness",
+          "manly honor",
+          "manly honour",
+          "manly reputation"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "man",
+          "boy"
+        ]
+      },
+      {
+        "pos": "n-pref,n-suf",
+        "glosses": [
+          "male"
+        ]
+      },
+      {
+        "pos": "n-pref",
+        "glosses": [
+          "manly",
+          "brave",
+          "heroic"
+        ]
+      },
+      {
+        "pos": "n-pref",
+        "glosses": [
+          "larger (of the two)",
+          "greater"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "man"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "husband"
+        ]
+      },
+      {
+        "pos": "n,n-suf,ctr",
+        "glosses": [
+          "son"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "masculine noun"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "son"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "baron"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "man",
+          "male"
+        ]
+      }
+    ],
+    "外": [
+      {
+        "pos": "n",
+        "glosses": [
+          "outside",
+          "exterior"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "the open (air)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "other place",
+          "somewhere else",
+          "outside one's group (family, company, etc.)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "another place",
+          "some other place",
+          "somewhere else",
+          "outside"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "another (person or thing)",
+          "other",
+          "different",
+          "something else",
+          "someone else",
+          "the rest",
+          "et al."
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "beyond (one's expectations, imagination, etc.)",
+          "outside"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "except",
+          "but",
+          "other than",
+          "apart from"
+        ]
+      },
+      {
+        "pos": "n,adv",
+        "glosses": [
+          "besides",
+          "in addition to",
+          "as well as",
+          "on top of"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "another place",
+          "somewhere else",
+          "strange parts"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "outside (one's family or group)",
+          "someone else",
+          "other people"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "not caring for",
+          "being indifferent to",
+          "taking little notice of",
+          "ignoring",
+          "neglecting"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "outside ...",
+          "beyond ...",
+          "not included in ..."
+        ]
+      }
+    ],
+    "誰": [
+      {
+        "pos": "pn",
+        "glosses": [
+          "who"
+        ]
+      }
+    ],
+    "も": [
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "mourning"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "calamity",
+          "misfortune"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "algae",
+          "waterweed",
+          "seaweed",
+          "duckweed"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "face"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "surface"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "mask (esp. a noh or kyogen mask)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "traditional skirt"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "too",
+          "also",
+          "in addition",
+          "as well",
+          "(not) either (in a negative sentence)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "both A and B",
+          "A as well as B",
+          "neither A nor B (in a negative sentence)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "even",
+          "as much as",
+          "as many as",
+          "as far as",
+          "as long as",
+          "no less than",
+          "no fewer than"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "even if",
+          "even though",
+          "although",
+          "in spite of"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "further",
+          "more",
+          "again",
+          "another",
+          "the other"
+        ]
+      }
+    ],
+    "ない": [
+      {
+        "pos": "adj-i",
+        "glosses": [
+          "dead"
+        ]
+      },
+      {
+        "pos": "adj-i",
+        "glosses": [
+          "nonexistent",
+          "not being (there)"
+        ]
+      },
+      {
+        "pos": "adj-i",
+        "glosses": [
+          "unowned",
+          "not had",
+          "unpossessed"
+        ]
+      },
+      {
+        "pos": "adj-i",
+        "glosses": [
+          "unique"
+        ]
+      },
+      {
+        "pos": "adj-i",
+        "glosses": [
+          "not",
+          "impossible",
+          "won't happen"
+        ]
+      },
+      {
+        "pos": "adj-i,aux-adj",
+        "glosses": [
+          "not"
+        ]
+      },
+      {
+        "pos": "adj-i,aux-adj",
+        "glosses": [
+          "to not be",
+          "to have not"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "within ...",
+          "inside ..."
+        ]
+      },
+      {
+        "pos": "aux-adj,suf",
+        "glosses": [
+          "not"
+        ]
+      },
+      {
+        "pos": "suf,adj-i",
+        "glosses": [
+          "emphatic suffix"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "earthquake"
+        ]
+      }
+    ],
+    "ただ": [
+      {
+        "pos": "adj-no,n",
+        "glosses": [
+          "ordinary",
+          "common",
+          "usual"
+        ]
+      },
+      {
+        "pos": "adj-no,n",
+        "glosses": [
+          "free of charge"
+        ]
+      },
+      {
+        "pos": "adj-no,n",
+        "glosses": [
+          "unaffected",
+          "as is",
+          "safe"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "only",
+          "merely",
+          "just",
+          "simply"
+        ]
+      },
+      {
+        "pos": "conj",
+        "glosses": [
+          "but",
+          "however",
+          "nevertheless"
+        ]
+      },
+      {
+        "pos": "adj-na,n,adv",
+        "glosses": [
+          "straight",
+          "direct"
+        ]
+      }
+    ],
+    "所々": [
+      {
+        "pos": "adv,n",
+        "glosses": [
+          "here and there",
+          "in places"
+        ]
+      }
+    ],
+    "丹塗": [
+      {
+        "pos": "n,adj-no,vs",
+        "glosses": [
+          "painting red",
+          "vermillion lacquering"
+        ]
+      }
+    ],
+    "剥げる": [
+      {
+        "pos": "v1,vi",
+        "glosses": [
+          "to peel off",
+          "to come off",
+          "to flake off",
+          "to be worn off"
+        ]
+      },
+      {
+        "pos": "v1,vi",
+        "glosses": [
+          "to fade",
+          "to discolor",
+          "to discolour"
+        ]
+      },
+      {
+        "pos": "v1,vi",
+        "glosses": [
+          "to peel off",
+          "to come off",
+          "to flake off"
+        ]
+      }
+    ],
+    "大きな": [
+      {
+        "pos": "adj-pn",
+        "glosses": [
+          "big",
+          "large",
+          "great"
+        ]
+      }
+    ],
+    "円柱": [
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "column",
+          "shaft",
+          "cylinder"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "round pillar (esp. in buildings)"
+        ]
+      }
+    ],
+    "きり": [
+      {
+        "pos": "n",
+        "glosses": [
+          "paulownia (Paulownia tomentosa)",
+          "empress tree",
+          "foxglove tree"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "drill",
+          "gimlet",
+          "awl",
+          "auger"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "end",
+          "finish",
+          "place to stop"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "bound",
+          "limit",
+          "end"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "delivery date (of a futures contract)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "finale (of a noh song)",
+          "end of an act (in jōruri or kabuki)",
+          "final performance of the day (in vaudeville)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "trump card"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "king (court card; in mekuri karuta and unsun karuta)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "cut",
+          "separation of two groups"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for slices (esp. thick slices)",
+          "counter for cuts (of fish, meat, etc.)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "only",
+          "just"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "(ever) since",
+          "after"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "continuously",
+          "remaining (in a particular state)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "texture (e.g. skin, fabric)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "grain (e.g. wood)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "detail"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fog",
+          "mist"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "spray"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "unexpected benefit",
+          "sudden profit"
+        ]
+      }
+    ],
+    "ぎ": [
+      {
+        "pos": "n",
+        "glosses": [
+          "ceremony"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "matter",
+          "affair",
+          "case"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "with regard to",
+          "as for",
+          "as concerns"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "technique",
+          "art",
+          "skill",
+          "move"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "doubt",
+          "distrust",
+          "suspicion (of)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "friendship",
+          "friendly relations",
+          "connection",
+          "relation",
+          "intimacy"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "morality",
+          "righteousness",
+          "justice",
+          "honour (honor)"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "meaning"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "teachings",
+          "doctrine"
+        ]
+      },
+      {
+        "pos": "n,n-pref",
+        "glosses": [
+          "nonconsanguineous relationship (i.e. of in-laws)"
+        ]
+      },
+      {
+        "pos": "n,n-pref",
+        "glosses": [
+          "prosthesis"
+        ]
+      },
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "clothes",
+          "outfit",
+          "uniform"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Wei (kingdom in China during the Three Kingdoms period; 220-266 CE)",
+          "Cao Wei"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Wei (kingdom in China during the Warring States period; 403-225 BCE)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "geisha"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "-like nature",
+          "-like disposition",
+          "-ish temperament"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "discussion",
+          "deliberation"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "thought",
+          "opinion"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "falseness"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "falsehood"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "pseudo-",
+          "quasi-"
+        ]
+      }
+    ],
+    "りす": [
+      {
+        "pos": "n",
+        "glosses": [
+          "squirrel (any mammal of family Sciuridae)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Japanese squirrel (Sciurus lis)"
+        ]
+      }
+    ],
+    "匹": [
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for small animals"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for rolls of cloth (two han in size)"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for horses"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "roll of cloth"
+        ]
+      }
+    ],
+    "とまる": [
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to stop (moving)",
+          "to come to a stop"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to stop (doing, working, being supplied)",
+          "to come to a halt",
+          "to cease",
+          "to be stopped",
+          "to be suspended"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to alight",
+          "to perch on"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to stay at (e.g. hotel)"
+        ]
+      },
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to be docked",
+          "to be berthed",
+          "to be moored"
+        ]
+      }
+    ],
+    "朱雀": [
+      {
+        "pos": "n",
+        "glosses": [
+          "Vermilion Bird (god said to rule over the southern heavens)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "seven mansions (Chinese constellations) of the southern heavens"
+        ]
+      }
+    ],
+    "大路": [
+      {
+        "pos": "n",
+        "glosses": [
+          "main street (esp. in a capital)",
+          "main thoroughfare"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "most important of the three classes of highway (ritsuryō period)"
+        ]
+      }
+    ],
+    "ある": [
+      {
+        "pos": "v5r-i,vi",
+        "glosses": [
+          "to be",
+          "to exist",
+          "to live"
+        ]
+      },
+      {
+        "pos": "v5r-i,vi",
+        "glosses": [
+          "to have"
+        ]
+      },
+      {
+        "pos": "v5r-i,vi",
+        "glosses": [
+          "to be located"
+        ]
+      },
+      {
+        "pos": "v5r-i,vi",
+        "glosses": [
+          "to be equipped with"
+        ]
+      },
+      {
+        "pos": "v5r-i,vi",
+        "glosses": [
+          "to happen",
+          "to come about"
+        ]
+      },
+      {
+        "pos": "aux-v,v5r-i",
+        "glosses": [
+          "to exist (in a completed state)",
+          "to be (something unchanged in its current state)"
+        ]
+      },
+      {
+        "pos": "adj-pn",
+        "glosses": [
+          "a certain ...",
+          "some ..."
+        ]
+      }
+    ],
+    "以上": [
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "not less than ...",
+          "... and over",
+          "... and above",
+          "... and upwards",
+          "... or more"
+        ]
+      },
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "beyond (e.g. one's expectations)",
+          "above",
+          "more than",
+          "further than"
+        ]
+      },
+      {
+        "pos": "adj-no,n",
+        "glosses": [
+          "the above",
+          "the above-mentioned",
+          "the aforementioned",
+          "the foregoing"
+        ]
+      },
+      {
+        "pos": "n,conj",
+        "glosses": [
+          "since ...",
+          "seeing that ...",
+          "now that ...",
+          "once ..."
+        ]
+      },
+      {
+        "pos": "exp",
+        "glosses": [
+          "that's all",
+          "that is the end",
+          "the end"
+        ]
+      }
+    ],
+    "する": [
+      {
+        "pos": "vs-i",
+        "glosses": [
+          "to do",
+          "to carry out",
+          "to perform"
+        ]
+      },
+      {
+        "pos": "vs-i",
+        "glosses": [
+          "to cause to become",
+          "to make (into)",
+          "to turn (into)"
+        ]
+      },
+      {
+        "pos": "vs-i",
+        "glosses": [
+          "to serve as",
+          "to act as",
+          "to work as"
+        ]
+      },
+      {
+        "pos": "vs-i",
+        "glosses": [
+          "to wear (clothes, a facial expression, etc.)"
+        ]
+      },
+      {
+        "pos": "vs-i",
+        "glosses": [
+          "to judge as being",
+          "to view as being",
+          "to think of as",
+          "to treat as",
+          "to use as"
+        ]
+      },
+      {
+        "pos": "vs-i",
+        "glosses": [
+          "to decide on",
+          "to choose"
+        ]
+      },
+      {
+        "pos": "vs-i,vi",
+        "glosses": [
+          "to be sensed (of a smell, noise, etc.)"
+        ]
+      },
+      {
+        "pos": "vs-i,vi",
+        "glosses": [
+          "to be (in a state, condition, etc.)"
+        ]
+      },
+      {
+        "pos": "vs-i,vi",
+        "glosses": [
+          "to be worth",
+          "to cost"
+        ]
+      },
+      {
+        "pos": "vs-i,vi",
+        "glosses": [
+          "to pass (of time)",
+          "to elapse"
+        ]
+      },
+      {
+        "pos": "vs-i,vt",
+        "glosses": [
+          "to place, or raise, person A to a post or status B"
+        ]
+      },
+      {
+        "pos": "vs-i,vt",
+        "glosses": [
+          "to transform A to B",
+          "to make A into B",
+          "to exchange A for B"
+        ]
+      },
+      {
+        "pos": "vs-i,vt",
+        "glosses": [
+          "to make use of A for B",
+          "to view A as B",
+          "to handle A as if it were B"
+        ]
+      },
+      {
+        "pos": "vs-i,vt",
+        "glosses": [
+          "to feel A about B"
+        ]
+      },
+      {
+        "pos": "suf,vs-i",
+        "glosses": [
+          "verbalizing suffix (applies to nouns noted in this dictionary with the part of speech \"vs\")"
+        ]
+      },
+      {
+        "pos": "aux-v,vs-i",
+        "glosses": [
+          "creates a humble verb (after a noun prefixed with \"o\" or \"go\")"
+        ]
+      },
+      {
+        "pos": "aux-v,vs-i",
+        "glosses": [
+          "to be just about to",
+          "to be just starting to",
+          "to try to",
+          "to attempt to"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to print"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to color or pattern fabric using a wooden mold"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to pickpocket",
+          "to steal"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to shave"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to rub",
+          "to chafe",
+          "to strike (match)",
+          "to file",
+          "to frost (glass)"
+        ]
+      },
+      {
+        "pos": "v5r,vt",
+        "glosses": [
+          "to squander (one's money)",
+          "to run through (one's fortune)",
+          "to lose money (e.g. by gambling)"
+        ]
+      }
+    ],
+    "市": [
+      {
+        "pos": "n",
+        "glosses": [
+          "market",
+          "fair"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "city"
+        ]
+      }
+    ],
+    "女": [
+      {
+        "pos": "n",
+        "glosses": [
+          "assistance",
+          "help",
+          "helper"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "babe",
+          "chick",
+          "broad"
+        ]
+      },
+      {
+        "pos": "n,n-pref",
+        "glosses": [
+          "woman",
+          "female"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "female lover",
+          "girlfriend",
+          "mistress",
+          "(someone's) woman"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "woman",
+          "girl",
+          "daughter"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "Chinese \"Girl\" constellation (one of the 28 mansions)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "feminine noun"
+        ]
+      },
+      {
+        "pos": "n-pref,n-suf",
+        "glosses": [
+          "female"
+        ]
+      },
+      {
+        "pos": "n-pref",
+        "glosses": [
+          "smaller (of the two)",
+          "weaker"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "woman"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "wife"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "woman"
+        ]
+      }
+    ],
+    "笠": [
+      {
+        "pos": "n",
+        "glosses": [
+          "conical hat (East-Asian style)",
+          "coolie hat"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "something shaped like a conical hat or an umbrella",
+          "shade (of a lamp)",
+          "mushroom cap",
+          "pileus"
+        ]
+      }
+    ],
+    "や": [
+      {
+        "pos": "n",
+        "glosses": [
+          "melting"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "arrow"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "wedge",
+          "chock"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "eight",
+          "8"
+        ]
+      },
+      {
+        "pos": "adj-na",
+        "glosses": [
+          "disliking",
+          "not wanting",
+          "unwilling (to do)",
+          "reluctant"
+        ]
+      },
+      {
+        "pos": "adj-na",
+        "glosses": [
+          "unpleasant",
+          "disagreeable",
+          "nasty",
+          "horrible",
+          "disgusting",
+          "undesirable",
+          "unwelcome"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "no!",
+          "quit it!",
+          "stop!"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "such things as ...",
+          "and ... and"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "the minute (that) ...",
+          "no sooner than ...",
+          "as soon as"
+        ]
+      },
+      {
+        "pos": "cop",
+        "glosses": [
+          "be",
+          "is"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "o",
+          "oh"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "huh",
+          "what"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "hi"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "yes",
+          "what?"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "yes?",
+          "no?",
+          "is it?",
+          "isn't it?"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "shop",
+          "store",
+          "restaurant"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "someone who sells (something) or works as (something)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "someone with a (certain) personality trait"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "house"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "roof"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "spoke"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for nights"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "plain",
+          "field"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "being outside the government",
+          "non-governmental sphere",
+          "private sector",
+          "private life"
+        ]
+      }
+    ],
+    "烏帽子": [
+      {
+        "pos": "n",
+        "glosses": [
+          "eboshi",
+          "black-lacquered headgear made of silk, cloth or paper, originally worn by court nobles in ancient Japan"
+        ]
+      }
+    ],
+    "もう": [
+      {
+        "pos": "adv",
+        "glosses": [
+          "already",
+          "yet",
+          "by now",
+          "now",
+          "(not) any more",
+          "(not) any longer"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "soon",
+          "shortly",
+          "before long",
+          "presently"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "further",
+          "more",
+          "again",
+          "another",
+          "the other"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "jeez",
+          "geez",
+          "gee",
+          "boy",
+          "come on",
+          "damn",
+          "seriously"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "ignorance"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "covering",
+          "concealing"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Mongolia"
+        ]
+      },
+      {
+        "pos": "adj-na",
+        "glosses": [
+          "greatly energetic"
+        ]
+      },
+      {
+        "pos": "adj-na",
+        "glosses": [
+          "ferocious"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "extreme",
+          "severe"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "one-thousandth",
+          "0.03 mm (one-thousandth of a sun)",
+          "0.01 percent (one-thousandth of a wari)",
+          "3.75 milligrams (one-thousandth of a monme)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "old monetary unit (0.0001 yen)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "network"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "blindness"
+        ]
+      }
+    ],
+    "二": [
+      {
+        "pos": "num",
+        "glosses": [
+          "two",
+          "2"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "two"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "two"
+        ]
+      }
+    ],
+    "三": [
+      {
+        "pos": "num",
+        "glosses": [
+          "three",
+          "3"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "three"
+        ]
+      }
+    ],
+    "そう": [
+      {
+        "pos": "aux,adj-na",
+        "glosses": [
+          "appearing that",
+          "seeming that",
+          "looking like",
+          "having the appearance of"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to run along",
+          "to run beside",
+          "to stick to (a line)"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to follow (a policy, plan, etc.)",
+          "to act in accordance with",
+          "to align with"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to meet (wishes, expectations, etc.)",
+          "to satisfy",
+          "to comply with",
+          "to live up to"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "koto (13-stringed Japanese zither)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "stringed instrument"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "zheng (Chinese zither)",
+          "guzheng"
+        ]
+      },
+      {
+        "pos": "aux",
+        "glosses": [
+          "to be"
+        ]
+      },
+      {
+        "pos": "aux",
+        "glosses": [
+          "to do"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "left and right",
+          "right and left"
+        ]
+      },
+      {
+        "pos": "n,vs,vt",
+        "glosses": [
+          "(asserting) control",
+          "influence",
+          "domination"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "one's attendants",
+          "people accompanying one"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "(serving at someone's) side"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "equivocation"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "surname",
+          "family name"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hereditary title (used in ancient Japan to denote rank and political standing)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "monk",
+          "priest"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "sangha (the Buddhist community)"
+        ]
+      },
+      {
+        "pos": "n,n-suf,ctr",
+        "glosses": [
+          "pair"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "mourning"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "calamity",
+          "misfortune"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "layer",
+          "stratum",
+          "seam",
+          "bed"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "class",
+          "stratum",
+          "bracket",
+          "group"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "sheaf"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for stories (of a building)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "conception",
+          "idea",
+          "thought"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "samjna (perception)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fidelity",
+          "honour",
+          "honor",
+          "constancy"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "chastity (of a woman)",
+          "faithfulness (e.g. to one's husband)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "aspect",
+          "appearance",
+          "look"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "physiognomy (as an indication of one's fortune)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "aspect"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "phase (e.g. solid, liquid and gaseous)"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "whole",
+          "total",
+          "gross",
+          "entire",
+          "overall",
+          "general (election, manager, etc.)"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to meet (wishes, expectations, etc.)",
+          "to satisfy",
+          "to comply with",
+          "to live up to"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to accompany",
+          "to go with",
+          "to stay by one's side"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to associate with (someone)",
+          "to mix with"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to marry",
+          "to wed"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to be added"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "great (i.e. great-grandson, great-grandmother)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "body (of a biwa)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "traditional Japanese wind instrument resembling panpipes",
+          "free-reed instrument used in Japanese court music"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for (small) boats"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "in that way",
+          "thus",
+          "such"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "so",
+          "the same",
+          "that's the case"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "so?"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "manor",
+          "villa"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Song dynasty (of China; 960-1279)",
+          "Sung dynasty"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Liu Song dynasty (of China; 420-479)",
+          "Liu Sung dynasty"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Song (ancient Chinese state; 11th century-286 BCE)",
+          "Sung"
+        ]
+      },
+      {
+        "pos": "n,adj-na",
+        "glosses": [
+          "vibrancy",
+          "strength",
+          "bravery",
+          "manliness"
+        ]
+      },
+      {
+        "pos": "n,adj-na",
+        "glosses": [
+          "one's prime (around age 30; esp. of a man)"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for cones or sticks of moxa burned on the skin (in moxibustion)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "draft",
+          "rough copy"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "highly cursive style (of writing Chinese characters)",
+          "grass style"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "clothing",
+          "dressing"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "binding (of a book)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "run",
+          "race"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "steaming basket (traditionally clay or wood)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "steaming vat (for steaming rice in sake production)"
+        ]
+      },
+      {
+        "pos": "n-suf,n",
+        "glosses": [
+          "plexus",
+          "rete"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "rural local self-government (Muromachi period)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "drizzle",
+          "scattered rain"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "report to the emperor"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "old man",
+          "venerable gentleman"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "palace room for government officials"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fellow",
+          "set (of people)",
+          "clan",
+          "family"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "funeral"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "mania"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "origin",
+          "source"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "virtuous ancestor"
+        ]
+      }
+    ],
+    "だ": [
+      {
+        "pos": "n",
+        "glosses": [
+          "dui (one of the trigrams of the I Ching: swamp, west)"
+        ]
+      },
+      {
+        "pos": "aux-v,cop",
+        "glosses": [
+          "be",
+          "is"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "poor",
+          "low-grade",
+          "trivial",
+          "insignificant",
+          "worthless"
+        ]
+      },
+      {
+        "pos": "n-suf,ctr",
+        "glosses": [
+          "load",
+          "pack",
+          "horse load"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "packhorse"
+        ]
+      },
+      {
+        "pos": "aux-v",
+        "glosses": [
+          "did",
+          "(have) done"
+        ]
+      },
+      {
+        "pos": "aux-v",
+        "glosses": [
+          "(please) do"
+        ]
+      },
+      {
+        "pos": "n,ctr",
+        "glosses": [
+          "hitting a ball (with a bat, golf club, etc.)",
+          "batting",
+          "stroke"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "branch (of flowers)",
+          "cluster",
+          "mass (of clouds)"
+        ]
+      }
+    ],
+    "もの": [
+      {
+        "pos": "n",
+        "glosses": [
+          "person"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "thing",
+          "object",
+          "article",
+          "stuff",
+          "substance"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "one's things",
+          "possessions",
+          "property",
+          "belongings"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "things",
+          "something",
+          "anything",
+          "everything",
+          "nothing"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "quality"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "reason",
+          "the way of things"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "used to emphasize emotion, judgment, etc.",
+          "used to indicate a common occurrence in the past (after a verb in past tense)",
+          "used to indicate a general tendency",
+          "used to indicate something that should happen"
+        ]
+      },
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "item classified as ...",
+          "item related to ...",
+          "work in the genre of ..."
+        ]
+      },
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "cause of ...",
+          "cause for ..."
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "somehow",
+          "somewhat",
+          "for some reason"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "really",
+          "truly"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates reason or excuse"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates dissatisfaction",
+          "indicates desire to be pampered or indulged"
+        ]
+      }
+    ],
+    "それ": [
+      {
+        "pos": "pn",
+        "glosses": [
+          "that",
+          "it"
+        ]
+      },
+      {
+        "pos": "pn",
+        "glosses": [
+          "then",
+          "that point (in time)",
+          "that time"
+        ]
+      },
+      {
+        "pos": "pn",
+        "glosses": [
+          "there"
+        ]
+      },
+      {
+        "pos": "pn",
+        "glosses": [
+          "you"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "there!",
+          "look!"
+        ]
+      },
+      {
+        "pos": "int",
+        "glosses": [
+          "go on!",
+          "right!",
+          "here goes!"
+        ]
+      }
+    ],
+    "何故": [
+      {
+        "pos": "adv",
+        "glosses": [
+          "why",
+          "how",
+          "for what reason"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "why"
+        ]
+      }
+    ],
+    "か": [
+      {
+        "pos": "adj-na,n",
+        "glosses": [
+          "beautiful",
+          "good",
+          "excellent"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "addition"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Canada"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "acceptable",
+          "satisfactory",
+          "allowed",
+          "permitted"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "approval",
+          "being in favour",
+          "(a) vote in favour",
+          "aye"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Pass (grade)",
+          "Fair",
+          "C",
+          "D"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "department (of a university or hospital)"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "course (of study)",
+          "branch of study",
+          "specialization"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "family"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "lesson"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "section (in an organization)",
+          "division",
+          "department"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for lessons and chapters (of a book)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "mosquito"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "deer (esp. the sika deer, Cervus nippon)",
+          "cervid"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "ge (ancient Chinese dagger-axe)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "rack",
+          "mount",
+          "stand"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates a question"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates an embedded question",
+          "indicates an indirect question"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "or",
+          "whether or not",
+          "either ... or ..."
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "some- (e.g. something, someone)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "hmm",
+          "huh",
+          "I wonder (if, why, etc.)",
+          "it might (be)",
+          "maybe",
+          "perhaps it's (because of)",
+          "could it be (that)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "shouldn't we ...?",
+          "why don't we ...?",
+          "what about ...?",
+          "how about ...?",
+          "let's ...",
+          "may I ...?",
+          "could you ...?"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "some (amount)",
+          "roughly",
+          "about",
+          "circa",
+          "more or less",
+          "or so"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "won't you ...?",
+          "why don't you ...?",
+          "couldn't you (e.g. have done differently)?",
+          "shouldn't you ...?"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "why should ...?",
+          "why would ...?",
+          "would I (really) ...?",
+          "who could have (guessed, foreseen, etc.) ...?",
+          "how could ...?",
+          "how should ...?"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "OK?",
+          "(you) understand?",
+          "got it?",
+          "really?",
+          "right?",
+          "didn't (I, you, etc.) ...?"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "oh",
+          "wow",
+          "how (incredible, strongly, badly, etc.)"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "come to think of ...",
+          "... you say?",
+          "ah",
+          "now that (you, it, etc.) ..."
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "very"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "-al",
+          "-ial",
+          "-ic",
+          "-ical",
+          "-ish",
+          "-y"
+        ]
+      },
+      {
+        "pos": "adv",
+        "glosses": [
+          "in that way"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "change to ...",
+          "becoming ...",
+          "making into ...",
+          "-ization",
+          "-ification"
+        ]
+      },
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "day of month"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for days"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "condyle"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for grains and small spheres"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "surplus-",
+          "excess-",
+          "over-"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "per- (chemical with more of a certain element than found in other compounds of the same constituents)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "under (influence, control, conditions, etc. of)",
+          "during (war, occupation, etc.)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "phala (attained state, result)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "enlightenment (as the fruits of one's Buddhist practice)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fruit"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for pieces of fruit"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "-ist",
+          "-er"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter used with Sino-Japanese words"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Tuesday"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fire (second of the five elements)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Xia dynasty (of China; ca. 2070-1600 BCE; possibly mythological)",
+          "Hsia dynasty"
+        ]
+      },
+      {
+        "pos": "suf,ctr",
+        "glosses": [
+          "counter for loads (that can be carried on one's shoulders)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fruit"
+        ]
+      },
+      {
+        "pos": "suf,ctr",
+        "glosses": [
+          "counter for fruit"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "smell (esp. a good smell)",
+          "fragrance",
+          "scent",
+          "aroma",
+          "perfume"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "minority",
+          "small numbers"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "unmarried person",
+          "widow",
+          "widower"
+        ]
+      },
+      {
+        "pos": "n-suf,ctr",
+        "glosses": [
+          "valence",
+          "valency"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "flashiness",
+          "showiness",
+          "brilliance",
+          "splendor"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "bloom",
+          "flowers"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Republic of China"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "disaster",
+          "calamity",
+          "misfortune"
+        ]
+      }
+    ],
+    "と": [
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "if",
+          "when"
+        ]
+      },
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "and"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "with"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "used for quoting (thoughts, speech, etc.)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "promoted pawn"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "indicates a question"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "outside",
+          "exterior"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "the open (air)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "other place",
+          "somewhere else",
+          "outside one's group (family, company, etc.)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "door (esp. Japanese-style)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "shutter",
+          "window shutter"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "entrance (to a home)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "narrows"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "person"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "party",
+          "set",
+          "gang",
+          "company",
+          "person"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "to",
+          "traditional unit of volume, approx. 18 litres"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "square bearing block (at the top of a pillar)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Chinese \"Dipper\" constellation (one of the 28 mansions)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "third string of a koto (counting from the player's near side)"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "ten",
+          "10"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "ten years of age"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "book containing a collection of poems"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Metropolis (of Tokyo)",
+          "(Tokyo) Metropolitan District",
+          "metropolitan prefecture"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for cities and towns"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "capital"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "way",
+          "route"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "whetstone",
+          "grindstone"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Turkey"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "fence",
+          "wall",
+          "hedge"
+        ]
+      }
+    ],
+    "云う": [
+      {
+        "pos": "v5u,vt",
+        "glosses": [
+          "to say",
+          "to utter",
+          "to declare"
+        ]
+      },
+      {
+        "pos": "v5u,vt",
+        "glosses": [
+          "to name",
+          "to call"
+        ]
+      },
+      {
+        "pos": "v5u,vi",
+        "glosses": [
+          "to go (e.g. \"the alarm went ping\")",
+          "to make a noise"
+        ]
+      }
+    ],
+    "年": [
+      {
+        "pos": "n",
+        "glosses": [
+          "year"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "age",
+          "years"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "past one's prime",
+          "old age"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "year"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for years (e.g. of an era), grades (e.g. school)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "period of an apprentice's contract (usu. ten years)"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for years"
+        ]
+      }
+    ],
+    "京都": [
+      {
+        "pos": "n",
+        "glosses": [
+          "Kyoto (city, prefecture)"
+        ]
+      }
+    ],
+    "地震": [
+      {
+        "pos": "n",
+        "glosses": [
+          "earthquake"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "earthquake"
+        ]
+      }
+    ],
+    "とか": [
+      {
+        "pos": "prt,conj",
+        "glosses": [
+          "and the like",
+          "such as",
+          "among other things",
+          "and so on"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "or something",
+          "something like",
+          "a (certain)"
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "I hear that ...",
+          "people say that ...",
+          "rumour has it that ..."
+        ]
+      },
+      {
+        "pos": "exp,prt",
+        "glosses": [
+          "or something",
+          "something like",
+          "or whatever"
+        ]
+      },
+      {
+        "pos": "n,vs,vi",
+        "glosses": [
+          "crossing a river"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "in the capital",
+          "in Tokyo"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Western Tokyo",
+          "areas of Tokyo outside the 23 wards, esp. the Tama area"
+        ]
+      },
+      {
+        "pos": "n,vs",
+        "glosses": [
+          "going to Canada"
+        ]
+      }
+    ],
+    "辻": [
+      {
+        "pos": "n",
+        "glosses": [
+          "crossroads",
+          "crossing",
+          "intersection",
+          "street corner"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "street"
+        ]
+      }
+    ],
+    "風": [
+      {
+        "pos": "n,ctr",
+        "glosses": [
+          "swing",
+          "shake",
+          "sweep",
+          "wave",
+          "wag"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "appearance",
+          "behaviour",
+          "behavior"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "pretence",
+          "pretense",
+          "(false) show",
+          "pretending"
+        ]
+      },
+      {
+        "pos": "n,adj-no",
+        "glosses": [
+          "(a customer) coming to restaurant, ryokan, etc. without a reservation or introduction"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "postures (of a dance)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "lead in (to a joke, question, etc.)",
+          "setup"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "unsewn part of a hanging sleeve on a traditional Japanese woman's garment"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for swords, blades, etc."
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "wind",
+          "breeze",
+          "draught",
+          "draft"
+        ]
+      },
+      {
+        "pos": "n,n-pref",
+        "glosses": [
+          "manner",
+          "behaviour",
+          "behavior"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "cold",
+          "influenza"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "manner",
+          "way",
+          "style"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "appearance",
+          "air",
+          "likeness"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "custom",
+          "convention",
+          "practice"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "folk song (genre of the Shi Jing)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "wind (one of the five elements)"
+        ]
+      },
+      {
+        "pos": "suf",
+        "glosses": [
+          "-ish",
+          "resembling",
+          "-looking"
+        ]
+      }
+    ],
+    "火事": [
+      {
+        "pos": "n",
+        "glosses": [
+          "fire",
+          "conflagration"
+        ]
+      }
+    ],
+    "饑饉": [
+      {
+        "pos": "n",
+        "glosses": [
+          "famine",
+          "crop failure"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "chronic shortage (e.g. of water)"
+        ]
+      }
+    ],
+    "い": [
+      {
+        "pos": "n,adj-na",
+        "glosses": [
+          "greatness",
+          "excellence",
+          "magnificence"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "stomach"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Chinese \"stomach\" constellation (one of the 28 mansions)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "medicine",
+          "the healing art",
+          "healing",
+          "curing"
+        ]
+      },
+      {
+        "pos": "n,n-suf",
+        "glosses": [
+          "doctor"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "five",
+          "5"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "weft",
+          "woof (crosswise threads on a loom)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "the Boar (twelfth sign of the Chinese zodiac)",
+          "the Pig"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hour of the Boar (around 10pm, 9-11pm, or 10pm to 12 midnight)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "north-northwest"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "tenth month of the lunar calendar"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "sleep"
+        ]
+      },
+      {
+        "pos": "num",
+        "glosses": [
+          "fifty",
+          "50"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "well"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "dam",
+          "weir",
+          "barrier",
+          "sluice"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "soft rush (Juncus effusus var. decipiens)",
+          "common rush"
+        ]
+      },
+      {
+        "pos": "n,adj-na",
+        "glosses": [
+          "difference (of opinion)"
+        ]
+      },
+      {
+        "pos": "adj-na",
+        "glosses": [
+          "strange",
+          "odd",
+          "unusual"
+        ]
+      },
+      {
+        "pos": "pref",
+        "glosses": [
+          "different"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "rank",
+          "place (e.g. first place)"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "decimal place"
+        ]
+      },
+      {
+        "pos": "ctr",
+        "glosses": [
+          "counter for ghosts"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "feelings",
+          "thoughts"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "meaning"
+        ]
+      },
+      {
+        "pos": "pn",
+        "glosses": [
+          "you"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "hog (esp. a wild boar, but also including the domesticated pig)"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "Italy"
+        ]
+      },
+      {
+        "pos": "n-suf,n-pref,n",
+        "glosses": [
+          "being (somewhere)"
+        ]
+      },
+      {
+        "pos": "n-suf,n-pref,n",
+        "glosses": [
+          "sitting"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "clothing",
+          "garment",
+          "dress"
+        ]
+      },
+      {
+        "pos": "prt",
+        "glosses": [
+          "strengthens a question, assertion, etc."
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "power",
+          "authority",
+          "might",
+          "influence",
+          "dignity",
+          "majesty"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "easiness"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "barbarian"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "kind",
+          "sort",
+          "type"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "gallbladder",
+          "liver"
+        ]
+      },
+      {
+        "pos": "n-suf",
+        "glosses": [
+          "committee",
+          "commission",
+          "board",
+          "panel"
+        ]
+      },
+      {
+        "pos": "n",
+        "glosses": [
+          "second string of a koto (counting from the player's near side)"
+        ]
+      }
+    ],
+    "つづく": [
+      {
+        "pos": "v5k,vi",
+        "glosses": [
+          "to continue",
+          "to last",
+          "to go on"
+        ]
+      },
+      {
+        "pos": "v5k,vi",
+        "glosses": [
+          "to continue (without a break)",
+          "to be unbroken"
+        ]
+      },
+      {
+        "pos": "v5k,vi",
+        "glosses": [
+          "to occur again and again"
+        ]
+      },
+      {
+        "pos": "v5k,vi",
+        "glosses": [
+          "to lead to",
+          "to connect to",
+          "to adjoin"
+        ]
+      },
+      {
+        "pos": "v5k,vi",
+        "glosses": [
+          "to come after",
+          "to follow",
+          "to succeed",
+          "to rank next to"
+        ]
+      },
+      {
+        "pos": "v5k,vi",
+        "glosses": [
+          "to hold out",
+          "to keep",
+          "to last"
+        ]
+      }
+    ],
+    "起こる": [
+      {
+        "pos": "v5r,vi",
+        "glosses": [
+          "to occur",
+          "to happen"
+        ]
+      }
+    ]
+  },
+  "demoKnownLemmas": [
+    "の",
+    "に",
+    "が",
+    "とか",
+    "いる",
+    "は",
+    "この",
+    "て",
+    "た",
+    "男",
+    "外",
+    "も",
+    "ある",
+    "云う",
+    "三",
+    "下",
+    "雨",
+    "やみ",
+    "を",
+    "一",
+    "誰",
+    "ない",
+    "と",
+    "人"
+  ]
+}
