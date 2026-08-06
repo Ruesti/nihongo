@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/learning_db.dart';
 import '../../core/ladder/exercise_content.dart';
 import '../../core/ladder/exercise_loader.dart';
-import '../../core/ladder/ladder_service.dart';
+import '../../core/ladder/ladder_review.dart';
 import '../../core/script_profile.dart';
 import '../../core/script_profile_mapper.dart';
 import '../../core/srs/scheduler.dart';
@@ -114,18 +114,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     if (result == ReviewResult.good || result == ReviewResult.easy) _correct++;
 
     final item = _queue[_index];
-    final ladderResult = processResult(
-      currentRung: item.masteryRung,
-      consecutiveCorrect: item.consecutiveCorrect,
-      scheduleInput: ScheduleInput(
-        ease: item.ease,
-        intervalDays: item.intervalDays,
-        reps: item.reps,
-      ),
-      result: result,
-    );
-
-    await _db.applyReviewResult(item, ladderResult, result);
+    // Goes through LadderReview so a promotion/demotion also projects the
+    // lexeme into the shared mining knowledge state (architecture C). The
+    // bridge is null until the app holds both DBs — dormant, not wrong.
+    await LadderReview(_db).submit(item, result);
 
     _index++;
     if (_index >= _queue.length) {
