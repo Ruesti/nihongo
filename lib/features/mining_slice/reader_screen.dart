@@ -18,7 +18,18 @@ class ReaderScreen extends StatefulWidget {
   final SliceRepository repo;
   final int passageIndex;
 
-  const ReaderScreen({super.key, required this.repo, this.passageIndex = 0});
+  /// The reading order for this session — passages ranked by i+1
+  /// suitability (see `SliceRepository.readingOrder`). Null falls back to
+  /// the pack's authored order, so the standalone demo and tests that
+  /// don't rank still work.
+  final List<SlicePassage>? passages;
+
+  const ReaderScreen({
+    super.key,
+    required this.repo,
+    this.passageIndex = 0,
+    this.passages,
+  });
 
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -29,8 +40,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
   int _lookups = 0;
   bool _advancing = false;
 
-  SlicePassage get _passage => widget.repo.pack.passages[widget.passageIndex];
-  int get _count => widget.repo.pack.passages.length;
+  List<SlicePassage> get _passages => widget.passages ?? widget.repo.pack.passages;
+  SlicePassage get _passage => _passages[widget.passageIndex];
+  int get _count => _passages.length;
   bool get _isLast => widget.passageIndex >= _count - 1;
 
   @override
@@ -59,7 +71,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
     } else {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (_) => ReaderScreen(
-            repo: widget.repo, passageIndex: widget.passageIndex + 1),
+          repo: widget.repo,
+          passageIndex: widget.passageIndex + 1,
+          passages: widget.passages, // keep the same ranked order
+        ),
       ));
     }
   }
