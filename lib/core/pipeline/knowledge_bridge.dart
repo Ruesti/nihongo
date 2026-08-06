@@ -131,6 +131,36 @@ class KnowledgeBridge {
     );
   }
 
+  /// The live counterpart to [backfill]: called whenever the on-ramp
+  /// applies a review to one learn item, so a promotion/demotion reaches
+  /// the shared knowledge state immediately — not only at the initial
+  /// hand-off. Non-lexeme refTypes (character, grammar) are ignored:
+  /// only words are lemmas (same rule as [backfill]).
+  ///
+  /// [languageCode] is mining's BCP-47 code; it may differ from the
+  /// on-ramp's [languageId] (e.g. `lang_ja` vs `ja`), so the caller that
+  /// knows the mapping passes it. It defaults to [languageId] for callers
+  /// where the two already coincide.
+  Future<void> onLearnItemReviewed(
+    LearningDb learning, {
+    required String languageId,
+    required String refType,
+    required String refId,
+    required int newMasteryRung,
+    String? languageCode,
+  }) async {
+    if (refType != 'lexeme') return;
+    final lexeme = await (learning.select(learning.lexemes)
+          ..where((l) => l.id.equals(refId)))
+        .getSingleOrNull();
+    if (lexeme == null) return;
+    await projectLexeme(
+      languageCode: languageCode ?? languageId,
+      lemma: lexeme.writtenForm,
+      masteryRung: newMasteryRung,
+    );
+  }
+
   fsrs.Card _cardFor(Knowledge knowledge, {DateTime? now}) {
     final scheduler = fsrs.FSRS();
     if (knowledge == Knowledge.known) return simulateWellKnownCard(scheduler);
