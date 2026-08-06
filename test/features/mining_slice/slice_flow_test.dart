@@ -119,4 +119,29 @@ void main() {
     // No fabricated proof, no gamification numbers on the opening (I3/§8).
     expect(find.byKey(const ValueKey('re-presentation')), findsNothing);
   });
+
+  // Regression: opening → reader → back drives OpeningGate._openReader,
+  // whose post-navigation setState must not return a Future (a device run
+  // surfaced that assertion). Reading once must leave the opening on the
+  // first-reading proof without throwing.
+  testWidgets('reading a passage and returning refreshes the opening cleanly',
+      (tester) async {
+    final db = MiningDb.forTesting();
+    addTearDown(() async => db.close());
+    final repo = SliceRepository(db: db, pack: _tinyPack());
+    await repo.seed(now: now);
+
+    await tester.pumpWidget(SliceApp(repo: repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('continue-reading')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('finish-passage')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('finish-passage')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull); // the setState-Future bug
+    expect(find.byKey(const ValueKey('first-reading-proof')), findsOneWidget);
+  });
 }

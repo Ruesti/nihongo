@@ -31,7 +31,13 @@ class _OpeningGateState extends State<OpeningGate> {
       builder: (_) => ReaderScreen(repo: widget.repo),
     ));
     if (!mounted) return;
-    setState(() => _future = _load()); // reflect the reading just done
+    // Block body, not an arrow: `setState(() => _future = _load())` would
+    // return the assigned Future from the callback, which Flutter rejects
+    // ("do async work first, then setState synchronously"). Assigning the
+    // future object is itself synchronous — the FutureBuilder re-runs it.
+    setState(() {
+      _future = _load(); // reflect the reading just done
+    });
   }
 
   @override
