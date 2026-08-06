@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/knowledge_providers.dart';
 import '../../core/db/learning_db.dart';
 import '../../core/ladder/exercise_content.dart';
 import '../../core/ladder/exercise_loader.dart';
@@ -116,8 +117,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     final item = _queue[_index];
     // Goes through LadderReview so a promotion/demotion also projects the
     // lexeme into the shared mining knowledge state (architecture C). The
-    // bridge is null until the app holds both DBs — dormant, not wrong.
-    await LadderReview(_db).submit(item, result);
+    // bridge is non-null once main() has co-hosted MiningDb; widget.lang
+    // is mining's BCP-47 code (the on-ramp id is 'lang_$lang').
+    await LadderReview(_db, bridge: ref.read(knowledgeBridgeProvider))
+        .submit(item, result, languageCode: widget.lang);
 
     _index++;
     if (_index >= _queue.length) {
