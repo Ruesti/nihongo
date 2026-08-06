@@ -39,11 +39,16 @@ class SliceRepository {
   SliceRepository({required this.db, required this.pack});
 
   /// Idempotent: safe to call on every launch. Content is re-asserted
-  /// (insert-or-update); demo knowledge is seeded only when no cards
-  /// exist yet, so a returning user's graded progress survives restarts.
-  Future<void> seed({DateTime? now}) async {
+  /// (insert-or-update).
+  ///
+  /// [includeDemoKnowledge] seeds a small "returning reader already saw
+  /// these" set of due cards — right for the standalone demo entry
+  /// (`main_mining.dart`), but WRONG in the unified app, where the
+  /// on-ramp is the real knowledge source and must not be polluted with
+  /// demo "known" words. The in-app reading tab passes `false`.
+  Future<void> seed({bool includeDemoKnowledge = true, DateTime? now}) async {
     await _seedContent();
-    await _seedDemoKnowledge(now: now);
+    if (includeDemoKnowledge) await _seedDemoKnowledge(now: now);
   }
 
   Future<void> _seedContent() async {

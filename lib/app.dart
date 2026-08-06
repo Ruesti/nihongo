@@ -7,6 +7,7 @@ import 'features/home/home_screen.dart';
 import 'features/kaiwa/kaiwa_hub.dart';
 import 'features/kanji_games/games_hub.dart';
 import 'features/lesson/lesson_screen.dart';
+import 'features/mining_slice/reading_tab.dart';
 import 'features/progress/progress_screen.dart';
 import 'features/review/review_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -24,6 +25,11 @@ final _router = GoRouter(
           path: '/',
           pageBuilder: (ctx, state) => const NoTransitionPage(
               child: HomeScreen()),
+        ),
+        GoRoute(
+          path: '/read',
+          pageBuilder: (ctx, state) => const NoTransitionPage(
+              child: ReadingTab()),
         ),
         GoRoute(
           path: '/review',
@@ -100,6 +106,11 @@ class _MainShellState extends State<_MainShell> {
       label: 'Home',
     ),
     NavigationDestination(
+      icon: Icon(Icons.menu_book_outlined),
+      selectedIcon: Icon(Icons.menu_book),
+      label: 'Lesen',
+    ),
+    NavigationDestination(
       icon: Icon(Icons.refresh_outlined),
       selectedIcon: Icon(Icons.refresh),
       label: 'Review',
@@ -126,7 +137,7 @@ class _MainShellState extends State<_MainShell> {
     ),
   ];
 
-  static const _routes = ['/', '/review', '/progress', '/kaiwa', '/games', '/settings'];
+  static const _routes = ['/', '/read', '/review', '/progress', '/kaiwa', '/games', '/settings'];
 
   void _onDestinationSelected(int index) {
     setState(() => _selectedIndex = index);
