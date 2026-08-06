@@ -27,8 +27,12 @@ class _OpeningGateState extends State<OpeningGate> {
   }
 
   Future<void> _openReader() async {
+    // Rank the passages by i+1 suitability for the learner now, so the
+    // session starts on the gentlest comprehensible content.
+    final passages = await widget.repo.readingOrder();
+    if (!mounted) return;
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ReaderScreen(repo: widget.repo),
+      builder: (_) => ReaderScreen(repo: widget.repo, passages: passages),
     ));
     if (!mounted) return;
     // Block body, not an arrow: `setState(() => _future = _load())` would

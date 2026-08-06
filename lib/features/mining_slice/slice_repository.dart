@@ -5,6 +5,7 @@ import '../../core/datum/datum_registry.dart';
 import '../../core/datum/datum_voice.dart';
 import '../../core/db/mining_db.dart';
 import '../../core/language_pack/language_pack.dart' show Token;
+import '../../core/pipeline/content_selector.dart';
 import '../../core/pipeline/due_in_reading.dart';
 import '../../core/pipeline/fsrs_knowledge_source.dart';
 import '../../core/pipeline/passage_snapshot.dart';
@@ -129,6 +130,19 @@ class SliceRepository {
 
   /// The dictionary lookup behind a word tap (§5).
   WordTapResult tap(Token token) => _tap.onTap(token);
+
+  /// The passages ordered by i+1 suitability for the learner's *current*
+  /// knowledge (from the shared mining state) — gentlest comprehensible
+  /// content first, so a beginner isn't dropped onto a wall. Computed once
+  /// when a reading session starts (see `OpeningGate`), then stable for
+  /// that session.
+  Future<List<SlicePassage>> readingOrder() async {
+    final knowledge =
+        await FsrsKnowledgeSource.load(db, languageCode: pack.languageCode);
+    final ranked = rankByIPlusOne<SlicePassage>(
+        pack.passages, (p) => p.tokens, knowledge.call);
+    return [for (final r in ranked) r.passage];
+  }
 
   /// Append an immutable snapshot of one reading of [passage] (§7). The
   /// unknown ratio is computed against the reader's *real* current
