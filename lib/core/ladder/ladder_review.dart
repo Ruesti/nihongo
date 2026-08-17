@@ -49,21 +49,31 @@ class LadderReview {
     return ladderResult;
   }
 
-  /// Introduce a brand-new item at rung 1 (I7's "new error" path) and
-  /// project it as `learning` — a just-met word is introduced, not
-  /// unknown, in the shared state.
+  /// Introduce a brand-new item at rung 0 — "not yet encountered". Its
+  /// first appearance (in a lesson or the Review queue) is the encounter,
+  /// never a cold test. Not yet projected as known/learning: an unmet item
+  /// is not knowledge.
   Future<void> introduce(
     String languageId,
     RefType refType,
     String refId, {
     String? languageCode,
   }) async {
-    await learning.addLearnItem(languageId, refType, refId);
+    await learning.addLearnItemAtRung(languageId, refType, refId, rung: 0);
+  }
+
+  /// Complete the encounter: promote rung 0 → 1, schedule the first review,
+  /// and project the item as `learning` in the shared mining state.
+  Future<void> markEncountered(
+    LearnItem item, {
+    String? languageCode,
+  }) async {
+    await learning.markEncounteredRow(item);
     await bridge?.onLearnItemReviewed(
       learning,
-      languageId: languageId,
-      refType: refType.name,
-      refId: refId,
+      languageId: item.languageId,
+      refType: item.refType,
+      refId: item.refId,
       newMasteryRung: 1,
       languageCode: languageCode,
     );

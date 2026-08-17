@@ -86,7 +86,8 @@ void main() {
     expect(await mining.select(mining.vocabItems).get(), isEmpty);
   });
 
-  test('introduce creates a rung-1 item and projects it as learning',
+  test(
+      'introduce creates a rung-0 (unmet) item and does not project it as knowledge',
       () async {
     await learning.into(learning.lexemes).insert(LexemesCompanion.insert(
           id: 'lex:inu',
@@ -100,8 +101,8 @@ void main() {
     final item = await (learning.select(learning.learnItems)
           ..where((t) => t.refId.equals('lex:inu')))
         .getSingle();
-    expect(item.masteryRung, 1);
-    expect(await _knows(mining, '犬'), Knowledge.learning);
+    expect(item.masteryRung, 0);
+    expect(await _knows(mining, '犬'), Knowledge.unknown);
   });
 
   test('without a bridge, applying a review leaves mining untouched',

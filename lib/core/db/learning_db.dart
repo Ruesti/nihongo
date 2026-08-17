@@ -98,6 +98,32 @@ class LearningDb extends _$LearningDb {
         .get();
   }
 
+  Future<LearnItem?> getLearnItem(String id) =>
+      (select(learnItems)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  /// Promote a just-encountered item from rung 0 to rung 1 and schedule
+  /// its first real review. Ungraded: writes no review_log row.
+  Future<void> markEncounteredRow(LearnItem item) async {
+    final sched = schedule(
+      ScheduleInput(
+        ease: item.ease,
+        intervalDays: item.intervalDays,
+        reps: item.reps,
+      ),
+      ReviewResult.good,
+    );
+    await (update(learnItems)..where((t) => t.id.equals(item.id))).write(
+      LearnItemsCompanion(
+        masteryRung: const Value(1),
+        consecutiveCorrect: const Value(0),
+        ease: Value(sched.ease),
+        intervalDays: Value(sched.intervalDays),
+        dueAt: Value(sched.dueAt),
+        reps: Value(sched.reps),
+      ),
+    );
+  }
+
   // --- Sentence DAOs (Graded Input) ---
 
   Future<List<Sentence>> getSentences(
