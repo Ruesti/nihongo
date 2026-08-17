@@ -56,6 +56,9 @@ Lernfortschritt schwerer wird** — und in dem **immer mehr Japanisch** steht.
   ihn, um das Niveau zu kennen.
 - **Reader ist die Review-Oberfläche** (bestehende §7-Entscheidung): Tippen →
   Gloss, fällige Karte im Lesen bewertet, Then/Now-Beweis via Datum.
+- **UI-Sprache = Systemsprache** (für Monetarisierung). Die **L1-Seite** des
+  mitwachsenden Comics ist die **aktive UI-/Systemsprache**, nicht fix Deutsch.
+  Setzt das l10n-Fundament aus dem Empfang-Spec voraus.
 
 ## Die Vision konkret
 
@@ -64,10 +67,12 @@ Lernfortschritt schwerer wird** — und in dem **immer mehr Japanisch** steht.
 - **Gestufte Schwierigkeit:** jeder Comic/jede Seite hat ein Ziel-i+1-Fenster;
   der Text nutzt überwiegend bekannten Wortschatz + wenige neue (geminte) Wörter.
 - **Mitwachsendes Comic (Immersions-Rampe):** Sprechblasen mischen die
-  Lernersprache (Deutsch, L1) und Japanisch (L2). Früh: überwiegend Deutsch mit
-  ein paar bekannten japanischen Wörtern. Mit steigendem Niveau kippt das
-  Verhältnis, bis die Blasen ganz japanisch sind. Der **Japanisch-Anteil**
-  `japaneseRatio(level)` steigt 0 → 1 über die Stufen.
+  Lernersprache (L1 = die aktive UI-/Systemsprache) und Japanisch (L2). Früh:
+  überwiegend L1 mit ein paar bekannten japanischen Wörtern. Mit steigendem
+  Niveau kippt das Verhältnis, bis die Blasen ganz japanisch sind. Der
+  **Japanisch-Anteil** `japaneseRatio(level)` steigt 0 → 1 über die Stufen. Der
+  L1-Blasentext wird pro Locale vorgehalten (ARB-/Content-seitig), nie fix
+  Deutsch.
 - **Lesen = Üben:** Tippen auf ein L2-Wort → Gloss-Sheet (bestehender
   `WordTapHandler`); fällige Karten im Lesen bewertet (bestehendes
   `InReadingReviewPanel`); `passage_snapshot` misst den Unbekannt-Anteil →
@@ -117,7 +122,9 @@ Auswahl und Rampe:
 - Wiederverwenden: `Works`/`Sources`/`TextSpans`/`SpatialAnchor`.
 - Panel-Bild: `pages` mit `imagePath` je `pageId` (bzw. Manifest-Eintrag).
 - Comic-Metadaten: `level`, `targetUnknownRatio`, `japaneseRatio`, `coverImage`.
-- `TextSpans.lang` (L1|L2) — steuert Tippbarkeit + Mining.
+- `TextSpans.lang` (L1|L2) — steuert Tippbarkeit + Mining. L2-Text ist fix
+  (Japanisch); **L1-Text ist locale-abhängig** (Content pro Locale bzw.
+  ARB-Key), damit dieselbe Seite in der Systemsprache erscheint.
 
 ## Grenzfälle
 

@@ -41,6 +41,29 @@ Aus `CLAUDE.md` und der bestehenden Architektur:
   nie Absturz.
 - **`learn_items` ist die einzige SRS-Einheit** (§3). Alle drei `refType`
   (`lexeme|character|grammar`) laufen dieselbe Leiter.
+- **UI-Sprache = Systemsprache, nicht hartkodiert Deutsch** (für spätere
+  Monetarisierung). Alle neuen Texte über Lokalisierung (`gen_l10n`/ARB);
+  Gerätesprache wählt. Siehe „Sprache & Lokalisierung" unten.
+
+## Sprache & Lokalisierung (querschnittlich)
+
+Die App hat heute **keine** l10n-Infrastruktur (`flutter_localizations`/`intl`
+fehlen; alles ist deutsch hartkodiert). Dieser Spec führt sie ein:
+
+- **Fundament:** `flutter_localizations` + `intl` + `gen_l10n` (ARB-Dateien).
+  Basis-/Template-Locale **Englisch** (`app_en.arb`), Deutsch mitgeliefert
+  (`app_de.arb`). Die **Gerätesprache** wählt; Fallback Englisch. Weitere
+  Locales trivial ergänzbar.
+- **Alle neuen Strings** (Onboarding, Datum-Stimme, Begegnungs-Ritual, Buttons)
+  gehen durch ARB — **kein** hartkodierter Anzeigetext.
+- **Datum-Templates** werden lokalisiert (ICU-Messages mit Platzhaltern, z. B.
+  `firstReading`); die deutschen Beispieltexte in diesem Doc sind die
+  `de`-Fassung, nicht die einzige.
+- **Abgegrenzt:** Wörterbuch-Glossen/Bedeutungen (猫 → „Katze"/„cat") sind eine
+  *separate* Datenachse (JMdict hat mehrsprachige Glossen). Nicht in diesem
+  Spec — hier geht es um die **App-Oberfläche**. Bestehende deutsche Strings
+  (Legacy-Übungen) werden nicht flächendeckend nachgezogen; neue Arbeit ist
+  lokalisiert, und der ARB-Pfad ist da, falls später retrofittet wird.
 
 ## Stimme: „Datum, wärmer"
 
