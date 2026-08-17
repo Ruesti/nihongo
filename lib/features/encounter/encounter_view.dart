@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import '../../core/ladder/encounter.dart';
@@ -76,8 +74,12 @@ class EncounterView extends StatelessWidget {
   Widget _lexeme(BuildContext context, LexemeEncounter e) {
     return Column(
       children: [
-        if (e.conceptImagePath != null && File(e.conceptImagePath!).existsSync())
-          Image.file(File(e.conceptImagePath!), height: 140),
+        if (e.conceptImagePath != null)
+          Image.asset(
+            e.conceptImagePath!,
+            height: 140,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
         Text(e.writtenForm, style: Theme.of(context).textTheme.displaySmall),
         const SizedBox(height: 4),
         Text(e.reading, style: Theme.of(context).textTheme.titleMedium),

@@ -44,4 +44,24 @@ void main() {
     expect(find.text('cat'), findsOneWidget);
     expect(find.byType(Image), findsNothing); // degraded, no crash
   });
+
+  testWidgets(
+      'lexeme encounter with a missing concept asset degrades gracefully, no crash',
+      (tester) async {
+    await tester.pumpWidget(_wrap(EncounterView(
+      encounter: const LexemeEncounter(
+        writtenForm: '猫',
+        reading: 'ねこ',
+        audioText: '猫',
+        meaning: 'cat',
+        conceptImagePath: 'assets/does_not_exist.webp',
+      ),
+      onDone: () {},
+    )));
+    await tester.pumpAndSettle();
+
+    // errorBuilder swallows the missing-asset failure: no crash, and the
+    // meaning text still renders.
+    expect(find.text('cat'), findsOneWidget);
+  });
 }
