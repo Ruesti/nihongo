@@ -7,6 +7,7 @@ import '../../core/db/learning_db.dart';
 import '../../core/pipeline/knowledge_bridge.dart';
 import '../../l10n/app_localizations.dart';
 import 'onboarding_prefs.dart';
+import 'onboarding_providers.dart';
 import 'placement_service.dart';
 
 /// The one-time first-run reception, spoken by Datum (warmer register).
@@ -50,6 +51,10 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
     );
     final prefs = await SharedPreferences.getInstance();
     await OnboardingPrefs(prefs).markComplete(profile);
+    // Flip the session-live flag so the router's redirect sees completion
+    // immediately — SharedPreferences alone only takes effect after an app
+    // restart, which was the cause of the first-run redirect loop.
+    ref.read(onboardingCompleteProvider.notifier).state = true;
     widget.onFinished();
   }
 

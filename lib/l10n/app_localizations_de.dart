@@ -30,6 +30,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get placementQuestion => 'Wo stehst du?';
 
   @override
+  String get settingsRerunOnboarding => 'Einführung erneut';
+
+  @override
   String get placementFromZero => 'Ich fange bei null an';
 
   @override

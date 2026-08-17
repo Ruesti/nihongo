@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Where do you stand?'**
   String get placementQuestion;
 
+  /// No description provided for @settingsRerunOnboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Introduction again'**
+  String get settingsRerunOnboarding;
+
   /// No description provided for @placementFromZero.
   ///
   /// In en, this message translates to:

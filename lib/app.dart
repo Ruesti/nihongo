@@ -83,21 +83,35 @@ final List<RouteBase> _routes = [
   ),
 ];
 
+/// The app's single `GoRouter` instance, built once and kept stable across
+/// rebuilds.
+///
+/// `redirect` deliberately `ref.read`s the onboarding flag (not `ref.watch`)
+/// so flipping `onboardingCompleteProvider` does NOT recreate this provider
+/// or the router — GoRouter re-evaluates `redirect` on every navigation on
+/// its own, so a live read is all that's needed. Rebuilding the router on
+/// every onboarding-flag change (or on every widget rebuild, as the old
+/// locally-constructed router did) would reset navigation state; that was
+/// the root cause of the redirect-loop bug this provider fixes.
+final goRouterProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: '/',
+    redirect: (context, state) {
+      final complete = ref.read(onboardingCompleteProvider);
+      final atOnboarding = state.matchedLocation == '/onboarding';
+      if (!complete && !atOnboarding) return '/onboarding';
+      return null;
+    },
+    routes: _routes,
+  );
+});
+
 class NihongoApp extends ConsumerWidget {
   const NihongoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final onboardingComplete = ref.watch(onboardingCompleteProvider);
-    final router = GoRouter(
-      initialLocation: '/',
-      redirect: (context, state) {
-        final atOnboarding = state.matchedLocation == '/onboarding';
-        if (!onboardingComplete && !atOnboarding) return '/onboarding';
-        return null;
-      },
-      routes: _routes,
-    );
+    final router = ref.watch(goRouterProvider);
     return MaterialApp.router(
       title: 'Nihongo',
       theme: AppTheme.light,

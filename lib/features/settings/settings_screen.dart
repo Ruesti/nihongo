@@ -94,7 +94,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.waving_hand_outlined),
-              title: Text(AppLocalizations.of(context)!.placementQuestion),
+              title:
+                  Text(AppLocalizations.of(context)!.settingsRerunOnboarding),
               onTap: () async {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('onboarding_complete', false);
