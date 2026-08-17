@@ -15,6 +15,7 @@ import 'core/pipeline/knowledge_bridge.dart';
 import 'core/purchases_service.dart';
 import 'core/tts_service.dart';
 import 'features/language_select/language_select_screen.dart';
+import 'features/onboarding/onboarding_providers.dart';
 import 'packs/ja/ja_seed.dart';
 
 void main() async {
@@ -22,6 +23,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final savedLang = prefs.getString('active_language') ?? 'ja';
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
   await TtsService.instance.init(locale: _ttsLocaleForCode(savedLang));
 
@@ -71,6 +73,7 @@ void main() async {
         activeLanguageProvider.overrideWith((ref) => savedLang),
         learningDbProvider.overrideWith((ref) => learningDb),
         miningDbProvider.overrideWith((ref) => miningDb),
+        onboardingCompleteProvider.overrideWith((ref) => onboardingComplete),
       ],
       child: const NihongoApp(),
     ),
