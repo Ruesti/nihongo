@@ -59,6 +59,13 @@ Lernfortschritt schwerer wird** — und in dem **immer mehr Japanisch** steht.
 - **UI-Sprache = Systemsprache** (für Monetarisierung). Die **L1-Seite** des
   mitwachsenden Comics ist die **aktive UI-/Systemsprache**, nicht fix Deutsch.
   Setzt das l10n-Fundament aus dem Empfang-Spec voraus.
+- **Zielsprachen-agnostisch (I8).** Der Manga-Stil muss für *jede* Zielsprache
+  funktionieren, nicht nur Japanisch. Leser, Selektor und Rampe sind über
+  `languageCode` + `ScriptProfile` parametrisiert — kein `'ja'`-Hartcode. Die
+  **L2-Seite ist die aktive Zielsprache** (Pack). Lesehilfe generisch (Furigana/
+  Pinyin/Romaji je `ScriptProfile.transliteration`); **Leserichtung** (LTR/RTL,
+  z. B. Arabisch) folgt `ScriptProfile.direction`. Die gestufte Comic-Bibliothek
+  liegt **pro Pack**.
 
 ## Die Vision konkret
 
@@ -67,12 +74,12 @@ Lernfortschritt schwerer wird** — und in dem **immer mehr Japanisch** steht.
 - **Gestufte Schwierigkeit:** jeder Comic/jede Seite hat ein Ziel-i+1-Fenster;
   der Text nutzt überwiegend bekannten Wortschatz + wenige neue (geminte) Wörter.
 - **Mitwachsendes Comic (Immersions-Rampe):** Sprechblasen mischen die
-  Lernersprache (L1 = die aktive UI-/Systemsprache) und Japanisch (L2). Früh:
-  überwiegend L1 mit ein paar bekannten japanischen Wörtern. Mit steigendem
-  Niveau kippt das Verhältnis, bis die Blasen ganz japanisch sind. Der
-  **Japanisch-Anteil** `japaneseRatio(level)` steigt 0 → 1 über die Stufen. Der
-  L1-Blasentext wird pro Locale vorgehalten (ARB-/Content-seitig), nie fix
-  Deutsch.
+  Lernersprache (L1 = die aktive UI-/Systemsprache) und die **Zielsprache (L2 =
+  das aktive Pack**, z. B. Japanisch, Koreanisch, Spanisch). Früh: überwiegend
+  L1 mit ein paar bekannten L2-Wörtern. Mit steigendem Niveau kippt das
+  Verhältnis, bis die Blasen ganz L2 sind. Der **L2-Anteil** `l2Ratio(level)`
+  steigt 0 → 1 über die Stufen. Der L1-Blasentext wird pro Locale vorgehalten
+  (ARB-/Content-seitig), nie fix Deutsch.
 - **Lesen = Üben:** Tippen auf ein L2-Wort → Gloss-Sheet (bestehender
   `WordTapHandler`); fällige Karten im Lesen bewertet (bestehendes
   `InReadingReviewPanel`); `passage_snapshot` misst den Unbekannt-Anteil →
@@ -92,7 +99,10 @@ Auswahl und Rampe:
 2. **Räumlicher Leser** — neues `features/reader/spatial_reader.dart`: rendert
    das Seiten-/Panel-Bild und legt tippbare Spans/Sprechblasen an ihren `rect`s
    darüber. Wort-Tipp → derselbe `WordTapHandler` → Gloss. Fällige Karte am
-   Ort → dasselbe `InReadingReviewPanel`. Lesereihenfolge wird für generierte
+   Ort → dasselbe `InReadingReviewPanel`. **Sprach-blind:** die Lesehilfe über
+   dem L2-Wort ist generisch (Furigana/Pinyin/Romaji je
+   `ScriptProfile.transliteration`), und die **Leserichtung** folgt
+   `ScriptProfile.direction` (LTR/RTL). Lesereihenfolge wird für generierte
    Comics **explizit autoriert** (kein RTL-Rätselraten wie bei fremden Manga).
 3. **Gestufte Bibliothek** — Comics getaggt mit `level`, gemessenem
    `unknownRatio` (gegen eine Referenz-Bekannt-Menge) und `japaneseRatio`.
@@ -121,7 +131,8 @@ Auswahl und Rampe:
 
 - Wiederverwenden: `Works`/`Sources`/`TextSpans`/`SpatialAnchor`.
 - Panel-Bild: `pages` mit `imagePath` je `pageId` (bzw. Manifest-Eintrag).
-- Comic-Metadaten: `level`, `targetUnknownRatio`, `japaneseRatio`, `coverImage`.
+- Comic-Metadaten: `level`, `targetUnknownRatio`, `l2Ratio`, `coverImage`,
+  `languageCode` (welches Pack).
 - `TextSpans.lang` (L1|L2) — steuert Tippbarkeit + Mining. L2-Text ist fix
   (Japanisch); **L1-Text ist locale-abhängig** (Content pro Locale bzw.
   ARB-Key), damit dieselbe Seite in der Systemsprache erscheint.
