@@ -33,6 +33,8 @@ class ExerciseLoader {
     final reading = readings.isNotEmpty ? readings.first : '';
 
     return switch (type) {
+      ExerciseType.encounter =>
+        throw UnimplementedError('rung-0 encounter is built in a later task'),
       ExerciseType.recognition =>
         RecognitionContent(displayForm: char.glyph, answer: char.meaning),
       ExerciseType.readingInput =>
@@ -59,6 +61,8 @@ class ExerciseLoader {
         .getSingle();
 
     return switch (type) {
+      ExerciseType.encounter =>
+        throw UnimplementedError('rung-0 encounter is built in a later task'),
       ExerciseType.recognition =>
         RecognitionContent(displayForm: lexeme.writtenForm, answer: concept.glossKey),
       ExerciseType.readingInput => ReadingInputContent(
