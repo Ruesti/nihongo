@@ -18,7 +18,7 @@ void main() {
   tearDown(() => db.close());
 
   group('onError — new item (I7: Fehler erzeugt Item)', () {
-    test('creates LearnItem at rung 1 when not yet known', () async {
+    test('introduces an unmet LearnItem at rung 0 when not yet known', () async {
       await service.onError(const ErrorSpan(
         languageId: 'lang_ja',
         refType: RefType.lexeme,
@@ -27,7 +27,7 @@ void main() {
 
       final items = await db.select(db.learnItems).get();
       expect(items, hasLength(1));
-      expect(items.first.masteryRung, 1);
+      expect(items.first.masteryRung, 0);
       expect(items.first.refId, 'lex_ja_dog');
       expect(items.first.refType, 'lexeme');
     });

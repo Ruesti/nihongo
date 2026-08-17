@@ -16,10 +16,11 @@ class ConversationService {
 
   ConversationService(this._db, {this.bridge});
 
-  /// New item: created at rung 1, due immediately (no review_log entry),
-  /// projected as `learning`. Existing item: processed as
-  /// ReviewResult.again — rung demoted, SRS reset, lapses incremented,
-  /// logged to review_log, and re-projected.
+  /// New item: introduced unmet at rung 0 (no review_log entry). Its first
+  /// appearance is the encounter, not a cold test — introduce() does not
+  /// project it as knowledge yet, since an unmet item isn't knowledge.
+  /// Existing item: processed as ReviewResult.again — rung demoted, SRS
+  /// reset, lapses incremented, logged to review_log, and re-projected.
   Future<void> onError(ErrorSpan span) async {
     final review = LadderReview(_db, bridge: bridge);
     final existing = await _findItem(span);
