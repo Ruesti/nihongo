@@ -87,6 +87,12 @@ class NihongoApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        for (final locale in supportedLocales) {
+          if (locale.languageCode == deviceLocale?.languageCode) return locale;
+        }
+        return const Locale('en');
+      },
     );
   }
 }

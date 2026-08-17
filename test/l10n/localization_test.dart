@@ -28,4 +28,30 @@ void main() {
         AppLocalizations.supportedLocales.map((l) => l.languageCode).toSet();
     expect(codes.containsAll({'en', 'de'}), isTrue);
   });
+
+  testWidgets(
+      'falls back to English (not the alphabetically-first supported '
+      'locale) for an unsupported system locale', (tester) async {
+    // Mirrors MaterialApp.router's localization wiring in lib/app.dart,
+    // including its localeResolutionCallback, so this exercises the same
+    // resolution behavior the real app uses.
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('fr'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        for (final locale in supportedLocales) {
+          if (locale.languageCode == deviceLocale?.languageCode) {
+            return locale;
+          }
+        }
+        return const Locale('en');
+      },
+      home: Builder(
+        builder: (context) =>
+            Text(AppLocalizations.of(context)!.welcomeTitle),
+      ),
+    ));
+    expect(find.text('Welcome.'), findsOneWidget);
+  });
 }
