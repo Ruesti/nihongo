@@ -1,19 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/knowledge_providers.dart';
 import '../../core/database.dart';
+import '../../core/db/learning_db.dart';
+import '../../core/ladder/exercise_content.dart';
+import '../../core/ladder/exercise_loader.dart';
+import '../../core/ladder/ladder_review.dart';
+import '../../core/ladder/rung_defs.dart';
+import '../../core/script_profile.dart';
 import '../../core/theme.dart';
+import '../../data/kana_data.dart';
 import '../../data/lessons.dart';
 import '../../data/vocab_800.dart';
 import '../../models/lesson.dart';
 import '../../models/mascot_state.dart';
-import '../../models/srs_card.dart';
 import '../../widgets/furigana_text.dart';
 import '../../widgets/progress_bar.dart';
+import '../encounter/encounter_view.dart';
 import '../home/home_providers.dart';
 import '../home/mascot_widget.dart';
 import 'exercise_factory.dart';
 import 'exercises/exercise_base.dart';
+
+/// Resolves a kana lesson's [cardIds] (e.g. `hira_a`) to the seeded
+/// `Characters.id` values in [db] for [langId], matching by glyph. A cardId
+/// that has no [KanaEntry], or whose glyph isn't a seeded character, is
+/// skipped — so the caller never introduces a rung-0 `LearnItem` whose
+/// backing `Characters` row is absent (which would crash the encounter
+/// loader). Pure enough to unit-test directly against an in-memory db.
+Future<List<String>> resolveKanaCharacterIds(
+  LearningDb db,
+  String langId,
+  List<String> cardIds,
+) async {
+  const allKana = [...hiragana, ...katakana];
+  final ids = <String>[];
+  for (final cardId in cardIds) {
+    final matches = allKana.where((k) => k.cardId == cardId);
+    if (matches.isEmpty) continue;
+    final glyph = matches.first.kana;
+    // Two where clauses (drift AND-combines them) so this Flutter file needn't
+    // import drift's `&` operator — which would also pull in Column/Table and
+    // clash with the Material widgets of the same name.
+    final row = await (db.select(db.characters)
+          ..where((t) => t.languageId.equals(langId))
+          ..where((t) => t.glyph.equals(glyph))
+          ..limit(1))
+        .getSingleOrNull();
+    if (row == null) continue;
+    ids.add(row.id);
+  }
+  return ids;
+}
+
+/// A minimal kana [ScriptProfile]. `resolveExercise(0, …)` ignores the
+/// profile (rung 0 is always an encounter), so the exact fields don't matter
+/// for the lesson's encounter phase — only that one exists to satisfy the
+/// [ExerciseLoader.load] signature.
+const _kanaScriptProfile = ScriptProfile(
+  id: 'sp_kana',
+  scriptType: ScriptType.syllabary,
+  direction: Direction.ltr,
+  decomposability: Decomposability.atomic,
+  positionalForms: false,
+  toneSystem: ToneSystem.pitchAccent,
+  needsScriptTrack: true,
+  transliteration: 'romaji',
+  inputMethods: [InputMethod.keyboard, InputMethod.ime],
+);
 
 class LessonScreen extends ConsumerStatefulWidget {
   final int lessonId;
@@ -54,7 +109,59 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
       );
       _exercises = factory.buildSession();
       _total = _exercises.length;
+      // Seam-fix: kana lessons feed the single SRS unit (LearningDb), not the
+      // dead legacy SrsCard path. Introduce each card unmet (rung 0) and
+      // prepend its encounter so every new item is met before it is tested.
+      // Other categories keep their existing behavior for now.
+      if (_lesson!.category == LessonCategory.kana) {
+        _setupLadder();
+      }
     }
+  }
+
+  /// Introduce each resolvable kana card into the ladder at rung 0 and build a
+  /// prepended encounter step for it. Runs async off [initState]; a
+  /// [setState] splices the encounters in front once ready. cardIds that don't
+  /// resolve to a seeded `Characters` row are skipped — never creating a
+  /// rung-0 item whose backing character is absent (that would crash the
+  /// Review encounter loader).
+  Future<void> _setupLadder() async {
+    final learningDb = ref.read(learningDbProvider);
+    final review = LadderReview(
+      learningDb,
+      bridge: ref.read(knowledgeBridgeProvider),
+    );
+    final loader = ExerciseLoader(learningDb);
+    final langId = 'lang_${widget.lang}';
+
+    final characterIds =
+        await resolveKanaCharacterIds(learningDb, langId, _lesson!.cardIds);
+
+    final encounters = <Widget Function(OnExerciseDone)>[];
+    for (final characterId in characterIds) {
+      await review.introduce(langId, RefType.character, characterId);
+      final item = await learningDb.getLearnItem('$langId:character:$characterId');
+      if (item == null) continue;
+      final content = await loader.load(item, _kanaScriptProfile);
+      if (content is! EncounterContent) continue;
+      encounters.add(
+        (onDone) => _EncounterStep(
+          content: content,
+          item: item,
+          review: review,
+          lang: widget.lang,
+          onDone: onDone,
+        ),
+      );
+    }
+
+    // Guard against splicing into a session the learner already advanced past
+    // (the async gap): only prepend while still at the very start.
+    if (!mounted || _done || _currentIndex != 0 || encounters.isEmpty) return;
+    setState(() {
+      _exercises = [...encounters, ..._exercises];
+      _total = _exercises.length;
+    });
   }
 
   void _onExerciseDone(bool correct) {
@@ -87,22 +194,9 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
         await db.setLessonStatus(nextId, 1, lang: widget.lang);
       }
     }
-    // Add vocab to SRS
-    for (final cardId in _lesson!.cardIds) {
-      final existing = await db.getSrsCard(cardId, lang: widget.lang);
-      if (existing == null) {
-        await db.upsertSrsCard(SrsCard(
-          cardId: cardId,
-          front: cardId,
-          back: cardId,
-          cardType: _lesson!.category.name,
-          languageCode: widget.lang,
-          dueAt: DateTime.now()
-              .add(const Duration(days: 1))
-              .millisecondsSinceEpoch,
-        ));
-      }
-    }
+    // The ladder items are created at lesson start (rung 0) and promoted by
+    // the encounter step (rung 1), so the legacy SrsCard write is gone — the
+    // lesson now feeds the single SRS unit (LearningDb) instead.
     ref.invalidate(userProgressProvider(widget.lang));
     ref.invalidate(lessonStatusProvider(widget.lang));
     ref.invalidate(dueCardsProvider(widget.lang));
@@ -427,4 +521,35 @@ class _StatRow extends StatelessWidget {
       ),
     );
   }
+}
+
+// --- Encounter step (rung 0 → 1) ---
+
+/// Renders a rung-0 [EncounterContent] as the lesson's first-meeting step and,
+/// when the learner taps through, promotes the item to rung 1 via
+/// [LadderReview.markEncountered] before advancing. Ungraded: `onDone(true)`
+/// simply counts it as seen.
+class _EncounterStep extends StatelessWidget {
+  final EncounterContent content;
+  final LearnItem item;
+  final LadderReview review;
+  final OnExerciseDone onDone;
+  final String lang;
+
+  const _EncounterStep({
+    required this.content,
+    required this.item,
+    required this.review,
+    required this.onDone,
+    required this.lang,
+  });
+
+  @override
+  Widget build(BuildContext context) => EncounterView(
+        encounter: content.encounter,
+        onDone: () async {
+          await review.markEncountered(item, languageCode: lang);
+          onDone(true); // ungraded — advance, counts as "seen"
+        },
+      );
 }
