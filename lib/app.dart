@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/theme.dart';
+import 'l10n/app_localizations.dart';
 import 'features/home/home_screen.dart';
 import 'features/kaiwa/kaiwa_hub.dart';
 import 'features/kanji_games/games_hub.dart';
@@ -83,6 +85,8 @@ class NihongoApp extends ConsumerWidget {
       theme: AppTheme.light,
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 }

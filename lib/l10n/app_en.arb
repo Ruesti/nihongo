@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "welcomeTitle": "Welcome.",
+  "welcomeBody": "Here you learn Japanese by reading it — at your pace, character by character.",
+  "methodEncounterFirst": "You meet every character, word and grammar point first — see it, hear it, trace it — before you are ever tested.",
+  "methodNoGamification": "No points, no streaks. Your progress is what you can actually read.",
+  "methodOffline": "Everything works offline. You set the pace.",
+  "placementQuestion": "Where do you stand?",
+  "placementFromZero": "I'm starting from zero",
+  "placementKnowSome": "I already know some",
+  "placementHiragana": "I can read Hiragana",
+  "placementKatakana": "I can read Katakana",
+  "placementVocabCheck": "Do you know this word?",
+  "startpointBeginner": "We start at the very beginning.",
+  "continueLabel": "Continue",
+  "yes": "Yes",
+  "no": "No",
+  "encounterListen": "Listen",
+  "encounterTrace": "Trace it",
+  "encounterNext": "Got it"
+}
