@@ -31,7 +31,8 @@ void main() async {
     await PurchasesService.init();
   } catch (_) {}
 
-  final learningDb = LearningDb();
+  final dir = await getApplicationDocumentsDirectory();
+  final learningDb = LearningDb.at(File(p.join(dir.path, 'learning.db')));
   final existingLangs = await learningDb.select(learningDb.languages).get();
   if (existingLangs.isEmpty) {
     try {
@@ -47,7 +48,6 @@ void main() async {
   // makes `knowledgeBridgeProvider` non-null, so `LadderReview` in the
   // review paths projects live. A one-time backfill hands the learner's
   // existing mastery over as mining's starting "known" set.
-  final dir = await getApplicationDocumentsDirectory();
   final miningDb = MiningDb.at(File(p.join(dir.path, 'mining.db')));
   try {
     final langs = await learningDb.select(learningDb.languages).get();

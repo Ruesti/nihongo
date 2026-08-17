@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull, Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/knowledge_providers.dart';
 import '../../core/db/learning_db.dart';
 import '../../core/progress/progress_service.dart';
 import '../../core/theme.dart';

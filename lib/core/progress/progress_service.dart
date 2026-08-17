@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 
 final progressServiceProvider = Provider<ProgressService>((ref) {

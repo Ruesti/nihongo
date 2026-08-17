@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app/knowledge_providers.dart';
-import '../../core/db/learning_db.dart';
 import '../../core/pipeline/knowledge_bridge.dart';
 import '../../l10n/app_localizations.dart';
 import 'onboarding_prefs.dart';

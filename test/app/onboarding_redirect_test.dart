@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app.dart';
+import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/features/home/home_screen.dart';
 import 'package:nihongo_app/features/onboarding/onboarding_flow.dart';
