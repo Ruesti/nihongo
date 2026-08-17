@@ -89,6 +89,12 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
   int _total = 0;
   bool _done = false;
 
+  /// True only while a kana lesson's ladder setup (`_setupLadder`) is still
+  /// running. `build()` shows a spinner instead of the exercise body until it
+  /// flips false, so no graded exercise can render — and a fast tap can't
+  /// discard the encounter batch — before the encounter steps are spliced in.
+  bool _preparingLadder = false;
+
   @override
   void initState() {
     super.initState();
@@ -114,6 +120,8 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
       // prepend its encounter so every new item is met before it is tested.
       // Other categories keep their existing behavior for now.
       if (_lesson!.category == LessonCategory.kana) {
+        // Gate the lesson body until the encounter steps are spliced in.
+        _preparingLadder = true;
         _setupLadder();
       }
     }
@@ -126,42 +134,53 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
   /// rung-0 item whose backing character is absent (that would crash the
   /// Review encounter loader).
   Future<void> _setupLadder() async {
-    final learningDb = ref.read(learningDbProvider);
-    final review = LadderReview(
-      learningDb,
-      bridge: ref.read(knowledgeBridgeProvider),
-    );
-    final loader = ExerciseLoader(learningDb);
-    final langId = 'lang_${widget.lang}';
-
-    final characterIds =
-        await resolveKanaCharacterIds(learningDb, langId, _lesson!.cardIds);
-
-    final encounters = <Widget Function(OnExerciseDone)>[];
-    for (final characterId in characterIds) {
-      await review.introduce(langId, RefType.character, characterId);
-      final item = await learningDb.getLearnItem('$langId:character:$characterId');
-      if (item == null) continue;
-      final content = await loader.load(item, _kanaScriptProfile);
-      if (content is! EncounterContent) continue;
-      encounters.add(
-        (onDone) => _EncounterStep(
-          content: content,
-          item: item,
-          review: review,
-          lang: widget.lang,
-          onDone: onDone,
-        ),
+    try {
+      final learningDb = ref.read(learningDbProvider);
+      final review = LadderReview(
+        learningDb,
+        bridge: ref.read(knowledgeBridgeProvider),
       );
-    }
+      final loader = ExerciseLoader(learningDb);
+      final langId = 'lang_${widget.lang}';
 
-    // Guard against splicing into a session the learner already advanced past
-    // (the async gap): only prepend while still at the very start.
-    if (!mounted || _done || _currentIndex != 0 || encounters.isEmpty) return;
-    setState(() {
-      _exercises = [...encounters, ..._exercises];
-      _total = _exercises.length;
-    });
+      final characterIds =
+          await resolveKanaCharacterIds(learningDb, langId, _lesson!.cardIds);
+
+      final encounters = <Widget Function(OnExerciseDone)>[];
+      for (final characterId in characterIds) {
+        await review.introduce(langId, RefType.character, characterId);
+        final item =
+            await learningDb.getLearnItem('$langId:character:$characterId');
+        if (item == null) continue;
+        final content = await loader.load(item, _kanaScriptProfile);
+        if (content is! EncounterContent) continue;
+        encounters.add(
+          (onDone) => _EncounterStep(
+            content: content,
+            item: item,
+            review: review,
+            lang: widget.lang,
+            onDone: onDone,
+          ),
+        );
+      }
+
+      // Guard against splicing into a session the learner already advanced past
+      // (the async gap): only prepend while still at the very start. With the
+      // spinner gate in build() this is now belt-and-suspenders — the learner
+      // can't tap through while _preparingLadder is true — but keep it as
+      // defense-in-depth.
+      if (!mounted || _done || _currentIndex != 0 || encounters.isEmpty) return;
+      setState(() {
+        _exercises = [...encounters, ..._exercises];
+        _total = _exercises.length;
+      });
+    } finally {
+      // Un-gate the lesson body no matter which path we took — encounters
+      // spliced, zero encounters, guard early-return, or a thrown error — so
+      // the lesson can never get stuck on the spinner.
+      if (mounted) setState(() => _preparingLadder = false);
+    }
   }
 
   void _onExerciseDone(bool correct) {
@@ -199,7 +218,10 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
     // lesson now feeds the single SRS unit (LearningDb) instead.
     ref.invalidate(userProgressProvider(widget.lang));
     ref.invalidate(lessonStatusProvider(widget.lang));
-    ref.invalidate(dueCardsProvider(widget.lang));
+    // The home due-badge watches dueCountProvider (reads LearningDb.getDueItems)
+    // — invalidate THAT so it reflects the just-introduced ladder items. The old
+    // dueCardsProvider reads the dead legacy SrsCards table nothing watches.
+    ref.invalidate(dueCountProvider(widget.lang));
   }
 
   @override
@@ -246,14 +268,19 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
         ),
       ),
       body: SafeArea(
-        child: _exercises.isEmpty
-            ? const Center(child: Text('Keine Übungen'))
-            : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8, bottom: 24),
-                  child: _exercises[_currentIndex](_onExerciseDone),
-                ),
-              ),
+        // Gate on ladder setup: until the encounter steps are spliced in, show a
+        // spinner rather than the first graded exercise — the user must meet the
+        // item before being tested on it.
+        child: _preparingLadder
+            ? const Center(child: CircularProgressIndicator())
+            : _exercises.isEmpty
+                ? const Center(child: Text('Keine Übungen'))
+                : SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 24),
+                      child: _exercises[_currentIndex](_onExerciseDone),
+                    ),
+                  ),
       ),
     );
   }

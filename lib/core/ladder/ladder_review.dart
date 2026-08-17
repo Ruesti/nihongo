@@ -53,12 +53,20 @@ class LadderReview {
   /// first appearance (in a lesson or the Review queue) is the encounter,
   /// never a cold test. Not yet projected as known/learning: an unmet item
   /// is not knowledge.
+  ///
+  /// Idempotent-safe: an item that already exists (at ANY rung) is left
+  /// untouched. Replaying an already-completed kana lesson must not reset a
+  /// progressed item back to rung 0 — the underlying DAO uses
+  /// insertOnConflictUpdate, so we guard on the row id here instead.
   Future<void> introduce(
     String languageId,
     RefType refType,
     String refId, {
     String? languageCode,
   }) async {
+    // Compute the row id exactly as LearningDb._insertLearnItem does.
+    final id = '$languageId:${refType.name}:$refId';
+    if (await learning.getLearnItem(id) != null) return;
     await learning.addLearnItemAtRung(languageId, refType, refId, rung: 0);
   }
 

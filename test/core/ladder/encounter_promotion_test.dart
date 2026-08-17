@@ -36,4 +36,28 @@ void main() {
     final logs = await db.select(db.reviewLog).get();
     expect(logs, isEmpty);
   });
+
+  test('re-introducing an already-progressed item does NOT reset its rung',
+      () async {
+    final review = LadderReview(db);
+
+    // fresh introduce creates the item at rung 0
+    await review.introduce('lang_ja', RefType.character, 'char_a');
+    final fresh = await db.getLearnItem('lang_ja:character:char_a');
+    expect(fresh, isNotNull);
+    expect(fresh!.masteryRung, 0);
+
+    // the encounter promotes it to rung 1
+    await review.markEncountered(fresh);
+    final promoted = await db.getLearnItem('lang_ja:character:char_a');
+    expect(promoted!.masteryRung, 1);
+
+    // replaying the lesson introduces the SAME item again — it must stay at
+    // rung 1, never be reset back to rung 0.
+    await review.introduce('lang_ja', RefType.character, 'char_a');
+    final after = await db.getLearnItem('lang_ja:character:char_a');
+    expect(after!.masteryRung, 1);
+    // and no duplicate row was created
+    expect((await db.select(db.learnItems).get()).length, 1);
+  });
 }
