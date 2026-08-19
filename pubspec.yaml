@@ -70,3 +70,4 @@ flutter:
   assets:
     - assets/kanji_svg/
     - assets/slice/
+    - assets/comic/
