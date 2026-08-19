@@ -9,6 +9,14 @@ List<Token> l2TokensOf(ComicPage page) => [
         if (b.lang == BubbleLang.l2) ...b.tokens,
     ];
 
+/// The realized L2 fraction of a page (L2 bubbles / all bubbles). Lets a
+/// test assert the authored immersion ramp actually rises with level.
+double measuredL2Ratio(ComicPage page) {
+  if (page.bubbles.isEmpty) return 0;
+  final l2 = page.bubbles.where((b) => b.lang == BubbleLang.l2).length;
+  return l2 / page.bubbles.length;
+}
+
 /// The next comic page for this learner: prefer an i+1 "ideal" fit,
 /// else the page nearest the window band. Reuses the shared
 /// `rankByIPlusOne` ranker — no comic-specific scoring, and no
