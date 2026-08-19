@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/knowledge_providers.dart';
 import '../../core/database.dart';
-import '../../core/db/learning_db.dart';
 import '../../core/progress/progress_service.dart';
 import '../../models/progress.dart';
 

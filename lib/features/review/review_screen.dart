@@ -13,6 +13,7 @@ import '../../core/theme.dart';
 import '../../widgets/audio_button.dart';
 import '../../widgets/grade_buttons.dart';
 import '../../widgets/progress_bar.dart';
+import '../encounter/encounter_view.dart';
 
 // ── screen ────────────────────────────────────────────────────────────────────
 
@@ -130,6 +131,21 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     }
   }
 
+  /// Complete an ungraded rung-0 encounter: promote to rung 1 (via
+  /// LadderReview.markEncountered), then advance exactly like _grade does.
+  Future<void> _finishEncounter() async {
+    final item = _queue[_index];
+    await LadderReview(_db, bridge: ref.read(knowledgeBridgeProvider))
+        .markEncountered(item, languageCode: widget.lang);
+
+    _index++;
+    if (_index >= _queue.length) {
+      setState(() => _done = true);
+    } else {
+      await _loadContent();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -164,6 +180,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: switch (content) {
+                  EncounterContent() => EncounterView(
+                      encounter: content.encounter,
+                      onDone: _finishEncounter,
+                    ),
                   RecognitionContent() => _RecognitionExercise(
                       content: content,
                       revealed: _revealed,
@@ -189,7 +209,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                 },
               ),
             ),
-            if (_revealed)
+            if (_revealed && _content is! EncounterContent)
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

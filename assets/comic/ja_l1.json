@@ -1,0 +1,23 @@
+{
+  "languageCode": "ja",
+  "title": "Neko no hi 2",
+  "level": 1,
+  "l2Ratio": 0.6,
+  "pages": [
+    {
+      "pageRef": "p1",
+      "imageAsset": "assets/comic/placeholder_page.png",
+      "aspectRatio": 0.7,
+      "bubbles": [
+        {"rect": {"left": 0.1, "top": 0.1, "right": 0.5, "bottom": 0.2},
+         "lang": "l2", "text": "猫", "reading": "ねこ",
+         "tokens": [{"surface": "猫", "lemma": "猫", "reading": "ねこ", "pos": "n", "charStart": 0, "charEnd": 1}]},
+        {"rect": {"left": 0.5, "top": 0.6, "right": 0.9, "bottom": 0.72},
+         "lang": "l2", "text": "犬", "reading": "いぬ",
+         "tokens": [{"surface": "犬", "lemma": "犬", "reading": "いぬ", "pos": "n", "charStart": 0, "charEnd": 1}]},
+        {"rect": {"left": 0.1, "top": 0.8, "right": 0.6, "bottom": 0.92},
+         "lang": "l1", "text": "… und so weiter.", "tokens": []}
+      ]
+    }
+  ]
+}

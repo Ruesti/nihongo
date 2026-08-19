@@ -15,6 +15,7 @@ import 'core/pipeline/knowledge_bridge.dart';
 import 'core/purchases_service.dart';
 import 'core/tts_service.dart';
 import 'features/language_select/language_select_screen.dart';
+import 'features/onboarding/onboarding_providers.dart';
 import 'packs/ja/ja_seed.dart';
 
 void main() async {
@@ -22,6 +23,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final savedLang = prefs.getString('active_language') ?? 'ja';
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
   await TtsService.instance.init(locale: _ttsLocaleForCode(savedLang));
 
@@ -29,7 +31,8 @@ void main() async {
     await PurchasesService.init();
   } catch (_) {}
 
-  final learningDb = LearningDb();
+  final dir = await getApplicationDocumentsDirectory();
+  final learningDb = LearningDb.at(File(p.join(dir.path, 'learning.db')));
   final existingLangs = await learningDb.select(learningDb.languages).get();
   if (existingLangs.isEmpty) {
     try {
@@ -45,7 +48,6 @@ void main() async {
   // makes `knowledgeBridgeProvider` non-null, so `LadderReview` in the
   // review paths projects live. A one-time backfill hands the learner's
   // existing mastery over as mining's starting "known" set.
-  final dir = await getApplicationDocumentsDirectory();
   final miningDb = MiningDb.at(File(p.join(dir.path, 'mining.db')));
   try {
     final langs = await learningDb.select(learningDb.languages).get();
@@ -71,6 +73,7 @@ void main() async {
         activeLanguageProvider.overrideWith((ref) => savedLang),
         learningDbProvider.overrideWith((ref) => learningDb),
         miningDbProvider.overrideWith((ref) => miningDb),
+        onboardingCompleteProvider.overrideWith((ref) => onboardingComplete),
       ],
       child: const NihongoApp(),
     ),

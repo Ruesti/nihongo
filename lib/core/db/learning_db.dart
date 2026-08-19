@@ -2,9 +2,6 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../ladder/ladder_service.dart';
 import '../ladder/rung_defs.dart';
@@ -13,12 +10,15 @@ import 'tables.dart';
 
 part 'learning_db.g.dart';
 
-final learningDbProvider = Provider<LearningDb>((ref) {
-  final db = LearningDb();
-  ref.onDispose(db.close);
-  return db;
-});
-
+/// Deliberately has no `path_provider`/`flutter_riverpod` dependency (see
+/// `mining_db.dart`'s and `jmdict_db.dart`'s doc comments for the same
+/// reasoning): headless proof tools under `tool/` (e.g.
+/// `tool/proof_onboarding_encounter.dart`) need this to compile and run
+/// under plain `dart run`, which can't resolve `dart:ui` transitively
+/// pulled in by those Flutter packages. Callers resolve the real
+/// on-device path themselves and pass it to [LearningDb.at] — see
+/// `main.dart` for where the app does this via `path_provider`, and
+/// `app/knowledge_providers.dart` for the Riverpod provider.
 @DriftDatabase(tables: [
   Concepts,
   Assets,
@@ -34,7 +34,7 @@ final learningDbProvider = Provider<LearningDb>((ref) {
   ReviewLog,
 ])
 class LearningDb extends _$LearningDb {
-  LearningDb() : super(_openConnection());
+  LearningDb.at(File file) : super(_openConnection(file));
 
   LearningDb.forTesting() : super(NativeDatabase.memory());
 
@@ -98,6 +98,32 @@ class LearningDb extends _$LearningDb {
         .get();
   }
 
+  Future<LearnItem?> getLearnItem(String id) =>
+      (select(learnItems)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  /// Promote a just-encountered item from rung 0 to rung 1 and schedule
+  /// its first real review. Ungraded: writes no review_log row.
+  Future<void> markEncounteredRow(LearnItem item) async {
+    final sched = schedule(
+      ScheduleInput(
+        ease: item.ease,
+        intervalDays: item.intervalDays,
+        reps: item.reps,
+      ),
+      ReviewResult.good,
+    );
+    await (update(learnItems)..where((t) => t.id.equals(item.id))).write(
+      LearnItemsCompanion(
+        masteryRung: const Value(1),
+        consecutiveCorrect: const Value(0),
+        ease: Value(sched.ease),
+        intervalDays: Value(sched.intervalDays),
+        dueAt: Value(sched.dueAt),
+        reps: Value(sched.reps),
+      ),
+    );
+  }
+
   // --- Sentence DAOs (Graded Input) ---
 
   Future<List<Sentence>> getSentences(
@@ -152,10 +178,6 @@ class LearningDb extends _$LearningDb {
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'learning.db'));
-    return NativeDatabase.createInBackground(file);
-  });
+LazyDatabase _openConnection(File file) {
+  return LazyDatabase(() async => NativeDatabase.createInBackground(file));
 }

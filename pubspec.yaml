@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   # SRS & Storage
   drift: ^2.22.1
@@ -62,7 +65,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/kanji_svg/
     - assets/slice/
+    - assets/comic/

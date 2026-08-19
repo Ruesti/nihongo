@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 
 import '../db/mining_db.dart';
@@ -78,6 +79,16 @@ class MangaSourceAdapter {
           kind: 'ocr',
           path: sourcePath,
           importedAt: now,
+        ));
+
+    // First-class image handle for the page (bring-your-own-manga /
+    // OCR side-door): hashes the path string as a stable, cheap handle —
+    // not the pixels. A real pixel-copy + content hash is a later step.
+    await db.into(db.mediaBlobs).insert(MediaBlobsCompanion.insert(
+          id: 'media:$stamp',
+          kind: 'image',
+          path: sourcePath,
+          contentHash: sha1.convert(sourcePath.codeUnits).toString(),
         ));
 
     // Reading order on a page is a hard, open problem (§12); a simple

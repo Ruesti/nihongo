@@ -1,0 +1,22 @@
+{
+  "@@locale": "de",
+  "welcomeTitle": "Willkommen.",
+  "welcomeBody": "Hier lernst du Japanisch, indem du es liest — in deinem Tempo, Zeichen für Zeichen.",
+  "methodEncounterFirst": "Jedem Zeichen, Wort und Grammatikpunkt begegnest du zuerst — sehen, hören, nachfahren — bevor du geprüft wirst.",
+  "methodNoGamification": "Kein Punktesammeln, keine Serien. Dein Fortschritt ist, was du wirklich lesen kannst.",
+  "methodOffline": "Alles läuft offline. Du bestimmst das Tempo.",
+  "placementQuestion": "Wo stehst du?",
+  "settingsRerunOnboarding": "Einführung erneut",
+  "placementFromZero": "Ich fange bei null an",
+  "placementKnowSome": "Ich kann schon etwas",
+  "placementHiragana": "Ich kann Hiragana",
+  "placementKatakana": "Ich kann Katakana",
+  "placementVocabCheck": "Kennst du dieses Wort?",
+  "startpointBeginner": "Wir fangen ganz vorn an.",
+  "continueLabel": "Weiter",
+  "yes": "Ja",
+  "no": "Nein",
+  "encounterListen": "Hören",
+  "encounterTrace": "Nachfahren",
+  "encounterNext": "Verstanden"
+}

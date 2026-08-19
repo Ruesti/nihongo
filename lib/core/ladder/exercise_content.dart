@@ -1,3 +1,5 @@
+import 'encounter.dart';
+
 /// Pure data model for exercise content — no logic, no DB dependencies.
 ///
 /// These 4 variants represent the different exercise types across rungs 1–4:
@@ -65,4 +67,13 @@ final class WriteTraceContent extends ExerciseContent {
     this.strokeOrderAssetId,
     required this.expectedReading,
   });
+}
+
+/// Rung 0: Encounter — first meeting, ungraded. Wraps the refType-specific
+/// [Encounter] so the review/lesson runners can carry it through the same
+/// ExerciseContent channel as the graded variants.
+final class EncounterContent extends ExerciseContent {
+  final Encounter encounter;
+
+  EncounterContent({required this.encounter});
 }
