@@ -32,6 +32,13 @@ void main() {
     expect(await svc().resolveStepIndex(0), 1);
   });
 
+  test('a rung-0 (introduced-not-encountered) lesson is NOT skipped', () async {
+    // char_ja_a only introduced at rung 0 (e.g. lesson start/abandon or a
+    // conversation error) — not yet actually learned → step 0 must NOT be skipped.
+    await db.addLearnItemAtRung('lang_ja', RefType.character, 'char_ja_a', rung: 0);
+    expect(await svc().resolveStepIndex(0), 0);
+  });
+
   test('past the end returns null', () async {
     expect(await svc().resolveStepIndex(3), isNull);
   });

@@ -40,7 +40,9 @@ class JourneyService {
     for (final (refType, refId) in refs) {
       final item =
           await learning.getLearnItem('$languageId:${refType.name}:$refId');
-      if (item == null) return false; // something not yet introduced
+      if (item == null || item.masteryRung < 1) {
+        return false; // not yet introduced, or introduced-but-not-encountered
+      }
     }
     return true;
   }
