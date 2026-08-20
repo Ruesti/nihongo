@@ -55,6 +55,7 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
   ExerciseContent? _content;
   LearnItem? _item;
   bool _loading = true;
+  bool _advancing = false;
 
   LearningDb get _db => ref.read(learningDbProvider);
   LadderReview get _review =>
@@ -83,6 +84,13 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
     }
     final content = await ExerciseLoader(_db).load(item, _encounterProfile);
     if (!mounted) return;
+    if (content is! EncounterContent) {
+      // Already learned (rung ≥ 1): no encounter to show — skip it, never
+      // freeze on a permanent spinner with no button to advance.
+      _index++;
+      await _load();
+      return;
+    }
     setState(() {
       _item = item;
       _content = content;
@@ -91,10 +99,13 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
   }
 
   Future<void> _next() async {
+    if (_advancing) return;
+    _advancing = true;
     final item = _item;
     if (item != null) {
       await _review.markEncountered(item, languageCode: widget.languageId);
     }
+    if (!mounted) return;
     _index++;
     if (_index >= _refs.length) {
       widget.onDone();
@@ -102,6 +113,7 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
     }
     setState(() => _loading = true);
     await _load();
+    _advancing = false;
   }
 
   @override
