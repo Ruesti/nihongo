@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import 'onboarding_prefs.dart';
 import 'onboarding_providers.dart';
 import 'placement_service.dart';
+import 'vocab_check.dart';
 
 /// The one-time first-run reception, spoken by Datum (warmer register).
 /// welcome → method → placement → (startpoint) → apply + finish.
@@ -27,19 +28,34 @@ class OnboardingFlow extends ConsumerStatefulWidget {
   ConsumerState<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
-enum _Step { welcome, method, placement, startpoint }
+enum _Step { welcome, method, placement, startpoint, vocabCheck }
 
 class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   _Step _step = _Step.welcome;
   bool _knowsHiragana = false;
   bool _knowsKatakana = false;
+  List<VocabCheckItem> _vocabItems = const [];
+  List<String> _knownWordIds = const [];
+
+  Future<void> _goToVocabCheck() async {
+    final db = ref.read(learningDbProvider);
+    final items = await loadVocabCheckItems(db, widget.languageId);
+    if (items.isEmpty) {
+      await _finish(fromZero: false); // nothing to check
+      return;
+    }
+    setState(() {
+      _vocabItems = items;
+      _step = _Step.vocabCheck;
+    });
+  }
 
   Future<void> _finish({required bool fromZero}) async {
     final profile = PlacementProfile(
       fromZero: fromZero,
       knowsHiragana: _knowsHiragana,
       knowsKatakana: _knowsKatakana,
-      knownWordLexemeIds: const [], // micro-check wiring is a later increment
+      knownWordLexemeIds: _knownWordIds,
     );
     final db = ref.read(learningDbProvider);
     final KnowledgeBridge? bridge = ref.read(knowledgeBridgeProvider);
@@ -95,7 +111,14 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                 knowsKatakana: _knowsKatakana,
                 onHiragana: (v) => setState(() => _knowsHiragana = v),
                 onKatakana: (v) => setState(() => _knowsKatakana = v),
-                onDone: () => _finish(fromZero: false),
+                onDone: _goToVocabCheck,
+              ),
+            _Step.vocabCheck => VocabCheckStep(
+                items: _vocabItems,
+                onDone: (known) {
+                  _knownWordIds = known;
+                  _finish(fromZero: false);
+                },
               ),
           },
         ),
