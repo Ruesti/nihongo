@@ -61,17 +61,20 @@ class JourneyHome extends ConsumerWidget {
   Future<void> _runStep(
       BuildContext context, WidgetRef ref, CurriculumStep step) async {
     final lang = ref.read(activeLanguageProvider);
+    bool completed = false;
     if (step is LessonStep) {
-      await Navigator.of(context).push(MaterialPageRoute(
+      final result = await Navigator.of(context).push<bool>(MaterialPageRoute(
         builder: (_) => LessonStepScreen(
           step: step,
           languageId: 'lang_$lang',
-          onDone: () => Navigator.of(context).maybePop(),
+          onDone: () => Navigator.of(context).pop(true),
         ),
       ));
+      completed = result == true;
     } else if (step is MangaStep) {
-      await openMangaStep(context, ref, step);
+      completed = await openMangaStep(context, ref, step);
     }
+    if (!completed) return; // backed out / could not run → do not advance
     // Advance the stored index and refresh the resolved step.
     final progress = await ref.read(journeyProgressProvider.future);
     await progress.setStepIndex(lang, _indexAfter(ref, step));

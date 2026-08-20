@@ -30,15 +30,17 @@ Future<ComicPack?> loadComicPackForStep(String comicAsset) async {
 }
 
 /// Opens the manga reader for a MangaStep and returns when it is popped.
-/// No-op (still resolves) if the pack can't load or mining DB is unavailable.
-Future<void> openMangaStep(
+/// Returns `false` (no-op) if the pack can't load or mining DB is
+/// unavailable — the caller must not treat that as a completed step.
+/// Returns `true` once the reader push has completed.
+Future<bool> openMangaStep(
   BuildContext context,
   WidgetRef ref,
   MangaStep step,
 ) async {
   final db = ref.read(miningDbProvider);
   final pack = await loadComicPackForStep(step.comicAsset);
-  if (!context.mounted || db == null || pack == null) return;
+  if (!context.mounted || db == null || pack == null) return false;
   await Navigator.of(context).push(MaterialPageRoute(
     builder: (_) => ComicReaderScreen(
       repo: ComicRepository(
@@ -49,4 +51,5 @@ Future<void> openMangaStep(
       direction: TextDirection.ltr,
     ),
   ));
+  return true;
 }
