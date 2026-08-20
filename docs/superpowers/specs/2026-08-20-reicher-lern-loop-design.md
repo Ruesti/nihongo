@@ -101,22 +101,36 @@ umgestellt (DRY).
   schwelliger Abruf. Ehrlich: Erstmeeting ungenotet, erster Abruf gleich danach.
 - **Auffrischen:** ein Weg-Beat, der **`getDueItems(langId)`** holt und über den
   `GradedExerciseRunner` benotet — gespaced, Items klettern die Sprossen
-  (Erkennen → Lesen → Produzieren → Nachzeichnen). **Automatisch eingefügt**
-  (nicht autoriert): der Weg prüft vor dem nächsten „Neu lernen", ob Fälliges da
-  ist, und schiebt dann ein warmes „Kurz auffrischen" davor. Kein Punkte-Zähler.
-  **Das holt die aus der Nav-Leiste genommene Wiederholung zurück in den Fluss.**
+  (Erkennen → Lesen → Produzieren → Nachzeichnen). **Autoriert** (nicht
+  automatisch): ein neuer Curriculum-Schritt-Typ **`RefreshStep`**, den der Autor
+  im Kapitel-Faden platziert (z. B. am Anfang eines Kapitels). Der Schritt holt
+  die fälligen Items und läuft den Runner; sind keine fällig, entfällt er still.
+  Kein Punkte-Zähler. **Das holt die aus der Nav-Leiste genommene Wiederholung
+  zurück in den Fluss.**
+  → *Modell:* `CurriculumStep` bekommt eine dritte Variante `RefreshStep`
+  (neben `LessonStep`/`MangaStep`); `resolveStepIndex` überspringt einen
+  `RefreshStep` nur, wenn nichts fällig ist.
 
 ### F. Grammatik mit „warum"
 - **Schema:** `GrammarPoints` += `pattern`, `explanation`, `example`,
   `contrast?` (nullable). schemaVersion-Bump + Migration + `build_runner`-Regen.
-- **Loader:** `_loadGrammar` baut `GrammarEncounter` aus den echten Spalten (statt
-  Row-ID/leer).
+- **Loader:** `_loadGrammar` baut aus den echten Spalten sowohl den
+  `GrammarEncounter` (Sprosse 0) **als auch die graded Sprossen** (heute wirft es
+  dort `UnimplementedError`).
 - **Inhalt:** echte Grammatikpunkte mit deutschen „warum"-Erklärungen (Satzbau
   Verb-am-Ende, は als Thema, です höflich). Lektions-Schritte referenzieren
   `grammarIds`.
-- **Rendering:** `GrammarCard` (reiche Lehr-Karte). Grammatik bleibt fürs MVP auf
-  **Verstehens-Ebene** (die „warum"-Karte) — **kein** Grammatik-Produktions-Drill
-  (I1).
+- **Rendering:** `GrammarCard` (reiche Lehr-Karte) für die Begegnung.
+- **Grammatik wird geübt** (nicht nur erklärt): die Leiter gilt auch für
+  Grammatik — **recall-basiert, kein Multiple-Choice (I1)**, unter
+  Wiederverwendung der vorhandenen Inhalts-Varianten:
+  - *Erkennen* (Sprosse 1): das Muster zeigen → aufdecken → seine Funktion/
+    Bedeutung (`RecognitionContent{displayForm: pattern, answer: explanation}`).
+  - *Produzieren* (Sprosse 3+): Aufforderung (die Kann-Ziel-Funktion) → der
+    Lernende **baut/tippt** einen Satz mit dem Muster
+    (`ProductionInputContent{prompt: canDo/Funktion, expectedForm: example}`).
+  So läuft Grammatik durch **denselben** `GradedExerciseRunner` wie Wörter/Zeichen
+  — der Auffrischen-Beat übt sie mit.
 
 ### G. Konzeptbilder + Beispielsätze
 - **Konzeptbilder:** `Assets`-Zeilen seeden (type `image`, path) + einfache
@@ -174,17 +188,19 @@ Bedeutung.
 
 **Drin:** reicher Lektions-Schritt (Trace + GrammarCard + Wort-mit-Bild/Beispiel),
 Strichfolge-Seed-Fix, `GradedExerciseRunner` (Herauslösen + Runner), Kurz-üben +
-Auffrischen-Beats, Grammatik (Schema + Inhalt + Karte), Konzeptbilder +
+**autorierter `RefreshStep`**-Auffrischen-Beat, Grammatik (Schema + Inhalt +
+Karte + **graded Üben über die Leiter, recall-basiert**), Konzeptbilder +
 Beispielsätze (Schema-Link), echtes erstes Kapitel, Comic-Wörterbuch fürs Gloss.
 
-**Draußen (später):** In-Reading-Leiter-Wiederholung, echte ComfyUI-Art, graded
-Grammatik-Produktion, volles Curriculum.
+**Draußen (später):** In-Reading-Leiter-Wiederholung, echte ComfyUI-Art, volles
+Curriculum.
 
 ## Getroffene Detail-Entscheidungen (Defaults)
 
-- Übung **gespaced** statt alles sofort. Grammatik = **Verstehen**, kein Drill.
-  Auffrischen **automatisch** eingefügt (nicht autoriert). Trace im Lern-Beat
-  **und** rung-4.
+- Übung **gespaced** statt alles sofort. **Grammatik = Verstehen *und* Üben**
+  (recall-basiert über die Leiter, kein MC). **Auffrischen autoriert**
+  (`RefreshStep` im Curriculum, nicht automatisch). Trace im Lern-Beat **und**
+  rung-4.
 
 ## Umsetzungs-Hinweis
 
