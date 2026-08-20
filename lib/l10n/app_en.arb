@@ -18,5 +18,15 @@
   "no": "No",
   "encounterListen": "Listen",
   "encounterTrace": "Trace it",
-  "encounterNext": "Got it"
+  "encounterNext": "Got it",
+  "journeyStart": "Let's go",
+  "journeyContinue": "Continue",
+  "journeyChapterLabel": "Chapter {n}",
+  "@journeyChapterLabel": { "placeholders": { "n": { "type": "int" } } },
+  "journeyPathComplete": "Done — more story coming soon.",
+  "journeyLessonStepTitle": "Learn something new",
+  "journeyMangaStepTitle": "Read on",
+  "vocabCheckIntro": "Which words do you already know?",
+  "vocabCheckKnow": "I know it",
+  "vocabCheckDont": "New to me"
 }
