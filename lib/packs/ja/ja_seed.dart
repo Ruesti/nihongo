@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../core/db/learning_db.dart';
+import '../../data/kana_strokes.dart';
 
 Future<void> seedJaPack(LearningDb db) async {
   await db.transaction(() async {
@@ -83,6 +84,7 @@ Future<void> seedJaPack(LearningDb db) async {
               glyph: Value(glyph),
               readingsJson: Value(jsonEncode(readings)),
               meaning: Value(meaning),
+              strokeOrderAssetId: Value(strokeAssetForKana(glyph)),
             ),
           );
     }
