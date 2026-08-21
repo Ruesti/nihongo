@@ -111,7 +111,15 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
         content is EncounterContent &&
         content.encounter is CharacterEncounter &&
         (content.encounter as CharacterEncounter).strokeOrderAssetId != null) {
+      // Hold the re-entry guard across the transition: setState doesn't
+      // rebuild until the next frame, so an impatient double-tap on
+      // "Weiter" could otherwise re-enter _next() while _tracing is still
+      // false-in-this-frame-but-about-to-flip, skip the trace beat, and
+      // advance straight to markEncountered. Release the guard only after
+      // the frame that renders TracePractice.
+      _advancing = true;
       setState(() => _tracing = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _advancing = false);
       return;
     }
     _advancing = true;
