@@ -57,12 +57,12 @@ void main() {
       expect(forms, containsAll({'犬', '猫', '水', '食べる', '何'}));
     });
 
-    test('creates 5 hiragana vowel characters', () async {
+    test('creates 7 kana characters (5 vowels + か-row start)', () async {
       await seedJaPack(db);
       final rows = await db.select(db.characters).get();
-      expect(rows.length, 5);
+      expect(rows.length, 7);
       final glyphs = rows.map((c) => c.glyph).toSet();
-      expect(glyphs, containsAll({'あ', 'い', 'う', 'え', 'お'}));
+      expect(glyphs, containsAll({'あ', 'い', 'う', 'え', 'お', 'か', 'き'}));
     });
 
     test('seeding twice is idempotent', () async {
