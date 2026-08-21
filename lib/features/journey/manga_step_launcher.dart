@@ -5,19 +5,11 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/knowledge_providers.dart';
-import '../../core/language_pack/language_pack.dart' show Dictionary, Sense;
+import '../comic/bundled_dictionary.dart';
 import '../comic/comic_pack.dart';
 import '../comic/comic_reader_screen.dart';
 import '../comic/comic_repository.dart';
 import 'curriculum.dart';
-
-/// Empty dictionary for the MVP — gloss sheet honestly degrades to "no entry".
-/// Wiring a real per-language dictionary is a follow-up (same as reading_tab).
-class _EmptyComicDictionary implements Dictionary {
-  const _EmptyComicDictionary();
-  @override
-  List<Sense> lookup(String lemma, String pos) => const [];
-}
 
 /// Loads a ComicPack from a bundle asset path, or null if missing/malformed.
 Future<ComicPack?> loadComicPackForStep(String comicAsset) async {
@@ -46,7 +38,7 @@ Future<bool> openMangaStep(
       repo: ComicRepository(
         db: db,
         pack: pack,
-        dictionary: const _EmptyComicDictionary(),
+        dictionary: jaBundledDictionary,
       ),
       direction: TextDirection.ltr,
     ),
