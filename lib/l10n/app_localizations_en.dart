@@ -96,4 +96,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vocabCheckDont => 'New to me';
+
+  @override
+  String traceStrokeProgress(int current, int total) {
+    return 'Trace the character — stroke $current of $total';
+  }
+
+  @override
+  String get traceRetryHint => 'Try again';
 }

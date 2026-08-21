@@ -265,6 +265,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New to me'**
   String get vocabCheckDont;
+
+  /// No description provided for @traceStrokeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Trace the character — stroke {current} of {total}'**
+  String traceStrokeProgress(int current, int total);
+
+  /// No description provided for @traceRetryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get traceRetryHint;
 }
 
 class _AppLocalizationsDelegate

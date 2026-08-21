@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../kanji_games/trace/kanji_svg_loader.dart';
 import '../kanji_games/trace/stroke_painter.dart';
 import '../kanji_games/trace/stroke_validator.dart';
@@ -73,7 +74,7 @@ class _TracePracticeState extends State<TracePractice> {
     } else {
       setState(() {
         _hint = StrokeValidator.directionHint(_current, target) ??
-            'Noch mal versuchen';
+            AppLocalizations.of(context)!.traceRetryHint;
         _current = [];
       });
     }
@@ -88,10 +89,11 @@ class _TracePracticeState extends State<TracePractice> {
       );
     }
     final ref = _reference!;
+    final l = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Fahr das Zeichen nach — Strich ${_completed + 1} von ${ref.length}',
+        Text(l.traceStrokeProgress(_completed + 1, ref.length),
             style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 8),
         GestureDetector(

@@ -28,5 +28,7 @@
   "journeyMangaStepTitle": "Weiterlesen",
   "vocabCheckIntro": "Welche Wörter kennst du schon?",
   "vocabCheckKnow": "Kenne ich",
-  "vocabCheckDont": "Neu für mich"
+  "vocabCheckDont": "Neu für mich",
+  "traceStrokeProgress": "Fahr das Zeichen nach — Strich {current} von {total}",
+  "traceRetryHint": "Noch mal versuchen"
 }
