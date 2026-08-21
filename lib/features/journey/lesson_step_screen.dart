@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/knowledge_providers.dart';
 export '../../app/knowledge_providers.dart' show learningDbProvider;
 import '../../core/db/learning_db.dart';
+import '../../core/ladder/encounter.dart';
 import '../../core/ladder/exercise_content.dart';
 import '../../core/ladder/exercise_loader.dart';
 import '../../core/ladder/ladder_review.dart';
@@ -11,6 +12,7 @@ import '../../core/ladder/rung_defs.dart';
 import '../../core/script_profile.dart';
 import '../encounter/encounter_view.dart';
 import 'curriculum.dart';
+import 'trace_practice.dart';
 
 /// A kana script profile is enough: resolveExercise(0, ...) ignores the
 /// profile and returns an EncounterContent for every refType.
@@ -56,6 +58,7 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
   LearnItem? _item;
   bool _loading = true;
   bool _advancing = false;
+  bool _tracing = false;
 
   LearningDb get _db => ref.read(learningDbProvider);
   LadderReview get _review =>
@@ -95,12 +98,24 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
       _item = item;
       _content = content;
       _loading = false;
+      _tracing = false;
     });
   }
 
   Future<void> _next() async {
     if (_advancing) return;
+    // If the current character has a stroke asset and we haven't traced yet,
+    // show the trace beat before marking it encountered.
+    final content = _content;
+    if (!_tracing &&
+        content is EncounterContent &&
+        content.encounter is CharacterEncounter &&
+        (content.encounter as CharacterEncounter).strokeOrderAssetId != null) {
+      setState(() => _tracing = true);
+      return;
+    }
     _advancing = true;
+    _tracing = false;
     final item = _item;
     if (item != null) {
       await _review.markEncountered(item, languageCode: widget.languageId);
@@ -124,10 +139,20 @@ class _LessonStepScreenState extends ConsumerState<LessonStepScreen> {
         child: (_loading || content is! EncounterContent)
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                child: EncounterView(
-                  encounter: content.encounter,
-                  onDone: _next,
-                ),
+                child: _tracing
+                    ? Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: TracePractice(
+                          assetPath:
+                              (content.encounter as CharacterEncounter)
+                                  .strokeOrderAssetId!,
+                          onDone: _next, // trace done → markEncountered + advance
+                        ),
+                      )
+                    : EncounterView(
+                        encounter: content.encounter,
+                        onDone: _next, // encounter done → trace beat (if char)
+                      ),
               ),
       ),
     );
