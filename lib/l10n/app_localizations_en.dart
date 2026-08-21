@@ -104,4 +104,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get traceRetryHint => 'Try again';
+
+  @override
+  String get traceSkip => 'Skip';
 }

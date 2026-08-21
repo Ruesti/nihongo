@@ -28,6 +28,7 @@ class _TracePracticeState extends State<TracePractice> {
   List<Offset> _current = [];
   int _completed = 0;
   String? _hint;
+  bool _finished = false; // guards onDone against firing twice
 
   @override
   void initState() {
@@ -40,13 +41,22 @@ class _TracePracticeState extends State<TracePractice> {
         await KanjiSvgLoader.loadStrokes(widget.assetPath, canvasSize: _canvas);
     if (!mounted) return;
     if (strokes == null || strokes.isEmpty) {
-      widget.onDone(); // nothing to trace → degrade
+      _finish(); // nothing to trace → degrade
       return;
     }
     setState(() {
       _reference = strokes;
       _resolved = true;
     });
+  }
+
+  /// Calls [widget.onDone] exactly once, however completion is reached
+  /// (all strokes traced, or the learner taps skip). The trace beat is
+  /// ungraded experience, not a gate — never leave the learner stuck.
+  void _finish() {
+    if (_finished) return;
+    _finished = true;
+    widget.onDone();
   }
 
   void _onPanStart(DragStartDetails d) {
@@ -70,7 +80,7 @@ class _TracePracticeState extends State<TracePractice> {
         _completed++;
         _hint = null;
       });
-      if (_completed >= ref.length) widget.onDone();
+      if (_completed >= ref.length) _finish();
     } else {
       setState(() {
         _hint = StrokeValidator.directionHint(_current, target) ??
@@ -97,6 +107,7 @@ class _TracePracticeState extends State<TracePractice> {
             style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 8),
         GestureDetector(
+          key: const ValueKey('trace-canvas'),
           onPanStart: _onPanStart,
           onPanUpdate: _onPanUpdate,
           onPanEnd: _onPanEnd,
@@ -119,6 +130,11 @@ class _TracePracticeState extends State<TracePractice> {
           const SizedBox(height: 8),
           Text(_hint!, style: Theme.of(context).textTheme.bodySmall),
         ],
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: _finish,
+          child: Text(l.traceSkip),
+        ),
       ],
     );
   }

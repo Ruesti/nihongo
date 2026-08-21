@@ -31,5 +31,6 @@
   "vocabCheckDont": "New to me",
   "traceStrokeProgress": "Trace the character — stroke {current} of {total}",
   "@traceStrokeProgress": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
-  "traceRetryHint": "Try again"
+  "traceRetryHint": "Try again",
+  "traceSkip": "Skip"
 }

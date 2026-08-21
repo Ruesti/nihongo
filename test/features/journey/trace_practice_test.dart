@@ -67,7 +67,9 @@ void main() {
     // its own), so its top-left is the origin that maps our 0..300 reference
     // points (same space KanjiSvgLoader sampled into) onto screen/global
     // coordinates for startGesture/moveTo (which operate in global space).
-    final detectorFinder = find.byType(GestureDetector);
+    // Keyed explicitly: the skip TextButton also contains a GestureDetector
+    // internally, so byType alone would be ambiguous.
+    final detectorFinder = find.byKey(const ValueKey('trace-canvas'));
     expect(detectorFinder, findsOneWidget);
     final origin = tester.getTopLeft(detectorFinder);
 
@@ -80,6 +82,36 @@ void main() {
       await tester.pump();
     }
 
+    expect(doneCount, 1);
+  });
+
+  testWidgets('skip button fires onDone exactly once (ungraded — never a gate)',
+      (tester) async {
+    var doneCount = 0;
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('de'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: TracePractice(
+          assetPath: 'assets/kanji_svg/3042.svg', // あ
+          onDone: () => doneCount++,
+        ),
+      ),
+    ));
+    await tester.pump();
+    await tester.pump();
+
+    final skipFinder = find.text('Überspringen');
+    expect(skipFinder, findsOneWidget);
+    await tester.tap(skipFinder);
+    await tester.pump();
+
+    expect(doneCount, 1);
+
+    // Tapping again (e.g. a stray double-tap) must not double-fire onDone.
+    await tester.tap(skipFinder);
+    await tester.pump();
     expect(doneCount, 1);
   });
 }

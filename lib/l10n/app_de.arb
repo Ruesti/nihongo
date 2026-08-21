@@ -30,5 +30,6 @@
   "vocabCheckKnow": "Kenne ich",
   "vocabCheckDont": "Neu für mich",
   "traceStrokeProgress": "Fahr das Zeichen nach — Strich {current} von {total}",
-  "traceRetryHint": "Noch mal versuchen"
+  "traceRetryHint": "Noch mal versuchen",
+  "traceSkip": "Überspringen"
 }

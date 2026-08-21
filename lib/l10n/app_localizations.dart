@@ -277,6 +277,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get traceRetryHint;
+
+  /// No description provided for @traceSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get traceSkip;
 }
 
 class _AppLocalizationsDelegate
