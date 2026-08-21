@@ -79,7 +79,8 @@ void main() {
       final trace = content as WriteTraceContent;
       expect(trace.glyph, 'あ');
       expect(trace.expectedReading, 'a');
-      expect(trace.strokeOrderAssetId, isNull); // no stroke assets yet (Phase 6)
+      // Since the JA seed wires KanjiVG stroke assets, kana carry their path.
+      expect(trace.strokeOrderAssetId, 'assets/kanji_svg/3042.svg');
     });
   });
 
