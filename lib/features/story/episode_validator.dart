@@ -18,6 +18,17 @@ void validateEpisode(Episode episode) {
   final budgetIds = {for (final item in episode.budget.items) item.id};
   final panelsByItem = <String, Set<int>>{};
 
+  // Structural check: panel indices must be unique across the whole episode
+  final seenPanelIndices = <int>{};
+  for (final panel in episode.allPanels) {
+    if (!seenPanelIndices.add(panel.index)) {
+      violations.add(
+        'Duplicate panel index ${panel.index}: panel indices must be '
+        'unique across the whole episode (structural).',
+      );
+    }
+  }
+
   for (final panel in episode.allPanels) {
     for (final bubble in panel.bubbles) {
       for (final token in bubble.tokens) {

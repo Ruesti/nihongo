@@ -116,4 +116,19 @@ void main() {
     expect(panel.notes, '');
     expect(panel.bubbles.single.tokens.single.itemId, isNull);
   });
+
+  test('defaults budget to empty items/glyphs when absent', () {
+    final episode = Episode.fromJson({
+      'id': 'ep_nobudget',
+      'seasonId': 'season_nobudget',
+      'orderIndex': 1,
+      'title': 'NoBudget',
+      'locale': 'ja',
+      'era': '1996',
+      'pages': [],
+    });
+
+    expect(episode.budget.items, isEmpty);
+    expect(episode.budget.glyphs, isEmpty);
+  });
 }

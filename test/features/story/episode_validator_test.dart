@@ -65,4 +65,53 @@ void main() {
       ),
     );
   });
+
+  test('structural: rejects an episode with duplicate panel indices across pages', () {
+    final episode = Episode.fromJson({
+      'id': 'ep_dup',
+      'seasonId': 'season_dup',
+      'orderIndex': 1,
+      'title': 'Dup',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+        {
+          'index': 2,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(
+      () => validateEpisode(episode),
+      throwsA(
+        isA<StoryValidationException>().having(
+          (e) => e.violations.join(),
+          'violations',
+          contains('Duplicate panel index'),
+        ),
+      ),
+    );
+  });
 }

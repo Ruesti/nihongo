@@ -245,7 +245,7 @@ class Episode {
         title: j['title'] as String,
         locale: j['locale'] as String,
         era: j['era'] as String,
-        budget: EpisodeBudget.fromJson(j['budget'] as Map<String, dynamic>),
+        budget: EpisodeBudget.fromJson(j['budget'] as Map<String, dynamic>? ?? const {}),
         pages: [
           for (final p in (j['pages'] as List? ?? const []))
             StoryPage.fromJson(p as Map<String, dynamic>),
