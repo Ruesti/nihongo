@@ -14,19 +14,29 @@ Harte Obergrenze. Nichts außerhalb dieser Liste wird in dieser Folge eingeführ
 
 ### Wörter (8)
 
-| # | Kana | Romaji | Bedeutung | Erstauftritt | Wiederholungen |
-|---|---|---|---|---|---|
-| 1 | すみません | sumimasen | Entschuldigung / Verzeihung | P07 | 3 |
-| 2 | あめ | ame | Regen | P11 | 4 |
-| 3 | かさ | kasa | Schirm | P15 | 3 |
-| 4 | これ | kore | das hier | P17 | 2 |
-| 5 | こわれた | kowareta | kaputt | P17 | 2 |
-| 6 | はい | hai | ja | P19 | 2 |
-| 7 | どうぞ | douzo | bitte, hier | P21 | 1 |
-| 8 | ありがとう | arigatou | danke | P22 | 2 |
+| # | Kana | Romaji | Bedeutung | Erstauftritt | Wiederholungen | Panels |
+|---|---|---|---|---|---|---|
+| 1 | すみません | sumimasen | Entschuldigung / Verzeihung | P07 | 2 | P07, P22 |
+| 2 | あめ | ame | Regen | P11 | 2 | P11, P24 |
+| 3 | かさ | kasa | Schirm | P21 (als Objekt bereits P15) | 2 | P21, P23 |
+| 4 | これ | kore | das hier | P17 | 2 | P17, P18 |
+| 5 | こわれた | kowareta | kaputt | P17 | 2 | P17, P18 |
+| 6 | はい | hai | ja | P19 | 2 | P19, P21 |
+| 7 | どうぞ | douzo | bitte, hier | P21 | 1 | P21 |
+| 8 | ありがとう | arigatou | danke | P20 | 2 | P20, P22 |
 
-**Invariante:** jedes Wort ≥ 2 Auftritte in unterschiedlichem Kontext. `douzo` ist die
+**Invariante:** jedes Wort ≥ 2 Auftritte in unterschiedlichem Kontext (als getaggtes,
+antippbares Token — nicht nur als Objekt oder Geste). `douzo` ist die einzige
 Ausnahme — es trägt den emotionalen Höhepunkt und darf einmalig bleiben.
+
+**Korrektur ggü. Erstfassung:** Die ursprüngliche Tabelle nannte Wiederholungszahlen,
+die im ausformulierten Panel-Skript nicht eingelöst wurden (sechs von acht Wörtern
+kamen dort nur einmal als echtes Token vor). Die Panels P18, P20, P21 und P23 wurden
+um kurze, charaktertreue Zeilen ergänzt (sie testet Gehörtes probeweise nach, ein
+leiser Dank vor dem großen am Schluss, eine idiomatische Ergänzung „はい" vor „どうぞ",
+ein gemurmeltes Nachsprechen des neuen Wortes), damit jedes Wort tatsächlich zweimal
+in unterschiedlichem Panel-Kontext auftaucht. Keine neuen Panels, keine Änderung an
+P09, P17 oder P19 in ihrer ursprünglichen Funktion.
 
 ### Kana (3)
 
@@ -199,8 +209,14 @@ dass Japanisch ohne Subjekt auskommt.
 ### P18
 **Bild:** Sie schaut ihn an. Sie hat kein Wort verstanden außer dem Zeigen.
 Sie nickt Richtung Werkbank. Frage ohne Sprache.
-**Text:** —
-**Interaktion:** keine.
+**Text (sie, gesprochen, leise, fragend):** これ… こわれた…？
+**Interaktion:**
+- Antippen → Audio, Kana
+- Beide Wörter über Wörterbuch auflösbar
+**Anmerkung:** Sie versteht die Wörter nicht, aber spricht sie probeweise nach —
+das ist keine Kommunikation, sondern lautes Einprägen. Die eigentliche Frage bleibt
+weiterhin die Geste (Nicken Richtung Werkbank), nicht der Satz. Zweiter Auftritt von
+`これ`/`こわれた` in anderem Panel-Kontext (siehe Budget).
 
 ### P19
 **Bild:** Er, minimal. Ein Nicken.
@@ -216,17 +232,24 @@ gestische, keine sprachliche.
 ### P20
 **Bild:** Zeitraffer-Panel, breit. Sie an der Werkbank, er im Hintergrund am Fernseher.
 Draußen dunkler geworden. Regen unverändert.
-**Text:** —
-**Interaktion:** keine.
+**Text (sie, gesprochen, beiläufig):** ありがとう
+**Interaktion:**
+- Antippen → Audio, Kana
+- Über Wörterbuch auflösbar
+**Anmerkung:** Ein leiser Dank zwischendurch, ohne dass er aufblickt oder antwortet —
+passt zu seiner Zurückhaltung (siehe P14: „er sagt nichts"). Erster, kleiner Auftritt
+von `ありがとう`, vor dem großen, emotional aufgeladenen zweiten Mal in P22.
 
 ### P21
 **Bild:** Sie hält den reparierten Schirm hoch, geöffnet. Er steht in der Tür.
-**Text (er, gesprochen):** かさ。どうぞ
+**Text (er, gesprochen):** はい。かさ。どうぞ
 **Interaktion:**
 - Antippen → Audio, Kana
-- `かさ` und `どうぞ` beide über Wörterbuch auflösbar
+- `はい`, `かさ` und `どうぞ` über Wörterbuch auflösbar
 **Anmerkung:** Emotionaler Höhepunkt. Er gibt ihr den Schirm, den sie selbst repariert
-hat — die Geste ist größer als das Objekt. Kein Panel darf das erklären.
+hat — die Geste ist größer als das Objekt. Kein Panel darf das erklären. Das
+vorangestellte `はい` ist idiomatisch (so übergibt man im Alltag etwas) und liefert
+nebenbei den zweiten Auftritt des Worts aus P19.
 
 ### P22
 **Bild:** Sie, Schirm in beiden Händen, Verbeugung angedeutet.
@@ -242,8 +265,13 @@ Serienhumor: Sprachkomik ohne Häme.)
 ### P23
 **Bild:** Draußen, unter dem Schirm. Erste Einstellung mit ihr im Regen und trocken.
 Hinter ihr das Licht des Ladens, noch an.
-**Text:** —
-**Interaktion:** keine.
+**Text (sie, gesprochen, gemurmelt):** かさ…
+**Interaktion:**
+- Antippen → Audio, Kana
+- Über Wörterbuch auflösbar
+**Anmerkung:** Sie spricht das neue Wort für sich selbst nach, testet es — ihre erste
+unaufgeforderte japanische Äußerung der Folge, an niemanden gerichtet. Zweiter Auftritt
+von `かさ` in anderem Panel-Kontext (siehe Budget).
 
 ### P24
 **Bild:** Sie hat unter dem Vordach angehalten, das Wörterbuch aufgeschlagen,
