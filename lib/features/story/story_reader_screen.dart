@@ -40,7 +40,8 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   Future<void> _restorePosition() async {
     final saved = await widget.progressStore.lastPosition(widget.episode.id);
     if (!mounted) return;
-    setState(() => _position = saved ?? 0);
+    final clamped = saved == null ? 0 : saved.clamp(0, _panels.length - 1);
+    setState(() => _position = clamped);
   }
 
   void _advance() {

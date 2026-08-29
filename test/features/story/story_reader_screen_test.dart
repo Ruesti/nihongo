@@ -159,4 +159,30 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+      'persists the position after advancing, so a fresh widget instance resumes there',
+      (tester) async {
+    final store = await _freshStore();
+    final episode = _twoPanelEpisode();
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(episode: episode, progressStore: store),
+    ));
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pump();
+    expect(find.text('Second panel text'), findsOneWidget);
+
+    // Rebuild a fresh widget instance against the same store — if advancing
+    // didn't actually persist, this would come up on the first panel again.
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(episode: episode, progressStore: store),
+    ));
+    await tester.pump();
+
+    expect(find.text('Second panel text'), findsOneWidget);
+    expect(find.text('First panel text'), findsNothing);
+  });
 }
