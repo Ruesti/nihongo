@@ -287,7 +287,8 @@ void main() {
     expect(find.text('Second panel text'), findsNothing);
   });
 
-  testWidgets('tapping a non-lookupable token plays no audio (INV-7)',
+  testWidgets(
+      'tapping a non-lookupable token plays no audio and falls through to advance (INV-7)',
       (tester) async {
     final store = await _freshStore();
     final speakCalls = <String>[];
@@ -318,6 +319,19 @@ void main() {
               'thoughts': [],
               'interactions': [],
             },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'narrator',
+                  'text': 'Second panel text',
+                  'tokens': [],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
           ],
         },
       ],
@@ -337,6 +351,65 @@ void main() {
     await tester.pump();
 
     expect(speakCalls, isEmpty);
+    expect(find.text('Second panel text'), findsOneWidget);
+  });
+
+  testWidgets(
+      'a multi-token bubble preserves punctuation between tokens and taps only the tapped token',
+      (tester) async {
+    final store = await _freshStore();
+    final speakCalls = <String>[];
+    final episode = Episode.fromJson({
+      'id': 'ep_test_multi_token',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Multi Token Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'ladenbesitzer',
+                  'text': 'これ、こわれた',
+                  'tokens': [
+                    {'surface': 'これ', 'lookupable': true},
+                    {'surface': 'こわれた', 'lookupable': false},
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: (text) async => speakCalls.add(text),
+      ),
+    ));
+    await tester.pump();
+
+    expect(find.text('これ'), findsOneWidget);
+    expect(find.text('、'), findsOneWidget);
+    expect(find.text('こわれた'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('これ'));
+    await tester.tap(find.text('これ'));
+    await tester.pump();
+
+    expect(speakCalls, ['これ']);
   });
 
   testWidgets('a token with a reading displays it above the surface',

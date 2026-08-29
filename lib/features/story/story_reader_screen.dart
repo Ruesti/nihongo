@@ -150,11 +150,24 @@ class _BubbleContent extends StatelessWidget {
     if (bubble.tokens.isEmpty) {
       return Text(bubble.text);
     }
+    final spans = <Widget>[];
+    var cursor = 0;
+    for (final token in bubble.tokens) {
+      final start = bubble.text.indexOf(token.surface, cursor);
+      if (start >= 0) {
+        if (start > cursor) {
+          spans.add(Text(bubble.text.substring(cursor, start)));
+        }
+        cursor = start + token.surface.length;
+      }
+      spans.add(_tokenWidget(context, token));
+    }
+    if (cursor < bubble.text.length) {
+      spans.add(Text(bubble.text.substring(cursor)));
+    }
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.end,
-      children: [
-        for (final token in bubble.tokens) _tokenWidget(context, token),
-      ],
+      children: spans,
     );
   }
 
