@@ -175,8 +175,19 @@ void main() {
     await tester.pump();
     expect(find.text('Second panel text'), findsOneWidget);
 
-    // Rebuild a fresh widget instance against the same store — if advancing
-    // didn't actually persist, this would come up on the first panel again.
+    // Assert directly on the store: proves the tap actually persisted,
+    // independent of any widget lifecycle behavior.
+    expect(await store.lastPosition(episode.id), 1);
+
+    // Unmount completely, then mount a genuinely fresh instance — with no
+    // widget tree present in between, Flutter cannot reuse the old State,
+    // so this actually re-runs initState/_restorePosition against the
+    // store, unlike simply calling pumpWidget again with the same widget
+    // type and key (which Flutter would treat as an update, not a fresh
+    // instance).
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+
     await tester.pumpWidget(MaterialApp(
       home: StoryReaderScreen(episode: episode, progressStore: store),
     ));
