@@ -114,11 +114,73 @@ void main() {
 
     expect(find.text('unleserliche Notiz'), findsOneWidget);
 
-    // No gesture handler wraps the note at all, so tapping it is a no-op —
-    // nothing new appears, nothing throws.
+    // Structural check: no GestureDetector wraps the note at all — this
+    // would catch a future regression (e.g. a no-op GestureDetector added
+    // "for consistency") that the behavioral check below cannot.
+    expect(
+      find.ancestor(
+        of: find.text('unleserliche Notiz'),
+        matching: find.byType(GestureDetector),
+      ),
+      findsNothing,
+    );
+
+    // Behavioral check: tapping the note is a no-op — nothing new appears,
+    // nothing throws.
     await tester.tap(find.text('unleserliche Notiz'));
     await tester.pump();
     expect(find.text('unleserliche Notiz'), findsOneWidget);
+  });
+
+  testWidgets(
+      'an entry whose headword matches no gojūon row appears under "Weitere" instead of disappearing',
+      (tester) async {
+    const entries = [
+      DictionaryEntry(id: 'lex_katakana', headword: 'コーヒー', meaning: 'Kaffee'),
+    ];
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DictionarySheet(entries: entries, knownIds: const {'lex_katakana'}),
+      ),
+    ));
+
+    expect(find.text('Weitere'), findsOneWidget);
+    expect(find.text('コーヒー'), findsNothing);
+
+    await tester.tap(find.text('Weitere'));
+    await tester.pump();
+
+    expect(find.text('コーヒー'), findsOneWidget);
+    expect(find.text('Kaffee'), findsOneWidget);
+  });
+
+  testWidgets(
+      'the "Weitere" group does not appear when every entry is reachable via a normal row',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DictionarySheet(entries: _entries, knownIds: const {}),
+      ),
+    ));
+
+    expect(find.text('Weitere'), findsNothing);
+  });
+
+  testWidgets('an entry with an empty headword does not crash and lands in "Weitere"',
+      (tester) async {
+    const entries = [
+      DictionaryEntry(id: 'lex_empty', headword: '', meaning: 'malformed'),
+    ];
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DictionarySheet(entries: entries, knownIds: const {}),
+      ),
+    ));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Weitere'), findsOneWidget);
   });
 
   testWidgets(

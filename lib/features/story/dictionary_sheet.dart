@@ -27,11 +27,25 @@ class DictionarySheet extends StatefulWidget {
 }
 
 class _DictionarySheetState extends State<DictionarySheet> {
+  static const _otherGroupName = 'Weitere';
+
   ScriptGroup? _selectedGroup;
 
+  bool _matchesGroup(DictionaryEntry entry, ScriptGroup group) {
+    return entry.headword.isNotEmpty &&
+        group.characters.contains(entry.headword[0]);
+  }
+
   List<DictionaryEntry> _entriesForGroup(ScriptGroup group) {
+    return widget.entries.where((e) => _matchesGroup(e, group)).toList();
+  }
+
+  /// Entries whose headword doesn't start with any gojūon-row character —
+  /// e.g. a katakana or kanji headword, or an empty headword. Without this
+  /// bucket such an entry would never appear anywhere when browsing.
+  List<DictionaryEntry> get _otherEntries {
     return widget.entries
-        .where((e) => group.characters.contains(e.headword[0]))
+        .where((e) => dictionaryGroups.every((g) => !_matchesGroup(e, g)))
         .toList();
   }
 
@@ -39,6 +53,7 @@ class _DictionarySheetState extends State<DictionarySheet> {
   Widget build(BuildContext context) {
     final group = _selectedGroup;
     if (group == null) {
+      final other = _otherEntries;
       return ListView(
         key: const ValueKey('dictionary-group-list'),
         children: [
@@ -48,9 +63,24 @@ class _DictionarySheetState extends State<DictionarySheet> {
               title: Text(g.name),
               onTap: () => setState(() => _selectedGroup = g),
             ),
+          if (other.isNotEmpty)
+            ListTile(
+              key: const ValueKey('dictionary-group-other'),
+              title: const Text(_otherGroupName),
+              onTap: () => setState(
+                () => _selectedGroup = const ScriptGroup(
+                  name: _otherGroupName,
+                  characters: [],
+                  romanizations: [],
+                ),
+              ),
+            ),
         ],
       );
     }
+
+    final entries =
+        group.name == _otherGroupName ? _otherEntries : _entriesForGroup(group);
 
     return Column(
       key: const ValueKey('dictionary-entry-list'),
@@ -64,7 +94,7 @@ class _DictionarySheetState extends State<DictionarySheet> {
         Expanded(
           child: ListView(
             children: [
-              for (final entry in _entriesForGroup(group)) _entryTile(entry),
+              for (final entry in entries) _entryTile(entry),
             ],
           ),
         ),
