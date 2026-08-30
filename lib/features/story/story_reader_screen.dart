@@ -9,18 +9,21 @@ import 'story_progress_store.dart';
 /// placeholder image.
 const double _panelAspectRatio = 0.7;
 
-/// Reads an [Episode] panel by panel, tap to advance. No bubble or thought
-/// is interactive yet (INV-1: the whole episode must be readable without
-/// solving anything) — that begins in a later phase. Resumes from the last
-/// panel the reader reached, persisted via [progressStore].
+/// Reads an [Episode] panel by panel, tap to advance. Tapping a lookupable
+/// token plays its audio and shows its reading (INV-2: audio + kana, never
+/// meaning). Tokens marked `lookupable: false` render as inert text — no
+/// tap handler, no visual hint, no lock indicator (INV-7). Resumes from the
+/// last panel the reader reached, persisted via [progressStore].
 class StoryReaderScreen extends StatefulWidget {
   final Episode episode;
   final StoryProgressStore progressStore;
+  final Future<void> Function(String text) speak;
 
   const StoryReaderScreen({
     super.key,
     required this.episode,
     required this.progressStore,
+    required this.speak,
   });
 
   @override
@@ -112,7 +115,10 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                     for (final bubble in panel.bubbles)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(bubble.text),
+                        child: _BubbleContent(
+                          bubble: bubble,
+                          speak: widget.speak,
+                        ),
                       ),
                   ],
                 ),
@@ -121,6 +127,70 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Renders one bubble's content. A bubble with no tokens (e.g. an
+/// environmental note with nothing tappable in it) renders as plain text,
+/// unchanged from phase P2. Otherwise each token renders individually:
+/// lookupable tokens are tappable and play audio (INV-2); non-lookupable
+/// tokens render as inert text with no gesture handler at all (INV-7 — not
+/// merely disabled, but genuinely absent as an interactive element, so a
+/// tap on one falls through to the panel's own advance gesture, same as
+/// tapping empty space).
+class _BubbleContent extends StatelessWidget {
+  final StoryBubble bubble;
+  final Future<void> Function(String text) speak;
+
+  const _BubbleContent({required this.bubble, required this.speak});
+
+  @override
+  Widget build(BuildContext context) {
+    if (bubble.tokens.isEmpty) {
+      return Text(bubble.text);
+    }
+    final spans = <Widget>[];
+    var cursor = 0;
+    for (final token in bubble.tokens) {
+      final start = bubble.text.indexOf(token.surface, cursor);
+      if (start >= 0) {
+        if (start > cursor) {
+          spans.add(Text(bubble.text.substring(cursor, start)));
+        }
+        cursor = start + token.surface.length;
+      }
+      spans.add(_tokenWidget(context, token));
+    }
+    if (cursor < bubble.text.length) {
+      spans.add(Text(bubble.text.substring(cursor)));
+    }
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.end,
+      children: spans,
+    );
+  }
+
+  Widget _tokenWidget(BuildContext context, StoryToken token) {
+    final content = token.reading == null
+        ? Text(token.surface)
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                token.reading!,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              Text(token.surface),
+            ],
+          );
+
+    if (!token.lookupable) return content;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => speak(token.surface),
+      child: content,
     );
   }
 }

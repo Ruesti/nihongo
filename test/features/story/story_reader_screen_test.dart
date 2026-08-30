@@ -55,14 +55,19 @@ Future<StoryProgressStore> _freshStore() async {
   return StoryProgressStore(await SharedPreferences.getInstance());
 }
 
+Future<void> _noopSpeak(String text) async {}
+
 void main() {
   testWidgets('shows the first panel and advances to the next on tap',
       (tester) async {
     final store = await _freshStore();
 
     await tester.pumpWidget(MaterialApp(
-      home:
-          StoryReaderScreen(episode: _twoPanelEpisode(), progressStore: store),
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
@@ -82,8 +87,11 @@ void main() {
     final store = await _freshStore();
 
     await tester.pumpWidget(MaterialApp(
-      home:
-          StoryReaderScreen(episode: _twoPanelEpisode(), progressStore: store),
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
@@ -110,8 +118,11 @@ void main() {
     final store = await _freshStore();
 
     await tester.pumpWidget(MaterialApp(
-      home:
-          StoryReaderScreen(episode: _twoPanelEpisode(), progressStore: store),
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
@@ -131,7 +142,11 @@ void main() {
     await store.savePosition(episode.id, 1);
 
     await tester.pumpWidget(MaterialApp(
-      home: StoryReaderScreen(episode: episode, progressStore: store),
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
@@ -145,7 +160,11 @@ void main() {
     final episode = Episode.fromJson(pilot01RegenJson);
 
     await tester.pumpWidget(MaterialApp(
-      home: StoryReaderScreen(episode: episode, progressStore: store),
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
@@ -167,7 +186,11 @@ void main() {
     final episode = _twoPanelEpisode();
 
     await tester.pumpWidget(MaterialApp(
-      home: StoryReaderScreen(episode: episode, progressStore: store),
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
@@ -175,25 +198,265 @@ void main() {
     await tester.pump();
     expect(find.text('Second panel text'), findsOneWidget);
 
-    // Assert directly on the store: proves the tap actually persisted,
-    // independent of any widget lifecycle behavior.
     expect(await store.lastPosition(episode.id), 1);
 
-    // Unmount completely, then mount a genuinely fresh instance — with no
-    // widget tree present in between, Flutter cannot reuse the old State,
-    // so this actually re-runs initState/_restorePosition against the
-    // store, unlike simply calling pumpWidget again with the same widget
-    // type and key (which Flutter would treat as an update, not a fresh
-    // instance).
+    // Unmount completely so the next pump forces a genuinely fresh State —
+    // pumping the same widget type/key again would let Flutter reuse the
+    // existing State instead of re-running initState/_restorePosition.
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
 
     await tester.pumpWidget(MaterialApp(
-      home: StoryReaderScreen(episode: episode, progressStore: store),
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
     ));
     await tester.pump();
 
     expect(find.text('Second panel text'), findsOneWidget);
     expect(find.text('First panel text'), findsNothing);
+  });
+
+  testWidgets(
+      'tapping a lookupable token plays its audio and does not advance the panel',
+      (tester) async {
+    final store = await _freshStore();
+    final speakCalls = <String>[];
+    final episode = Episode.fromJson({
+      'id': 'ep_test_tap',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Tap Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'protagonist',
+                  'text': 'すみません',
+                  'tokens': [
+                    {'surface': 'すみません', 'lookupable': true},
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'narrator',
+                  'text': 'Second panel text',
+                  'tokens': [],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: (text) async => speakCalls.add(text),
+      ),
+    ));
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('すみません'));
+    await tester.tap(find.text('すみません'));
+    await tester.pump();
+
+    expect(speakCalls, ['すみません']);
+    expect(find.text('すみません'), findsOneWidget);
+    expect(find.text('Second panel text'), findsNothing);
+  });
+
+  testWidgets(
+      'tapping a non-lookupable token plays no audio and falls through to advance (INV-7)',
+      (tester) async {
+    final store = await _freshStore();
+    final speakCalls = <String>[];
+    final episode = Episode.fromJson({
+      'id': 'ep_test_locked',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Locked Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'signage',
+                  'text': '駅',
+                  'tokens': [
+                    {'surface': '駅', 'lookupable': false},
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'narrator',
+                  'text': 'Second panel text',
+                  'tokens': [],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: (text) async => speakCalls.add(text),
+      ),
+    ));
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('駅'));
+    await tester.tap(find.text('駅'));
+    await tester.pump();
+
+    expect(speakCalls, isEmpty);
+    expect(find.text('Second panel text'), findsOneWidget);
+  });
+
+  testWidgets(
+      'a multi-token bubble preserves punctuation between tokens and taps only the tapped token',
+      (tester) async {
+    final store = await _freshStore();
+    final speakCalls = <String>[];
+    final episode = Episode.fromJson({
+      'id': 'ep_test_multi_token',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Multi Token Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'ladenbesitzer',
+                  'text': 'これ、こわれた',
+                  'tokens': [
+                    {'surface': 'これ', 'lookupable': true},
+                    {'surface': 'こわれた', 'lookupable': false},
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: (text) async => speakCalls.add(text),
+      ),
+    ));
+    await tester.pump();
+
+    expect(find.text('これ'), findsOneWidget);
+    expect(find.text('、'), findsOneWidget);
+    expect(find.text('こわれた'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('これ'));
+    await tester.tap(find.text('これ'));
+    await tester.pump();
+
+    expect(speakCalls, ['これ']);
+  });
+
+  testWidgets('a token with a reading displays it above the surface',
+      (tester) async {
+    final store = await _freshStore();
+    final episode = Episode.fromJson({
+      'id': 'ep_test_reading',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Reading Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'signage',
+                  'text': '駅',
+                  'tokens': [
+                    {'surface': '駅', 'reading': 'えき', 'lookupable': true},
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+      ),
+    ));
+    await tester.pump();
+
+    expect(find.text('駅'), findsOneWidget);
+    expect(find.text('えき'), findsOneWidget);
   });
 }
