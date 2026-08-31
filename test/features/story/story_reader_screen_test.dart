@@ -643,4 +643,37 @@ void main() {
     expect(find.text('すみません'), findsOneWidget);
     expect(find.text('Entschuldigung / Verzeihung'), findsNothing);
   });
+
+  testWidgets(
+      'reading the real Folge 01 fixture: P10 shows the visible consequence after P09',
+      (tester) async {
+    final store = await _freshStore();
+    final episode = Episode.fromJson(pilot01RegenJson);
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: folge01DictionaryEntries,
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+
+    // Advance to P09 (position index 8), which auto-opens the dictionary.
+    for (var i = 0; i < 8; i++) {
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+
+    // Close the book and read on — the next panel carries the consequence.
+    await tester.tapAt(const Offset(400, 50));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Weg.'), findsOneWidget);
+  });
 }
