@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nihongo_app/features/story/dictionary.dart';
 import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:nihongo_app/features/story/story_reader_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../fixtures/story/folge_01_dictionary_fixture.dart';
 import '../../fixtures/story/pilot_01_regen_fixture.dart';
 
 Episode _twoPanelEpisode() => Episode.fromJson({
@@ -50,6 +52,51 @@ Episode _twoPanelEpisode() => Episode.fromJson({
       ],
     });
 
+Episode _episodeWithDictionaryOnSecondPanel() => Episode.fromJson({
+      'id': 'ep_test_dictionary',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Dictionary Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'narrator',
+                  'text': 'First panel text',
+                  'tokens': [],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'narrator',
+                  'text': 'Second panel text',
+                  'tokens': [],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [
+                {'type': 'dictionary', 'diegetic': true},
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
 Future<StoryProgressStore> _freshStore() async {
   SharedPreferences.setMockInitialValues({});
   return StoryProgressStore(await SharedPreferences.getInstance());
@@ -67,6 +114,8 @@ void main() {
         episode: _twoPanelEpisode(),
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -91,6 +140,8 @@ void main() {
         episode: _twoPanelEpisode(),
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -122,6 +173,8 @@ void main() {
         episode: _twoPanelEpisode(),
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -146,6 +199,8 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -164,13 +219,15 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: folge01DictionaryEntries,
+        knownIds: const {},
       ),
     ));
     await tester.pump();
 
     for (var i = 0; i < 23; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
-      await tester.pump();
+      await tester.pumpAndSettle();
     }
 
     expect(
@@ -190,6 +247,8 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -200,9 +259,6 @@ void main() {
 
     expect(await store.lastPosition(episode.id), 1);
 
-    // Unmount completely so the next pump forces a genuinely fresh State —
-    // pumping the same widget type/key again would let Flutter reuse the
-    // existing State instead of re-running initState/_restorePosition.
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
 
@@ -211,6 +267,8 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -274,11 +332,12 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: (text) async => speakCalls.add(text),
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
 
-    await tester.ensureVisible(find.text('すみません'));
     await tester.tap(find.text('すみません'));
     await tester.pump();
 
@@ -342,11 +401,12 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: (text) async => speakCalls.add(text),
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
 
-    await tester.ensureVisible(find.text('駅'));
     await tester.tap(find.text('駅'));
     await tester.pump();
 
@@ -397,6 +457,8 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: (text) async => speakCalls.add(text),
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
@@ -452,11 +514,120 @@ void main() {
         episode: episode,
         progressStore: store,
         speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
       ),
     ));
     await tester.pump();
 
     expect(find.text('駅'), findsOneWidget);
     expect(find.text('えき'), findsOneWidget);
+  });
+
+  testWidgets(
+      'reaching a panel with a dictionary interaction opens the dictionary sheet automatically',
+      (tester) async {
+    final store = await _freshStore();
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDictionaryOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+  });
+
+  testWidgets('a panel without a dictionary interaction does not open the sheet',
+      (tester) async {
+    final store = await _freshStore();
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+  });
+
+  testWidgets(
+      'the dictionary sheet can be dismissed and reading continues normally',
+      (tester) async {
+    final store = await _freshStore();
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDictionaryOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+
+    await tester.tap(find.byType(ModalBarrier).last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+
+    expect(find.text('Second panel text'), findsOneWidget);
+  });
+
+  testWidgets(
+      'reading the real Folge 01 fixture: reaching P09 opens the dictionary with nothing resolvable yet',
+      (tester) async {
+    final store = await _freshStore();
+    final episode = Episode.fromJson(pilot01RegenJson);
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: folge01DictionaryEntries,
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+
+    for (var i = 0; i < 7; i++) {
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pump();
+    }
+    // The 8th tap lands on P09 (position index 8), which carries the
+    // dictionary interaction in the real fixture.
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+
+    await tester.tap(find.text('さ行'));
+    await tester.pump();
+
+    expect(find.text('すみません'), findsOneWidget);
+    expect(find.text('Entschuldigung / Verzeihung'), findsNothing);
   });
 }
