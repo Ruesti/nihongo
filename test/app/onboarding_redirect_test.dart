@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app.dart';
 import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
-import 'package:nihongo_app/features/home/home_screen.dart';
+import 'package:nihongo_app/features/journey/journey_home.dart';
 import 'package:nihongo_app/features/onboarding/onboarding_flow.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,7 +28,7 @@ void main() {
   });
 
   testWidgets(
-      'completing onboarding escapes the redirect loop and reaches Home',
+      'completing onboarding escapes the redirect loop and reaches JourneyHome',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
     final db = LearningDb.forTesting();
@@ -48,8 +48,8 @@ void main() {
     // SharedPreferences had no in-memory effect and the router bounced the
     // user straight back to /onboarding after `ctx.go('/')`. Driving the
     // whole beginner path end-to-end (rather than asserting on the provider
-    // value directly) proves the user actually lands on Home, not just that
-    // the flag flipped.
+    // value directly) proves the user actually lands on the journey front
+    // door, not just that the flag flipped.
     expect(find.byType(OnboardingFlow), findsOneWidget);
 
     // Welcome → Method (tap by widget type/order to stay locale-agnostic;
@@ -63,12 +63,11 @@ void main() {
     // of the two placement options; the second ("I already know some") is
     // an OutlinedButton.
     await tester.tap(find.byType(FilledButton).first);
-    // Not pumpAndSettle: once Home is reached, its mascot runs an infinite
-    // `AnimationController.repeat(reverse: true)` (see MascotWidget), which
-    // never stops scheduling frames — pumpAndSettle would hang until its own
-    // timeout. Instead pump in bounded steps, long enough for `_finish`'s
-    // async work (DB write, SharedPreferences, provider flip, navigation)
-    // and Home's data providers to resolve.
+    // Not pumpAndSettle: `_finish`'s async work (DB write, SharedPreferences,
+    // provider flip, navigation) and JourneyHome's `currentStepProvider`
+    // both need real time to resolve. JourneyHome itself carries no infinite
+    // animation, but pumping in bounded steps here (rather than assuming a
+    // single frame suffices) keeps this robust to that async chain.
     await tester.pump();
     for (var i = 0;
         i < 20 && find.byType(OnboardingFlow).evaluate().isNotEmpty;
@@ -77,6 +76,6 @@ void main() {
     }
 
     expect(find.byType(OnboardingFlow), findsNothing);
-    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(JourneyHome), findsOneWidget);
   });
 }

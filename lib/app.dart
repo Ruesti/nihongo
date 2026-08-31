@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
-import 'features/home/home_screen.dart';
+import 'features/journey/journey_home.dart';
 import 'features/kaiwa/kaiwa_hub.dart';
 import 'features/kanji_games/games_hub.dart';
 import 'features/lesson/lesson_screen.dart';
@@ -29,7 +29,7 @@ final List<RouteBase> _routes = [
       GoRoute(
         path: '/',
         pageBuilder: (ctx, state) => const NoTransitionPage(
-            child: HomeScreen()),
+            child: JourneyHome()),
       ),
       GoRoute(
         path: '/read',
@@ -148,16 +148,6 @@ class _MainShellState extends State<_MainShell> {
       label: 'Home',
     ),
     NavigationDestination(
-      icon: Icon(Icons.menu_book_outlined),
-      selectedIcon: Icon(Icons.menu_book),
-      label: 'Lesen',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.refresh_outlined),
-      selectedIcon: Icon(Icons.refresh),
-      label: 'Review',
-    ),
-    NavigationDestination(
       icon: Icon(Icons.bar_chart_outlined),
       selectedIcon: Icon(Icons.bar_chart),
       label: 'Fortschritt',
@@ -179,7 +169,7 @@ class _MainShellState extends State<_MainShell> {
     ),
   ];
 
-  static const _routes = ['/', '/read', '/review', '/progress', '/kaiwa', '/games', '/settings'];
+  static const _routes = ['/', '/progress', '/kaiwa', '/games', '/settings'];
 
   void _onDestinationSelected(int index) {
     setState(() => _selectedIndex = index);

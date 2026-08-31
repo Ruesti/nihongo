@@ -9,14 +9,19 @@
       "imageAsset": "assets/comic/placeholder_page.png",
       "aspectRatio": 0.7,
       "bubbles": [
-        {"rect": {"left": 0.1, "top": 0.1, "right": 0.5, "bottom": 0.2},
+        {"rect": {"left": 0.08, "top": 0.06, "right": 0.5, "bottom": 0.18},
          "lang": "l2", "text": "猫", "reading": "ねこ",
          "tokens": [{"surface": "猫", "lemma": "猫", "reading": "ねこ", "pos": "n", "charStart": 0, "charEnd": 1}]},
-        {"rect": {"left": 0.5, "top": 0.6, "right": 0.9, "bottom": 0.72},
+        {"rect": {"left": 0.1, "top": 0.28, "right": 0.9, "bottom": 0.4},
+         "lang": "l1", "text": "Die Katze trifft einen Hund.", "tokens": []},
+        {"rect": {"left": 0.55, "top": 0.5, "right": 0.94, "bottom": 0.62},
          "lang": "l2", "text": "犬", "reading": "いぬ",
          "tokens": [{"surface": "犬", "lemma": "犬", "reading": "いぬ", "pos": "n", "charStart": 0, "charEnd": 1}]},
-        {"rect": {"left": 0.1, "top": 0.8, "right": 0.6, "bottom": 0.92},
-         "lang": "l1", "text": "… und so weiter.", "tokens": []}
+        {"rect": {"left": 0.06, "top": 0.68, "right": 0.4, "bottom": 0.8},
+         "lang": "l2", "text": "水", "reading": "みず",
+         "tokens": [{"surface": "水", "lemma": "水", "reading": "みず", "pos": "n", "charStart": 0, "charEnd": 1}]},
+        {"rect": {"left": 0.1, "top": 0.84, "right": 0.9, "bottom": 0.96},
+         "lang": "l1", "text": "Beide trinken Wasser.", "tokens": []}
       ]
     }
   ]

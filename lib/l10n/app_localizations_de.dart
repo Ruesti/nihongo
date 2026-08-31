@@ -67,4 +67,44 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get encounterNext => 'Verstanden';
+
+  @override
+  String get journeyStart => 'Los geht\'s';
+
+  @override
+  String get journeyContinue => 'Weiter';
+
+  @override
+  String journeyChapterLabel(int n) {
+    return 'Kapitel $n';
+  }
+
+  @override
+  String get journeyPathComplete => 'Geschafft — mehr Geschichte kommt bald.';
+
+  @override
+  String get journeyLessonStepTitle => 'Neu lernen';
+
+  @override
+  String get journeyMangaStepTitle => 'Weiterlesen';
+
+  @override
+  String get vocabCheckIntro => 'Welche Wörter kennst du schon?';
+
+  @override
+  String get vocabCheckKnow => 'Kenne ich';
+
+  @override
+  String get vocabCheckDont => 'Neu für mich';
+
+  @override
+  String traceStrokeProgress(int current, int total) {
+    return 'Fahr das Zeichen nach — Strich $current von $total';
+  }
+
+  @override
+  String get traceRetryHint => 'Noch mal versuchen';
+
+  @override
+  String get traceSkip => 'Überspringen';
 }

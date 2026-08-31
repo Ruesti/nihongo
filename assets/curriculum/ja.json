@@ -1,0 +1,14 @@
+{
+  "languageCode": "ja",
+  "title": "Neko no hi",
+  "steps": [
+    {"id": "c1-lesson", "kind": "lesson", "chapterRef": "Kapitel 1",
+     "characterIds": ["char_ja_a", "char_ja_i", "char_ja_u"], "lexemeIds": ["lex_ja_cat", "lex_ja_water"], "grammarIds": []},
+    {"id": "c1-manga", "kind": "manga", "chapterRef": "Kapitel 1",
+     "comicAsset": "assets/comic/ja_l0.json"},
+    {"id": "c2-lesson", "kind": "lesson", "chapterRef": "Kapitel 2",
+     "characterIds": ["char_ja_e", "char_ja_o", "char_ja_ka", "char_ja_ki"], "lexemeIds": ["lex_ja_dog"], "grammarIds": []},
+    {"id": "c2-manga", "kind": "manga", "chapterRef": "Kapitel 2",
+     "comicAsset": "assets/comic/ja_l1.json"}
+  ]
+}

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../core/db/learning_db.dart';
+import '../../data/kana_strokes.dart';
 
 Future<void> seedJaPack(LearningDb db) async {
   await db.transaction(() async {
@@ -74,6 +75,8 @@ Future<void> seedJaPack(LearningDb db) async {
       ('char_ja_u', 'う', ['u'], 'vowel u'),
       ('char_ja_e', 'え', ['e'], 'vowel e'),
       ('char_ja_o', 'お', ['o'], 'vowel o'),
+      ('char_ja_ka', 'か', ['ka'], 'ka'),
+      ('char_ja_ki', 'き', ['ki'], 'ki'),
     ];
     for (final (id, glyph, readings, meaning) in charRows) {
       await db.into(db.characters).insertOnConflictUpdate(
@@ -83,6 +86,7 @@ Future<void> seedJaPack(LearningDb db) async {
               glyph: Value(glyph),
               readingsJson: Value(jsonEncode(readings)),
               meaning: Value(meaning),
+              strokeOrderAssetId: Value(strokeAssetForKana(glyph)),
             ),
           );
     }

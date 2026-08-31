@@ -18,5 +18,18 @@
   "no": "Nein",
   "encounterListen": "Hören",
   "encounterTrace": "Nachfahren",
-  "encounterNext": "Verstanden"
+  "encounterNext": "Verstanden",
+  "journeyStart": "Los geht's",
+  "journeyContinue": "Weiter",
+  "journeyChapterLabel": "Kapitel {n}",
+  "@journeyChapterLabel": { "placeholders": { "n": { "type": "int" } } },
+  "journeyPathComplete": "Geschafft — mehr Geschichte kommt bald.",
+  "journeyLessonStepTitle": "Neu lernen",
+  "journeyMangaStepTitle": "Weiterlesen",
+  "vocabCheckIntro": "Welche Wörter kennst du schon?",
+  "vocabCheckKnow": "Kenne ich",
+  "vocabCheckDont": "Neu für mich",
+  "traceStrokeProgress": "Fahr das Zeichen nach — Strich {current} von {total}",
+  "traceRetryHint": "Noch mal versuchen",
+  "traceSkip": "Überspringen"
 }

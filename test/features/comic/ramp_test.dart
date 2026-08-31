@@ -21,7 +21,7 @@ void main() {
 
   test('measuredL2Ratio counts L2 bubbles over all bubbles', () async {
     final l1 = await load('assets/comic/ja_l1.json');
-    // ja_l1 page: 2 L2 + 1 L1 = 2/3
-    expect(measuredL2Ratio(l1.pages.first), closeTo(2 / 3, 0.001));
+    // ja_l1 page: 3 L2 (猫/犬/水) + 2 L1 = 3/5
+    expect(measuredL2Ratio(l1.pages.first), closeTo(3 / 5, 0.001));
   });
 }

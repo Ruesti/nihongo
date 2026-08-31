@@ -67,4 +67,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get encounterNext => 'Got it';
+
+  @override
+  String get journeyStart => 'Let\'s go';
+
+  @override
+  String get journeyContinue => 'Continue';
+
+  @override
+  String journeyChapterLabel(int n) {
+    return 'Chapter $n';
+  }
+
+  @override
+  String get journeyPathComplete => 'Done — more story coming soon.';
+
+  @override
+  String get journeyLessonStepTitle => 'Learn something new';
+
+  @override
+  String get journeyMangaStepTitle => 'Read on';
+
+  @override
+  String get vocabCheckIntro => 'Which words do you already know?';
+
+  @override
+  String get vocabCheckKnow => 'I know it';
+
+  @override
+  String get vocabCheckDont => 'New to me';
+
+  @override
+  String traceStrokeProgress(int current, int total) {
+    return 'Trace the character — stroke $current of $total';
+  }
+
+  @override
+  String get traceRetryHint => 'Try again';
+
+  @override
+  String get traceSkip => 'Skip';
 }

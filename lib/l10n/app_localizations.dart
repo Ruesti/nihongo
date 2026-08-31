@@ -211,6 +211,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it'**
   String get encounterNext;
+
+  /// No description provided for @journeyStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go'**
+  String get journeyStart;
+
+  /// No description provided for @journeyContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get journeyContinue;
+
+  /// No description provided for @journeyChapterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {n}'**
+  String journeyChapterLabel(int n);
+
+  /// No description provided for @journeyPathComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Done — more story coming soon.'**
+  String get journeyPathComplete;
+
+  /// No description provided for @journeyLessonStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn something new'**
+  String get journeyLessonStepTitle;
+
+  /// No description provided for @journeyMangaStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read on'**
+  String get journeyMangaStepTitle;
+
+  /// No description provided for @vocabCheckIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Which words do you already know?'**
+  String get vocabCheckIntro;
+
+  /// No description provided for @vocabCheckKnow.
+  ///
+  /// In en, this message translates to:
+  /// **'I know it'**
+  String get vocabCheckKnow;
+
+  /// No description provided for @vocabCheckDont.
+  ///
+  /// In en, this message translates to:
+  /// **'New to me'**
+  String get vocabCheckDont;
+
+  /// No description provided for @traceStrokeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Trace the character — stroke {current} of {total}'**
+  String traceStrokeProgress(int current, int total);
+
+  /// No description provided for @traceRetryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get traceRetryHint;
+
+  /// No description provided for @traceSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get traceSkip;
 }
 
 class _AppLocalizationsDelegate
