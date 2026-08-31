@@ -228,6 +228,15 @@ void main() {
     for (var i = 0; i < 23; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
+
+      // Panel 9 (P09, reached after the 8th tap) carries a dictionary
+      // interaction and auto-opens the dictionary sheet — dismiss it by
+      // tapping a point clearly above the sheet (which covers the bottom
+      // 70% of the screen) so the remaining taps keep advancing the story.
+      if (find.byKey(const ValueKey('dictionary-sheet')).evaluate().isNotEmpty) {
+        await tester.tapAt(const Offset(400, 50));
+        await tester.pumpAndSettle();
+      }
     }
 
     expect(
@@ -338,6 +347,7 @@ void main() {
     ));
     await tester.pump();
 
+    await tester.ensureVisible(find.text('すみません'));
     await tester.tap(find.text('すみません'));
     await tester.pump();
 
@@ -407,6 +417,7 @@ void main() {
     ));
     await tester.pump();
 
+    await tester.ensureVisible(find.text('駅'));
     await tester.tap(find.text('駅'));
     await tester.pump();
 
@@ -589,7 +600,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
 
-    await tester.tap(find.byType(ModalBarrier).last);
+    // Tap a point clearly above the sheet (which covers the bottom 70% of
+    // the screen) to hit the exposed modal barrier and dismiss it.
+    await tester.tapAt(const Offset(400, 50));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
 
