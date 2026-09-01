@@ -676,4 +676,58 @@ void main() {
 
     expect(find.text('Weg.'), findsOneWidget);
   });
+
+  testWidgets('fires onEpisodeComplete once when the last panel is reached',
+      (tester) async {
+    final store = await _freshStore();
+    var completeCount = 0;
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        onEpisodeComplete: () async => completeCount++,
+      ),
+    ));
+    await tester.pump();
+
+    // On the first panel — episode not finished yet.
+    expect(completeCount, 0);
+
+    // Advance to the last (second) panel — fires exactly once.
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(completeCount, 1);
+
+    // Going back and forward again must NOT fire a second time.
+    await tester.tap(find.byKey(const ValueKey('story-reader-back')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(completeCount, 1);
+  });
+
+  testWidgets('fires onEpisodeComplete once when resuming directly at the last '
+      'panel', (tester) async {
+    final store = await _freshStore();
+    await store.savePosition('ep_test_reader', 1); // last panel of _twoPanelEpisode
+    var completeCount = 0;
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        onEpisodeComplete: () async => completeCount++,
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(completeCount, 1);
+  });
 }

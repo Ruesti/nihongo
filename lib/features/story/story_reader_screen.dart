@@ -27,6 +27,13 @@ class StoryReaderScreen extends StatefulWidget {
   final List<DictionaryEntry> dictionaryEntries;
   final Set<String> knownIds;
 
+  /// Fired exactly once, the first time the reader reaches the final panel of
+  /// the episode (P5b — hand the episode's vocabulary to the SRS ladder).
+  /// Optional: the reader is fully functional without it (INV-1, no gate) —
+  /// nothing about reading depends on this firing. Fire-and-forget: the
+  /// returned Future is not awaited, so a slow handoff never blocks reading.
+  final Future<void> Function()? onEpisodeComplete;
+
   const StoryReaderScreen({
     super.key,
     required this.episode,
@@ -34,6 +41,7 @@ class StoryReaderScreen extends StatefulWidget {
     required this.speak,
     required this.dictionaryEntries,
     required this.knownIds,
+    this.onEpisodeComplete,
   });
 
   @override
@@ -43,6 +51,7 @@ class StoryReaderScreen extends StatefulWidget {
 class _StoryReaderScreenState extends State<StoryReaderScreen> {
   late final List<StoryPanel> _panels = widget.episode.allPanels.toList();
   int? _position;
+  bool _completionFired = false;
 
   @override
   void initState() {
@@ -56,6 +65,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final clamped = saved == null ? 0 : saved.clamp(0, _panels.length - 1);
     setState(() => _position = clamped);
     _maybeShowDictionary(clamped);
+    _maybeFireCompletion(clamped);
   }
 
   void _advance() {
@@ -74,6 +84,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     setState(() => _position = position);
     widget.progressStore.savePosition(widget.episode.id, position);
     _maybeShowDictionary(position);
+    _maybeFireCompletion(position);
   }
 
   void _maybeShowDictionary(int position) {
@@ -96,6 +107,12 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         ),
       );
     });
+  }
+
+  void _maybeFireCompletion(int position) {
+    if (position < _panels.length - 1 || _completionFired) return;
+    _completionFired = true;
+    widget.onEpisodeComplete?.call();
   }
 
   @override
