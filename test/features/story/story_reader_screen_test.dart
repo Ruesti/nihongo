@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/features/story/dictionary.dart';
 import 'package:nihongo_app/features/story/episode.dart';
+import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:nihongo_app/features/story/story_reader_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,12 +98,66 @@ Episode _episodeWithDictionaryOnSecondPanel() => Episode.fromJson({
       ],
     });
 
+Episode _episodeWithDiegeticSpeakOnSecondPanel() => Episode.fromJson({
+      'id': 'ep_speak_test',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Speak Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'narrator', 'text': 'First', 'tokens': []},
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'her',
+                  'text': 'すみません',
+                  'tokens': [
+                    {
+                      'surface': 'すみません',
+                      'itemId': 'lex_ja_sumimasen',
+                      'lookupable': true,
+                    },
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [
+                {'type': 'speak', 'diegetic': true},
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
 Future<StoryProgressStore> _freshStore() async {
   SharedPreferences.setMockInitialValues({});
   return StoryProgressStore(await SharedPreferences.getInstance());
 }
 
 Future<void> _noopSpeak(String text) async {}
+
+class _FakeSpeakEvaluator implements SpeakEvaluator {
+  final double score;
+  _FakeSpeakEvaluator(this.score);
+  @override
+  Future<double> evaluate(String target) async => score;
+}
 
 void main() {
   testWidgets('shows the first panel and advances to the next on tap',
@@ -729,5 +784,98 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(completeCount, 1);
+  });
+
+  testWidgets('a diegetic-speak panel opens the speak sheet when an evaluator '
+      'is injected', (tester) async {
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDiegeticSpeakOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+        onDiegeticSpeakSuccess: (_) async {},
+      ),
+    ));
+    await tester.pump();
+
+    // Not on the speak panel yet.
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsOneWidget);
+
+    // Skippable, no gate: dismissing keeps reading available.
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-skip')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
+  });
+
+  testWidgets('no evaluator injected → no speak sheet even on a diegetic-speak '
+      'panel (INV-1 standalone)', (tester) async {
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDiegeticSpeakOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+  });
+
+  testWidgets('a non-diegetic panel never opens the speak sheet (INV-6)',
+      (tester) async {
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(), // no speak interaction anywhere
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+        onDiegeticSpeakSuccess: (_) async {},
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+  });
+
+  testWidgets('a successful speak fires onDiegeticSpeakSuccess with the '
+      "panel's item ids", (tester) async {
+    final store = await _freshStore();
+    List<String>? received;
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDiegeticSpeakOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+        onDiegeticSpeakSuccess: (ids) async => received = ids,
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
+    await tester.pumpAndSettle();
+
+    expect(received, ['lex_ja_sumimasen']);
   });
 }
