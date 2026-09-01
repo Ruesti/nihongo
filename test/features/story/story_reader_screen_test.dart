@@ -878,4 +878,70 @@ void main() {
 
     expect(received, ['lex_ja_sumimasen']);
   });
+
+  testWidgets('a speak interaction with diegetic:false never opens the sheet '
+      '(INV-6 boundary)', (tester) async {
+    final store = await _freshStore();
+    final episode = Episode.fromJson({
+      'id': 'ep_speak_nondiegetic',
+      'seasonId': 's',
+      'orderIndex': 1,
+      'title': 'T',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'n', 'text': 'First', 'tokens': []},
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'her',
+                  'text': 'すみません',
+                  'tokens': [
+                    {
+                      'surface': 'すみません',
+                      'itemId': 'lex_ja_sumimasen',
+                      'lookupable': true,
+                    },
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [
+                {'type': 'speak', 'diegetic': false},
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+        onDiegeticSpeakSuccess: (_) async {},
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+  });
 }
