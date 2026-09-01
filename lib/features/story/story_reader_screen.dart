@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dictionary.dart';
+import 'dictionary_sheet.dart';
 import 'episode.dart';
 import 'story_progress_store.dart';
 
@@ -13,17 +15,25 @@ const double _panelAspectRatio = 0.7;
 /// token plays its audio and shows its reading (INV-2: audio + kana, never
 /// meaning). Tokens marked `lookupable: false` render as inert text — no
 /// tap handler, no visual hint, no lock indicator (INV-7). Resumes from the
-/// last panel the reader reached, persisted via [progressStore].
+/// last panel the reader reached, persisted via [progressStore]. A panel
+/// carrying a `dictionary` interaction (e.g. Folge 01's P09) automatically
+/// opens [DictionarySheet] as a dismissible sheet — no gate, no forced
+/// resolution (INV-1): the reader can dismiss it and keep reading exactly
+/// as with any other panel.
 class StoryReaderScreen extends StatefulWidget {
   final Episode episode;
   final StoryProgressStore progressStore;
   final Future<void> Function(String text) speak;
+  final List<DictionaryEntry> dictionaryEntries;
+  final Set<String> knownIds;
 
   const StoryReaderScreen({
     super.key,
     required this.episode,
     required this.progressStore,
     required this.speak,
+    required this.dictionaryEntries,
+    required this.knownIds,
   });
 
   @override
@@ -45,6 +55,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (!mounted) return;
     final clamped = saved == null ? 0 : saved.clamp(0, _panels.length - 1);
     setState(() => _position = clamped);
+    _maybeShowDictionary(clamped);
   }
 
   void _advance() {
@@ -62,6 +73,29 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   void _goTo(int position) {
     setState(() => _position = position);
     widget.progressStore.savePosition(widget.episode.id, position);
+    _maybeShowDictionary(position);
+  }
+
+  void _maybeShowDictionary(int position) {
+    final panel = _panels[position];
+    final hasDictionaryInteraction =
+        panel.interactions.any((i) => i.type == InteractionType.dictionary);
+    if (!hasDictionaryInteraction) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (sheetContext) => SizedBox(
+          key: const ValueKey('dictionary-sheet'),
+          height: MediaQuery.of(sheetContext).size.height * 0.7,
+          child: DictionarySheet(
+            entries: widget.dictionaryEntries,
+            knownIds: widget.knownIds,
+          ),
+        ),
+      );
+    });
   }
 
   @override
@@ -138,7 +172,8 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
 /// tokens render as inert text with no gesture handler at all (INV-7 — not
 /// merely disabled, but genuinely absent as an interactive element, so a
 /// tap on one falls through to the panel's own advance gesture, same as
-/// tapping empty space).
+/// tapping empty space). Text between/after tokens is reconstructed from
+/// `bubble.text` so punctuation isn't lost (phase P3 fix).
 class _BubbleContent extends StatelessWidget {
   final StoryBubble bubble;
   final Future<void> Function(String text) speak;

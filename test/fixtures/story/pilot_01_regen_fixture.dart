@@ -164,7 +164,9 @@ const Map<String, dynamic> pilot01RegenJson = {
           'index': 10,
           'asset': 'assets/comic/placeholder_page.png',
           'bubbles': [],
-          'thoughts': [],
+          'thoughts': [
+            {'text': 'Weg.'},
+          ],
           'interactions': [],
           'notes':
               'Aufblick. Die Frau ist weg, nur noch ihr Rücken am Ende der '
