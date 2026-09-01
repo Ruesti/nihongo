@@ -158,18 +158,25 @@ void main() {
   // ── achievedGoals ─────────────────────────────────────────────────────────
 
   group('achievedGoals', () {
+    // The A1 can-do goal (cando_ja_a1_kana) is achieved only when *every*
+    // A1 lexeme in the pack is mastered. Derive that set from the DB — the
+    // same query the production code uses — so these tests stay correct as
+    // the pack grows (P5a added the Folge 01 words to the A1 band) instead
+    // of hardcoding an id list that silently rots.
+    Future<List<String>> a1LexemeIds() async {
+      final rows = await (db.select(db.lexemes)
+            ..where((l) =>
+                l.languageId.equals('lang_ja') & l.cefrBand.equals('A1')))
+          .get();
+      return rows.map((r) => r.id).toList();
+    }
+
     test('no learn items → empty list', () async {
       expect(await svc.achievedGoals('lang_ja'), isEmpty);
     });
 
     test('all A1 lexemes at rung 3 → goal achieved', () async {
-      for (final id in [
-        'lex_ja_dog',
-        'lex_ja_cat',
-        'lex_ja_water',
-        'lex_ja_eat',
-        'lex_ja_what'
-      ]) {
+      for (final id in await a1LexemeIds()) {
         await db.addLearnItemAtRung('lang_ja', RefType.lexeme, id, rung: 3);
       }
       final achieved = await svc.achievedGoals('lang_ja');
@@ -178,40 +185,25 @@ void main() {
     });
 
     test('all A1 lexemes at rung 5 → goal achieved (mastered)', () async {
-      for (final id in [
-        'lex_ja_dog',
-        'lex_ja_cat',
-        'lex_ja_water',
-        'lex_ja_eat',
-        'lex_ja_what'
-      ]) {
+      for (final id in await a1LexemeIds()) {
         await db.addLearnItemAtRung('lang_ja', RefType.lexeme, id, rung: 5);
       }
       expect(await svc.achievedGoals('lang_ja'), hasLength(1));
     });
 
     test('one lexeme below rung 3 → goal not achieved', () async {
-      await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_dog',
-          rung: 3);
-      await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_cat',
-          rung: 2); // below threshold
-      await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_water',
-          rung: 3);
-      await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_eat',
-          rung: 3);
-      await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_what',
-          rung: 3);
+      final ids = await a1LexemeIds();
+      // Every A1 lexeme mastered except the first, which sits below threshold.
+      await db.addLearnItemAtRung('lang_ja', RefType.lexeme, ids.first,
+          rung: 2);
+      for (final id in ids.skip(1)) {
+        await db.addLearnItemAtRung('lang_ja', RefType.lexeme, id, rung: 3);
+      }
       expect(await svc.achievedGoals('lang_ja'), isEmpty);
     });
 
     test('lexeme at rung 2 exactly → not counted (threshold is ≥ 3)', () async {
-      for (final id in [
-        'lex_ja_dog',
-        'lex_ja_cat',
-        'lex_ja_water',
-        'lex_ja_eat',
-        'lex_ja_what'
-      ]) {
+      for (final id in await a1LexemeIds()) {
         await db.addLearnItemAtRung('lang_ja', RefType.lexeme, id, rung: 2);
       }
       expect(await svc.achievedGoals('lang_ja'), isEmpty);
@@ -222,16 +214,12 @@ void main() {
     });
 
     test('lexeme missing from learn_items → goal not achieved', () async {
-      // Only 4 of 5 A1 lexemes have items
-      for (final id in [
-        'lex_ja_dog',
-        'lex_ja_cat',
-        'lex_ja_water',
-        'lex_ja_eat'
-      ]) {
+      final ids = await a1LexemeIds();
+      // Every A1 lexeme except the last has an item at rung 3; the last is
+      // missing entirely → goal not achieved.
+      for (final id in ids.take(ids.length - 1)) {
         await db.addLearnItemAtRung('lang_ja', RefType.lexeme, id, rung: 3);
       }
-      // lex_ja_what has no item → goal not achieved
       expect(await svc.achievedGoals('lang_ja'), isEmpty);
     });
   });

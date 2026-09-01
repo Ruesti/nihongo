@@ -43,18 +43,20 @@ void main() {
       expect(rows.first.transliteration, 'romaji');
     });
 
-    test('creates 5 concepts', () async {
+    test('creates 13 concepts (5 demo + 8 Folge 01)', () async {
       await seedJaPack(db);
       final rows = await db.select(db.concepts).get();
-      expect(rows.length, 5);
+      expect(rows.length, 13);
     });
 
-    test('creates 5 lexemes with correct written forms', () async {
+    test('creates 13 lexemes (5 demo + 8 Folge 01)', () async {
       await seedJaPack(db);
       final rows = await db.select(db.lexemes).get();
-      expect(rows.length, 5);
+      expect(rows.length, 13);
       final forms = rows.map((l) => l.writtenForm).toSet();
       expect(forms, containsAll({'犬', '猫', '水', '食べる', '何'}));
+      expect(forms, containsAll(
+          {'すみません', 'あめ', 'かさ', 'これ', 'こわれた', 'はい', 'どうぞ', 'ありがとう'}));
     });
 
     test('creates 5 hiragana vowel characters', () async {
@@ -71,7 +73,7 @@ void main() {
       final langs = await db.select(db.languages).get();
       expect(langs.length, 1);
       final concepts = await db.select(db.concepts).get();
-      expect(concepts.length, 5);
+      expect(concepts.length, 13);
     });
   });
 }

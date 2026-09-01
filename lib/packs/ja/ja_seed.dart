@@ -36,6 +36,17 @@ Future<void> seedJaPack(LearningDb db) async {
       ('concept_water', 'water', 'noun', 'image'),
       ('concept_eat', 'eat', 'verb', 'clip'),
       ('concept_what', 'what', 'pronoun', 'none'),
+      // Folge 01 "Regen" vocabulary (docs/story/PILOT_01_REGEN.md).
+      // glossKey stays a language-neutral English key (I4); the German
+      // meanings shown to the reader live in the P4a dictionary fixture.
+      ('concept_sorry', 'sorry', 'interjection', 'none'),
+      ('concept_rain', 'rain', 'noun', 'image'),
+      ('concept_umbrella', 'umbrella', 'noun', 'image'),
+      ('concept_this', 'this', 'pronoun', 'none'),
+      ('concept_broken', 'broken', 'verb', 'image'),
+      ('concept_yes', 'yes', 'interjection', 'none'),
+      ('concept_here_you_go', 'here_you_go', 'interjection', 'none'),
+      ('concept_thanks', 'thanks', 'interjection', 'none'),
     ];
     for (final (id, gloss, pos, assetType) in conceptRows) {
       await db.into(db.concepts).insertOnConflictUpdate(
@@ -54,6 +65,16 @@ Future<void> seedJaPack(LearningDb db) async {
       ('lex_ja_water', 'concept_water', '水', 'みず'),
       ('lex_ja_eat', 'concept_eat', '食べる', 'たべる'),
       ('lex_ja_what', 'concept_what', '何', 'なに'),
+      // Folge 01 "Regen": hiragana form is both writtenForm and reading;
+      // ids match the P1 episode budget and the P4a dictionary fixture.
+      ('lex_ja_sumimasen', 'concept_sorry', 'すみません', 'すみません'),
+      ('lex_ja_ame', 'concept_rain', 'あめ', 'あめ'),
+      ('lex_ja_kasa', 'concept_umbrella', 'かさ', 'かさ'),
+      ('lex_ja_kore', 'concept_this', 'これ', 'これ'),
+      ('lex_ja_kowareta', 'concept_broken', 'こわれた', 'こわれた'),
+      ('lex_ja_hai', 'concept_yes', 'はい', 'はい'),
+      ('lex_ja_douzo', 'concept_here_you_go', 'どうぞ', 'どうぞ'),
+      ('lex_ja_arigatou', 'concept_thanks', 'ありがとう', 'ありがとう'),
     ];
     for (final (id, conceptId, form, reading) in lexemeRows) {
       await db.into(db.lexemes).insertOnConflictUpdate(
