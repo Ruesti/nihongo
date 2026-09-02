@@ -46,7 +46,11 @@ void main() {
 
     // Adding more due items after entry does NOT change this session's café.
     await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_b', rung: 5);
-    await tester.pump();
+    // Force build() to run again on the SAME State (same widget config →
+    // Element/State reused, no re-init). Occupancy is cached from initState,
+    // so a rebuild must NOT surface the newly-due rung-5 item.
+    await tester.pumpWidget(MaterialApp(home: CafeScreen(db: db)));
+    await tester.pumpAndSettle();
     expect(
         find.byKey(const ValueKey('cafe-guest-gleichaltrige')), findsNothing);
   });
