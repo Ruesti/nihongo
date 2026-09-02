@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'dictionary.dart';
 import 'dictionary_sheet.dart';
 import 'diegetic_speak_sheet.dart';
+import 'diegetic_trace_sheet.dart';
 import 'episode.dart';
 import 'speak_evaluator.dart';
 import 'story_progress_store.dart';
+import 'trace_evaluator.dart';
 
 /// Default panel aspect ratio (width / height) — matches the default used
 /// for the earlier comic-page model (`comic_pack.dart`). Real per-panel
@@ -47,6 +49,15 @@ class StoryReaderScreen extends StatefulWidget {
   /// the reader never depends on it.
   final Future<void> Function(List<String> itemIds)? onDiegeticSpeakSuccess;
 
+  /// Judges a handwriting attempt at a `diegetic: true` trace panel (P6b).
+  /// When null, diegetic-trace panels open no overlay — the reader stays
+  /// fully readable standalone (INV-1). Tests inject a fake.
+  final TraceEvaluator? traceEvaluator;
+
+  /// Called with the panel's item ids when a diegetic trace attempt is
+  /// accepted (P6b). The caller turns this into the SRS encounter (rung 1).
+  final Future<void> Function(List<String> itemIds)? onDiegeticTraceSuccess;
+
   const StoryReaderScreen({
     super.key,
     required this.episode,
@@ -57,6 +68,8 @@ class StoryReaderScreen extends StatefulWidget {
     this.onEpisodeComplete,
     this.speakEvaluator,
     this.onDiegeticSpeakSuccess,
+    this.traceEvaluator,
+    this.onDiegeticTraceSuccess,
   });
 
   @override
@@ -81,6 +94,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     setState(() => _position = clamped);
     _maybeShowDictionary(clamped);
     _maybeShowSpeak(clamped);
+    _maybeShowTrace(clamped);
     _maybeFireCompletion(clamped);
   }
 
@@ -101,6 +115,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     widget.progressStore.savePosition(widget.episode.id, position);
     _maybeShowDictionary(position);
     _maybeShowSpeak(position);
+    _maybeShowTrace(position);
     _maybeFireCompletion(position);
   }
 
@@ -150,6 +165,41 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           evaluator: evaluator,
           speak: widget.speak,
           onSuccess: () => widget.onDiegeticSpeakSuccess?.call(itemIds),
+          onSkip: () => Navigator.of(sheetContext).pop(),
+        ),
+      );
+    });
+  }
+
+  void _maybeShowTrace(int position) {
+    final evaluator = widget.traceEvaluator;
+    if (evaluator == null) return;
+    final panel = _panels[position];
+    final hasTrace = panel.interactions
+        .any((i) => i.type == InteractionType.trace && i.diegetic);
+    if (!hasTrace) return;
+
+    // Derive the trace target from tokens (surface + itemId), NOT bubble
+    // text — P24 carries an inert margin-note bubble with no tokens that
+    // must be excluded.
+    final tokens = [
+      for (final b in panel.bubbles)
+        for (final t in b.tokens)
+          if (t.itemId != null) t,
+    ];
+    if (tokens.isEmpty) return;
+    final targetText = tokens.map((t) => t.surface).join();
+    final itemIds = tokens.map((t) => t.itemId!).toList();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (sheetContext) => DiegeticTraceSheet(
+          targetText: targetText,
+          evaluator: evaluator,
+          onSuccess: () => widget.onDiegeticTraceSuccess?.call(itemIds),
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );

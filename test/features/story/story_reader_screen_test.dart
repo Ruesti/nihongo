@@ -5,6 +5,7 @@ import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:nihongo_app/features/story/story_reader_screen.dart';
+import 'package:nihongo_app/features/story/trace_evaluator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../fixtures/story/folge_01_dictionary_fixture.dart';
@@ -145,6 +146,54 @@ Episode _episodeWithDiegeticSpeakOnSecondPanel() => Episode.fromJson({
       ],
     });
 
+Episode _episodeWithDiegeticTraceOnSecondPanel() => Episode.fromJson({
+      'id': 'ep_trace_test',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Trace Test',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'n', 'text': 'First', 'tokens': []},
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'buch',
+                  'text': 'あめ',
+                  'tokens': [
+                    {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                  ],
+                },
+                {
+                  'speakerId': 'notiz',
+                  'text': '(unleserliche Randnotiz)',
+                  'tokens': [],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [
+                {'type': 'trace', 'diegetic': true},
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
 Future<StoryProgressStore> _freshStore() async {
   SharedPreferences.setMockInitialValues({});
   return StoryProgressStore(await SharedPreferences.getInstance());
@@ -157,6 +206,14 @@ class _FakeSpeakEvaluator implements SpeakEvaluator {
   _FakeSpeakEvaluator(this.score);
   @override
   Future<double> evaluate(String target) async => score;
+}
+
+class _FakeTraceEvaluator implements TraceEvaluator {
+  final bool ok;
+  _FakeTraceEvaluator(this.ok);
+  @override
+  Future<bool> evaluate(String target, List<List<Offset>> userStrokes) async =>
+      ok;
 }
 
 void main() {
@@ -943,5 +1000,98 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+  });
+
+  testWidgets('a diegetic-trace panel opens the trace sheet when an evaluator '
+      'is injected, and is skippable', (tester) async {
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDiegeticTraceOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        traceEvaluator: _FakeTraceEvaluator(true),
+        onDiegeticTraceSuccess: (_) async {},
+      ),
+    ));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('diegetic-trace-skip')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
+  });
+
+  testWidgets('no evaluator → no trace sheet on a diegetic-trace panel (INV-1)',
+      (tester) async {
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDiegeticTraceOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
+  });
+
+  testWidgets('a non-diegetic panel never opens the trace sheet (INV-6)',
+      (tester) async {
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        traceEvaluator: _FakeTraceEvaluator(true),
+        onDiegeticTraceSuccess: (_) async {},
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
+  });
+
+  testWidgets('a successful trace fires onDiegeticTraceSuccess with only the '
+      'token bubble ids (the inert note bubble is excluded)', (tester) async {
+    final store = await _freshStore();
+    List<String>? received;
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithDiegeticTraceOnSecondPanel(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        traceEvaluator: _FakeTraceEvaluator(true),
+        onDiegeticTraceSuccess: (ids) async => received = ids,
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+        find.byKey(const ValueKey('diegetic-trace-canvas')), const Offset(60, 40));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('diegetic-trace-done')));
+    await tester.pumpAndSettle();
+
+    expect(received, ['lex_ja_ame']);
   });
 }
