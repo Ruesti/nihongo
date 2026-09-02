@@ -181,7 +181,9 @@ Episode _episodeWithDiegeticTraceOnSecondPanel() => Episode.fromJson({
                 {
                   'speakerId': 'notiz',
                   'text': '(unleserliche Randnotiz)',
-                  'tokens': [],
+                  'tokens': [
+                    {'surface': 'メモ', 'itemId': null},
+                  ],
                 },
               ],
               'thoughts': [],
@@ -1053,6 +1055,68 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: StoryReaderScreen(
         episode: _twoPanelEpisode(),
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        traceEvaluator: _FakeTraceEvaluator(true),
+        onDiegeticTraceSuccess: (_) async {},
+      ),
+    ));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
+  });
+
+  testWidgets('a trace interaction with diegetic:false never opens the sheet '
+      '(INV-6 boundary)', (tester) async {
+    final store = await _freshStore();
+    final episode = Episode.fromJson({
+      'id': 'ep_trace_nondiegetic',
+      'seasonId': 's',
+      'orderIndex': 1,
+      'title': 'T',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'n', 'text': 'First', 'tokens': []},
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'buch',
+                  'text': 'あめ',
+                  'tokens': [
+                    {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                  ],
+                },
+              ],
+              'thoughts': [],
+              'interactions': [
+                {'type': 'trace', 'diegetic': false},
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
         progressStore: store,
         speak: _noopSpeak,
         dictionaryEntries: const [],
