@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'dictionary.dart';
 import 'dictionary_sheet.dart';
+import 'diegetic_speak_sheet.dart';
 import 'episode.dart';
+import 'speak_evaluator.dart';
 import 'story_progress_store.dart';
 
 /// Default panel aspect ratio (width / height) — matches the default used
@@ -34,6 +36,17 @@ class StoryReaderScreen extends StatefulWidget {
   /// returned Future is not awaited, so a slow handoff never blocks reading.
   final Future<void> Function()? onEpisodeComplete;
 
+  /// Scores a spoken attempt at a `diegetic: true` speak panel (P6a). When
+  /// null, diegetic-speak panels open no overlay — the reader stays fully
+  /// readable standalone (INV-1). The real implementation wraps the mic;
+  /// tests inject a fake.
+  final SpeakEvaluator? speakEvaluator;
+
+  /// Called with the panel's item ids when a diegetic speak attempt succeeds
+  /// (P6a). The caller turns this into the SRS encounter (rung 1). Optional;
+  /// the reader never depends on it.
+  final Future<void> Function(List<String> itemIds)? onDiegeticSpeakSuccess;
+
   const StoryReaderScreen({
     super.key,
     required this.episode,
@@ -42,6 +55,8 @@ class StoryReaderScreen extends StatefulWidget {
     required this.dictionaryEntries,
     required this.knownIds,
     this.onEpisodeComplete,
+    this.speakEvaluator,
+    this.onDiegeticSpeakSuccess,
   });
 
   @override
@@ -65,6 +80,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final clamped = saved == null ? 0 : saved.clamp(0, _panels.length - 1);
     setState(() => _position = clamped);
     _maybeShowDictionary(clamped);
+    _maybeShowSpeak(clamped);
     _maybeFireCompletion(clamped);
   }
 
@@ -84,6 +100,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     setState(() => _position = position);
     widget.progressStore.savePosition(widget.episode.id, position);
     _maybeShowDictionary(position);
+    _maybeShowSpeak(position);
     _maybeFireCompletion(position);
   }
 
@@ -104,6 +121,36 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
             entries: widget.dictionaryEntries,
             knownIds: widget.knownIds,
           ),
+        ),
+      );
+    });
+  }
+
+  void _maybeShowSpeak(int position) {
+    final evaluator = widget.speakEvaluator;
+    if (evaluator == null) return;
+    final panel = _panels[position];
+    final hasSpeak = panel.interactions
+        .any((i) => i.type == InteractionType.speak && i.diegetic);
+    if (!hasSpeak) return;
+
+    final targetText = panel.bubbles.map((b) => b.text).join(' ');
+    final itemIds = <String>[
+      for (final b in panel.bubbles)
+        for (final t in b.tokens)
+          if (t.itemId != null) t.itemId!,
+    ];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showModalBottomSheet<void>(
+        context: context,
+        builder: (sheetContext) => DiegeticSpeakSheet(
+          targetText: targetText,
+          evaluator: evaluator,
+          speak: widget.speak,
+          onSuccess: () => widget.onDiegeticSpeakSuccess?.call(itemIds),
+          onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
     });
