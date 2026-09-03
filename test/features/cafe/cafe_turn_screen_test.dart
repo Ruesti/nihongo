@@ -23,6 +23,9 @@ void main() {
   Future<int> reviewLogCount() async =>
       (await db.select(db.reviewLog).get()).length;
 
+  Future<String> singleReviewLogResult() async =>
+      (await db.select(db.reviewLog).get()).single.result;
+
   testWidgets('the Schulkind poses a rung-3 production turn; a correct answer '
       'grades it (a review is logged) and a followUp appears', (tester) async {
     await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame',
@@ -44,6 +47,8 @@ void main() {
 
     // A grade was submitted to the ladder, and the guest reacted.
     expect(await reviewLogCount(), 1);
+    // An unhinted correct answer grades as good, not hard.
+    expect(await singleReviewLogResult(), 'good');
     expect(find.byKey(const ValueKey('cafe-turn-followup')), findsOneWidget);
   });
 
@@ -66,6 +71,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(await reviewLogCount(), 1);
+    // The hint dodges the correct answer down to hard — proving the hint
+    // overrode what would otherwise have graded as good (§4.4).
+    expect(await singleReviewLogResult(), 'hard');
     expect(find.byKey(const ValueKey('cafe-turn-followup')), findsOneWidget);
   });
 
