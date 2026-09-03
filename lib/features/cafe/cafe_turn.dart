@@ -2,16 +2,20 @@ import '../../core/db/learning_db.dart';
 import '../../core/srs/scheduler.dart';
 
 /// How a café turn ended (brief §4.4/§4.5): the learner answered correctly,
-/// wrongly, or dodged by tapping the meaning as a hint.
-enum CafeOutcome { correct, wrong, hinted }
+/// wrongly, dodged by tapping the meaning as a hint, or (rung 5) produced
+/// freely without being graded right/wrong.
+enum CafeOutcome { correct, wrong, hinted, freeProduced }
 
 /// Maps the café outcome to the SM-2 grade fed to [LadderReview.submit].
 /// A tapped hint schedules like [ReviewResult.hard] — it counts, but does not
 /// extend the interval the way a clean [ReviewResult.good] would (§4.4).
+/// Free production (rung 5) is held, not graded correct/wrong, so it also
+/// schedules like [ReviewResult.hard].
 ReviewResult resultForOutcome(CafeOutcome outcome) => switch (outcome) {
       CafeOutcome.correct => ReviewResult.good,
       CafeOutcome.wrong => ReviewResult.again,
       CafeOutcome.hinted => ReviewResult.hard,
+      CafeOutcome.freeProduced => ReviewResult.hard,
     };
 
 /// A used hint dodges the turn: the outcome is [CafeOutcome.hinted] regardless
@@ -21,15 +25,23 @@ CafeOutcome outcomeFor({required bool hintUsed, required bool answerCorrect}) {
   return answerCorrect ? CafeOutcome.correct : CafeOutcome.wrong;
 }
 
-/// The café turn's exercise shape for rungs 1–3 (P8). Mirrors
-/// `resolveExercise` (rung_defs.dart) for these rungs without pulling in the
-/// `ScriptProfile` it requires but does not use.
-enum CafeExerciseKind { recognition, readingInput, productionInput }
+/// The café turn's exercise shape for rungs 1–5. Mirrors `resolveExercise`
+/// (rung_defs.dart) for these rungs without pulling in the `ScriptProfile`
+/// it requires but does not use.
+enum CafeExerciseKind {
+  recognition,
+  readingInput,
+  productionInput,
+  comprehension,
+  freeProduction,
+}
 
 CafeExerciseKind kindForRung(int rung) {
   if (rung <= 1) return CafeExerciseKind.recognition;
   if (rung == 2) return CafeExerciseKind.readingInput;
-  return CafeExerciseKind.productionInput; // rung 3 (P8's top rung)
+  if (rung == 3) return CafeExerciseKind.productionInput;
+  if (rung == 4) return CafeExerciseKind.comprehension;
+  return CafeExerciseKind.freeProduction; // rung 5 (and any higher)
 }
 
 /// The content of one café turn, built from a due lexeme [LearnItem] by a
@@ -79,6 +91,8 @@ class CafeTurnContent {
       CafeExerciseKind.recognition => (lex.writtenForm, meaning),
       CafeExerciseKind.readingInput => (lex.writtenForm, lex.reading),
       CafeExerciseKind.productionInput => (meaning, lex.writtenForm),
+      CafeExerciseKind.comprehension => (lex.writtenForm, meaning),
+      CafeExerciseKind.freeProduction => (lex.writtenForm, ''),
     };
 
     return CafeTurnContent(

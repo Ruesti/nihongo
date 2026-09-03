@@ -4,6 +4,7 @@ import '../../core/db/learning_db.dart';
 import '../../core/ladder/ladder_review.dart';
 import 'cafe_guest_script.dart';
 import 'cafe_occupancy.dart';
+import 'cafe_prompts.dart';
 import 'cafe_turn.dart';
 
 /// One guest's café turns (brief §4.5). Drives the guest's due SM-2 items:
@@ -97,15 +98,22 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   bool _isCorrect(CafeTurnContent content) =>
       _input.text.trim() == content.expectedAnswer.trim();
 
-  Future<void> _grade({required bool answerCorrect}) async {
-    final content = _content;
-    if (content == null) return;
-    final outcome =
-        outcomeFor(hintUsed: _hintUsed, answerCorrect: answerCorrect);
+  Future<void> _submitOutcome(CafeOutcome outcome) async {
     await _ladder.submit(_queue[_index], resultForOutcome(outcome),
         languageCode: widget.languageId);
     if (!mounted) return;
     setState(() => _followUp = _script.followUp(outcome, _index));
+  }
+
+  Future<void> _grade({required bool answerCorrect}) async {
+    if (_content == null) return;
+    await _submitOutcome(
+        outcomeFor(hintUsed: _hintUsed, answerCorrect: answerCorrect));
+  }
+
+  Future<void> _gradeFree() async {
+    if (_content == null) return;
+    await _submitOutcome(CafeOutcome.freeProduced);
   }
 
   Future<void> _next() async {
@@ -134,73 +142,32 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
 
   Widget _buildTurn(CafeTurnContent content) {
     final followUp = _followUp;
+    final isMonologue = content.kind == CafeExerciseKind.comprehension ||
+        content.kind == CafeExerciseKind.freeProduction;
+    final headerText = switch (content.kind) {
+      CafeExerciseKind.comprehension =>
+        vielrednerMonologue(content.writtenForm, _index),
+      CafeExerciseKind.freeProduction =>
+        gleichaltrigeOpener(content.writtenForm, _index),
+      _ => content.promptText,
+    };
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(content.promptText,
-              key: const ValueKey('cafe-turn-prompt'),
-              style: const TextStyle(fontSize: 28)),
+          Text(headerText,
+              key: ValueKey(
+                  isMonologue ? 'cafe-turn-monologue' : 'cafe-turn-prompt'),
+              style: TextStyle(fontSize: isMonologue ? 18 : 28)),
           const SizedBox(height: 16),
           if (_revealed)
             Text('→ ${content.expectedAnswer}',
                 style: const TextStyle(fontStyle: FontStyle.italic)),
           const SizedBox(height: 16),
-          if (followUp == null) ...[
-            if (content.kind == CafeExerciseKind.recognition)
-              Row(
-                children: [
-                  TextButton(
-                    key: const ValueKey('cafe-turn-reveal'),
-                    onPressed: () => setState(() => _revealed = true),
-                    child: const Text('zeigen'),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    key: const ValueKey('cafe-turn-known'),
-                    onPressed: () => _grade(answerCorrect: true),
-                    child: const Text('gewusst'),
-                  ),
-                  TextButton(
-                    key: const ValueKey('cafe-turn-unknown'),
-                    onPressed: () => _grade(answerCorrect: false),
-                    child: const Text('nicht'),
-                  ),
-                ],
-              )
-            else ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      key: const ValueKey('cafe-turn-input'),
-                      controller: _input,
-                      decoration: const InputDecoration(hintText: '…'),
-                    ),
-                  ),
-                  TextButton(
-                    key: const ValueKey('cafe-turn-submit'),
-                    onPressed: () =>
-                        _grade(answerCorrect: _isCorrect(content)),
-                    child: const Text('sagen'),
-                  ),
-                ],
-              ),
-              // The meaning hint is a dodge only for a typed turn (where you
-              // must PRODUCE something and could peek). Recognition's answer
-              // IS the meaning, so revealing it there is the normal check via
-              // "zeigen", not a dodge.
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  key: const ValueKey('cafe-turn-hint'),
-                  onPressed: _hintUsed ? null : _useHint,
-                  child: const Text('Bedeutung zeigen'),
-                ),
-              ),
-            ],
-          ] else ...[
+          if (followUp == null)
+            ..._buildAnswerControls(content)
+          else ...[
             Text(followUp, key: const ValueKey('cafe-turn-followup')),
             const SizedBox(height: 12),
             TextButton(
@@ -212,6 +179,87 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildAnswerControls(CafeTurnContent content) {
+    if (content.kind == CafeExerciseKind.recognition ||
+        content.kind == CafeExerciseKind.comprehension) {
+      return [
+        Row(
+          children: [
+            TextButton(
+              key: const ValueKey('cafe-turn-reveal'),
+              onPressed: () => setState(() => _revealed = true),
+              child: const Text('zeigen'),
+            ),
+            const Spacer(),
+            TextButton(
+              key: const ValueKey('cafe-turn-known'),
+              onPressed: () => _grade(answerCorrect: true),
+              child: const Text('gewusst'),
+            ),
+            TextButton(
+              key: const ValueKey('cafe-turn-unknown'),
+              onPressed: () => _grade(answerCorrect: false),
+              child: const Text('nicht'),
+            ),
+          ],
+        ),
+      ];
+    }
+
+    if (content.kind == CafeExerciseKind.freeProduction) {
+      return [
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: const ValueKey('cafe-turn-free-input'),
+                controller: _input,
+                decoration: const InputDecoration(hintText: '…'),
+              ),
+            ),
+            TextButton(
+              key: const ValueKey('cafe-turn-free-submit'),
+              onPressed: _gradeFree,
+              child: const Text('sagen'),
+            ),
+          ],
+        ),
+      ];
+    }
+
+    // readingInput / productionInput: the P8 typed row + meaning-hint dodge.
+    return [
+      Row(
+        children: [
+          Expanded(
+            child: TextField(
+              key: const ValueKey('cafe-turn-input'),
+              controller: _input,
+              decoration: const InputDecoration(hintText: '…'),
+            ),
+          ),
+          TextButton(
+            key: const ValueKey('cafe-turn-submit'),
+            onPressed: () => _grade(answerCorrect: _isCorrect(content)),
+            child: const Text('sagen'),
+          ),
+        ],
+      ),
+      // The meaning hint is a dodge only for a typed turn (where you
+      // must PRODUCE something and could peek). Recognition's answer
+      // IS the meaning, so revealing it there is the normal check via
+      // "zeigen", not a dodge.
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton(
+          key: const ValueKey('cafe-turn-hint'),
+          onPressed: _hintUsed ? null : _useHint,
+          child: const Text('Bedeutung zeigen'),
+        ),
+      ),
+    ];
   }
 }
 

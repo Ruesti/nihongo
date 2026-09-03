@@ -4,12 +4,10 @@ import 'package:nihongo_app/features/cafe/cafe_turn.dart';
 import 'package:nihongo_app/features/cafe/cafe_guest_script.dart';
 
 void main() {
-  test('the Wirtin and the Schulkind each have ≥3 lines per outcome', () {
-    for (final guest in [CafeGuest.wirtin, CafeGuest.schulkind]) {
+  test('each guest has ≥3 distinct lines for every outcome it reacts to', () {
+    for (final guest in CafeGuest.values) {
       final script = scriptFor(guest);
-      for (final outcome in CafeOutcome.values) {
-        expect(script.followUp(outcome, 0), isNotEmpty);
-        // ≥3 distinct lines → indices 0,1,2 don't all collapse to one.
+      for (final outcome in script.lines.keys) {
         final lines = {
           script.followUp(outcome, 0),
           script.followUp(outcome, 1),
@@ -19,6 +17,14 @@ void main() {
             reason: '$guest/$outcome has fewer than 3 lines');
       }
     }
+  });
+
+  test('the Gleichaltrige reacts to free production; the Vielredner to '
+      'correct/wrong/hinted', () {
+    expect(scriptFor(CafeGuest.gleichaltrige).lines.keys,
+        contains(CafeOutcome.freeProduced));
+    expect(scriptFor(CafeGuest.vielredner).lines.keys,
+        containsAll([CafeOutcome.correct, CafeOutcome.wrong, CafeOutcome.hinted]));
   });
 
   test('followUp rotates deterministically by turn index', () {
