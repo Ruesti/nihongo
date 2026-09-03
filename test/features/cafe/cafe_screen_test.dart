@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/features/cafe/cafe_screen.dart';
+import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
 
 void main() {
   late LearningDb db;
@@ -53,5 +54,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(
         find.byKey(const ValueKey('cafe-guest-gleichaltrige')), findsNothing);
+  });
+
+  testWidgets('tapping a present guest opens that guest\'s turn screen',
+      (tester) async {
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_x', rung: 3);
+
+    await tester.pumpWidget(MaterialApp(home: CafeScreen(db: db)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('cafe-guest-schulkind')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('cafe-turn-screen')), findsOneWidget);
   });
 }

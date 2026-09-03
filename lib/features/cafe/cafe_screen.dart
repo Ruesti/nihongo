@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../core/db/learning_db.dart';
 import 'cafe_occupancy.dart';
+import 'cafe_turn_screen.dart';
 
 /// The café — the repetition mode that replaces the bare SRS feed (brief §4).
 /// Occupancy is the due indicator: who is present depends on what is due,
 /// computed ONCE on entry and stable for the session (PHASE_0 §7). Nothing
 /// due → the café is calmly empty, no count, no "0 due" message (§4.3). The
 /// café introduces nothing (INV-8) and has no progress of its own — no level,
-/// no currency, no unlocks (INV-10). This scaffold (P7) renders presence only;
-/// the guests' turns are P8/P9, so tapping a guest is a deliberate no-op.
+/// no currency, no unlocks (INV-10). Tapping a present guest opens that
+/// guest's turn ([CafeTurnScreen], P8); returning refreshes occupancy so a
+/// finished batch of reviews is reflected without violating "fixed per
+/// session" (still only once per guest visit, not on every rebuild).
 class CafeScreen extends StatefulWidget {
   final LearningDb db;
   final String languageId;
@@ -76,8 +79,21 @@ class _CafeScreenState extends State<CafeScreen> {
                         ListTile(
                           key: ValueKey(_keys[guest]!),
                           title: Text(_labels[guest]!),
-                          // Scaffold only — a guest's turn is P8/P9.
-                          onTap: null,
+                          onTap: () async {
+                            await Navigator.of(context)
+                                .push(MaterialPageRoute<void>(
+                              builder: (_) => CafeTurnScreen(
+                                db: widget.db,
+                                guest: guest,
+                                languageId: widget.languageId,
+                              ),
+                            ));
+                            // On return, the due state may have changed —
+                            // recompute this session's occupancy (still
+                            // once-per-visit, just refreshed after a turn
+                            // set).
+                            if (mounted) _load();
+                          },
                         ),
                   ],
                 ),
