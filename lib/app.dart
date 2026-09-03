@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
+import 'features/cafe/cafe_route.dart';
 import 'features/home/home_screen.dart';
 import 'features/kaiwa/kaiwa_hub.dart';
 import 'features/kanji_games/games_hub.dart';
@@ -13,7 +14,6 @@ import 'features/mining_slice/reading_tab.dart';
 import 'features/onboarding/onboarding_flow.dart';
 import 'features/onboarding/onboarding_providers.dart';
 import 'features/progress/progress_screen.dart';
-import 'features/review/review_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/travel/travel_screen.dart';
 
@@ -39,7 +39,7 @@ final List<RouteBase> _routes = [
       GoRoute(
         path: '/review',
         pageBuilder: (ctx, state) => const NoTransitionPage(
-            child: ReviewScreen()),
+            child: CafeRoute()),
       ),
       GoRoute(
         path: '/progress',
@@ -153,9 +153,9 @@ class _MainShellState extends State<_MainShell> {
       label: 'Lesen',
     ),
     NavigationDestination(
-      icon: Icon(Icons.refresh_outlined),
-      selectedIcon: Icon(Icons.refresh),
-      label: 'Review',
+      icon: Icon(Icons.local_cafe_outlined),
+      selectedIcon: Icon(Icons.local_cafe),
+      label: 'Café',
     ),
     NavigationDestination(
       icon: Icon(Icons.bar_chart_outlined),
