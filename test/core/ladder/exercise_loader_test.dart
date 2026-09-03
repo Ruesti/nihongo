@@ -93,7 +93,7 @@ void main() {
       expect(content, isA<RecognitionContent>());
       final rec = content as RecognitionContent;
       expect(rec.displayForm, '犬');
-      expect(rec.answer, 'dog');
+      expect(rec.answer, 'Hund');
     });
 
     test('rung 2 → ReadingInputContent with writtenForm and reading', () async {

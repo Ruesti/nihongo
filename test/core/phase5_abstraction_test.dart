@@ -132,7 +132,7 @@ void main() {
 
     tearDown(() => db.close());
 
-    test('ES rung1 → RecognitionContent with Spanish form and English gloss', () async {
+    test('ES rung1 → RecognitionContent with Spanish form and German gloss', () async {
       await db.addLearnItem('lang_es', RefType.lexeme, 'lex_es_dog');
       final item = (await db.select(db.learnItems).get()).first;
 
@@ -141,7 +141,7 @@ void main() {
       expect(content, isA<RecognitionContent>());
       final rec = content as RecognitionContent;
       expect(rec.displayForm, 'perro');
-      expect(rec.answer, 'dog');
+      expect(rec.answer, 'Hund');
     });
 
     test('ES rung2 → ReadingInputContent (reading = writtenForm for alphabet)', () async {
@@ -164,7 +164,7 @@ void main() {
 
       expect(content, isA<ProductionInputContent>());
       final prod = content as ProductionInputContent;
-      expect(prod.prompt, 'dog');
+      expect(prod.prompt, 'Hund');
       expect(prod.expectedForm, 'perro');
     });
 
