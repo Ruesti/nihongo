@@ -4,33 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/db/mining_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
+import 'package:nihongo_app/core/pipeline/fsrs_knowledge_source.dart';
 import 'package:nihongo_app/core/pipeline/knowledge_bridge.dart';
 import 'package:nihongo_app/core/pipeline/sentence_scoring.dart'
     show Knowledge;
 import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
 import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
 
-/// Mirrors `ladder_review_test.dart`'s `_knows`, but reads FSRS card state
-/// directly instead of going through `FsrsKnowledgeSource.load` (which
-/// filters by `languageCode`). `VocabItems` has no `masteryRung` column
-/// (that's an on-ramp-only field, per `KnowledgeBridge`'s doc comment) —
-/// mining's own knowledge signal is the joined `Cards` row's FSRS
-/// `state`/`stability`. This helper deliberately does not filter by
-/// `languageCode`: proving the reviewed lemma projected is the point of
-/// this test, not pinning `CafeTurnScreen`'s existing (pre-Task-1)
-/// `languageCode: widget.languageId` passthrough to the bridge.
-Future<Knowledge> _knows(MiningDb db, String lemma) async {
-  final query = db.select(db.vocabItems).join([
-    innerJoin(db.cards, db.cards.vocabItemId.equalsExp(db.vocabItems.id)),
-  ])
-    ..where(db.vocabItems.lemma.equals(lemma));
-  final rows = await query.get();
-  if (rows.isEmpty) return Knowledge.unknown;
-  final card = rows.first.readTable(db.cards);
-  return (card.state == 'review' && card.stability >= 5.0)
-      ? Knowledge.known
-      : Knowledge.learning;
-}
+/// Mirrors `ladder_review_test.dart`'s `_knows` exactly: reads through
+/// `FsrsKnowledgeSource.load`, the same canonical read path
+/// `ReviewScreen`-parity code uses, filtered by mining's BCP-47
+/// `languageCode`. This proves the café's projection lands in the SAME
+/// bucket the rest of the app reads from — not just that some row landed
+/// somewhere.
+Future<Knowledge> _knows(MiningDb db, String lemma,
+        {required String languageCode}) async =>
+    (await FsrsKnowledgeSource.load(db, languageCode: languageCode))
+        .call(lemma);
 
 void main() {
   testWidgets('a café turn with a bridge projects the reviewed lexeme into '
@@ -55,8 +45,8 @@ void main() {
     await learning.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_dog',
         rung: 3);
 
-    // Before: mining knows nothing about 犬.
-    expect(await _knows(mining, '犬'), Knowledge.unknown);
+    // Before: mining knows nothing about 犬 under the canonical 'ja' bucket.
+    expect(await _knows(mining, '犬', languageCode: 'ja'), Knowledge.unknown);
 
     await tester.pumpWidget(MaterialApp(
       home: CafeTurnScreen(
@@ -73,7 +63,17 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('cafe-turn-submit')));
     await tester.pumpAndSettle();
 
-    // After: the graded review projected into mining (rung 3 → known).
-    expect(await _knows(mining, '犬'), Knowledge.known);
+    // After: the graded review projected into mining under 'ja' — the same
+    // bucket ReviewScreen and the KnowledgeBoot backfill use (rung 3 → known).
+    expect(await _knows(mining, '犬', languageCode: 'ja'), Knowledge.known);
+
+    // Negative: nothing landed in the dead 'lang_ja' bucket (the on-ramp
+    // pack id, not the BCP-47 mining code). If this fails, the café is
+    // still projecting to the wrong bucket.
+    final wrongBucket = await mining.select(mining.vocabItems).get()
+      ..retainWhere((v) => v.languageCode == 'lang_ja');
+    expect(wrongBucket, isEmpty);
+    expect(await _knows(mining, '犬', languageCode: 'lang_ja'),
+        Knowledge.unknown);
   });
 }

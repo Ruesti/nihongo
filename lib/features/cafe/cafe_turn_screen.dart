@@ -103,8 +103,11 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
       _input.text.trim() == content.expectedAnswer.trim();
 
   Future<void> _submitOutcome(CafeOutcome outcome) async {
+    // The mining store keys by BCP-47 code ('ja'), NOT the on-ramp pack id
+    // ('lang_ja') — same convention as ReviewScreen (review_screen.dart:124)
+    // and the KnowledgeBoot backfill (main.dart:56).
     await _ladder.submit(_queue[_index], resultForOutcome(outcome),
-        languageCode: widget.languageId);
+        languageCode: widget.languageId.replaceFirst('lang_', ''));
     if (!mounted) return;
     setState(() => _followUp = _script.followUp(outcome, _index));
   }
