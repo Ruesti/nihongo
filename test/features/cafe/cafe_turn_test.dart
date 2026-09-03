@@ -26,6 +26,11 @@ void main() {
       expect(outcomeFor(hintUsed: false, answerCorrect: false),
           CafeOutcome.wrong);
     });
+
+    test('freeProduced grades hard (rung-5 free production is held, not graded)',
+        () {
+      expect(resultForOutcome(CafeOutcome.freeProduced), ReviewResult.hard);
+    });
   });
 
   group('kindForRung', () {
@@ -33,6 +38,11 @@ void main() {
       expect(kindForRung(1), CafeExerciseKind.recognition);
       expect(kindForRung(2), CafeExerciseKind.readingInput);
       expect(kindForRung(3), CafeExerciseKind.productionInput);
+    });
+
+    test('kindForRung: rung 4 comprehension, rung 5 free production', () {
+      expect(kindForRung(4), CafeExerciseKind.comprehension);
+      expect(kindForRung(5), CafeExerciseKind.freeProduction);
     });
   });
 
@@ -79,6 +89,21 @@ void main() {
       final item = (await db.getDueItems('lang_ja', limit: 500))
           .firstWhere((i) => i.refId == 'lex_missing');
       expect(await CafeTurnContent.forItem(db, item), isNull);
+    });
+
+    test('rung 4 (comprehension): the word carries, meaning is the check',
+        () async {
+      final content = await CafeTurnContent.forItem(db, await due(4));
+      expect(content!.kind, CafeExerciseKind.comprehension);
+      expect(content.writtenForm, 'あめ');
+      expect(content.expectedAnswer, 'rain'); // the comprehension reveal
+    });
+
+    test('rung 5 (free production): no expected answer', () async {
+      final content = await CafeTurnContent.forItem(db, await due(5));
+      expect(content!.kind, CafeExerciseKind.freeProduction);
+      expect(content.writtenForm, 'あめ');
+      expect(content.expectedAnswer, '');
     });
   });
 }
