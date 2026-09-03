@@ -26,9 +26,12 @@ void main() {
     final a = script.followUp(CafeOutcome.correct, 0);
     final b = script.followUp(CafeOutcome.correct, 1);
     expect(a, isNot(b));
-    // Wraps around.
-    expect(script.followUp(CafeOutcome.correct, 0),
+    // Wraps around: with 3 lines, index 3 must return the same line as index 0.
+    expect(script.followUp(CafeOutcome.correct, 3),
         script.followUp(CafeOutcome.correct, 0));
+    // And an out-of-order pair still differs (index 4 wraps to 1, not 0).
+    expect(script.followUp(CafeOutcome.correct, 4),
+        isNot(script.followUp(CafeOutcome.correct, 0)));
   });
 
   test('the Schulkind sounds nothing like the Wirtin (distinct content)', () {
