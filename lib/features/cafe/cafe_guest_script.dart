@@ -54,11 +54,40 @@ const _schulkind = CafeGuestScript({
   ],
 });
 
-/// The script for a guest. P8 covers only the Wirtin and the Schulkind;
-/// Vielredner/Gleichaltrige (rung 4–5) arrive in P9.
+/// The Vielredner (rung 4): erzählt viel, prüft freundlich, ob der Kern ankam.
+const _vielredner = CafeGuestScript({
+  CafeOutcome.correct: [
+    'Ha, genau! Wusste ich, dass du es hast.',
+    'Siehst du — du verstehst mehr, als du denkst.',
+    'Genau das, ja. Bei so viel Gerede muss man ja was mitnehmen.',
+  ],
+  CafeOutcome.wrong: [
+    'Kein Ding, das war auch viel Gerede. Nächstes.',
+    'Ich rede halt zu viel — das hört sich noch ein.',
+    'Macht nichts, das kriegst du beim nächsten Mal.',
+  ],
+  CafeOutcome.hinted: [
+    'Nachgeschaut, auch gut — Hauptsache, es bleibt hängen.',
+    'Klar, schau nach. Bei mir verliert man schon mal den Faden.',
+    'Passt, so lernt man es auch.',
+  ],
+});
+
+/// The Gleichaltrige (rung 5): offenes Gespräch, kein richtig/falsch —
+/// reagiert warm auf alles, was du produzierst.
+const _gleichaltrige = CafeGuestScript({
+  CafeOutcome.freeProduced: [
+    'Schön gesagt. Weiter geht es.',
+    'Ja, so ungefähr würde ich es auch sagen.',
+    'Gefällt mir. Nächstes?',
+    'Cool, du traust dich was.',
+  ],
+});
+
+/// The script for a guest.
 CafeGuestScript scriptFor(CafeGuest guest) => switch (guest) {
       CafeGuest.wirtin => _wirtin,
       CafeGuest.schulkind => _schulkind,
-      CafeGuest.vielredner => _wirtin, // placeholder until P9
-      CafeGuest.gleichaltrige => _wirtin, // placeholder until P9
+      CafeGuest.vielredner => _vielredner,
+      CafeGuest.gleichaltrige => _gleichaltrige,
     };
