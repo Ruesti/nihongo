@@ -88,4 +88,43 @@ void main() {
     expect(find.byKey(const ValueKey('cafe-turn-done')), findsOneWidget);
     expect(find.byKey(const ValueKey('cafe-turn-prompt')), findsNothing);
   });
+
+  testWidgets('the Vielredner (rung 4) tells a monologue; understanding it '
+      'grades good and the guest reacts', (tester) async {
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame',
+        rung: 4);
+    await tester.pumpWidget(MaterialApp(
+      home: CafeTurnScreen(db: db, guest: CafeGuest.vielredner),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('cafe-turn-monologue')), findsOneWidget);
+    expect(await reviewLogCount(), 0);
+
+    await tester.tap(find.byKey(const ValueKey('cafe-turn-known')));
+    await tester.pumpAndSettle();
+
+    final log = (await db.select(db.reviewLog).get()).single;
+    expect(log.result, 'good');
+    expect(find.byKey(const ValueKey('cafe-turn-followup')), findsOneWidget);
+  });
+
+  testWidgets('the Gleichaltrige (rung 5) is free production: any answer is '
+      'held (graded hard), never wrong', (tester) async {
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame',
+        rung: 5);
+    await tester.pumpWidget(MaterialApp(
+      home: CafeTurnScreen(db: db, guest: CafeGuest.gleichaltrige),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+        find.byKey(const ValueKey('cafe-turn-free-input')), 'irgendwas');
+    await tester.tap(find.byKey(const ValueKey('cafe-turn-free-submit')));
+    await tester.pumpAndSettle();
+
+    final log = (await db.select(db.reviewLog).get()).single;
+    expect(log.result, 'hard'); // free production is held, never good/again
+    expect(find.byKey(const ValueKey('cafe-turn-followup')), findsOneWidget);
+  });
 }
