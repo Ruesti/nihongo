@@ -1,4 +1,5 @@
 import '../../core/db/learning_db.dart';
+import '../../core/i18n/concept_meaning.dart';
 import '../../core/srs/scheduler.dart';
 
 /// How a café turn ended (brief §4.4/§4.5): the learner answered correctly,
@@ -46,8 +47,8 @@ CafeExerciseKind kindForRung(int rung) {
 
 /// The content of one café turn, built from a due lexeme [LearnItem] by a
 /// café-scoped Lexemes+Concepts query (the same data `ExerciseLoader` reads).
-/// [meaning] is the concept's `glossKey` — the English key `review_screen`
-/// also shows today; German localization is a deferred follow-up.
+/// [meaning] is the German meaning via [meaningForConcept] (falling back to
+/// the concept's English `glossKey` for concepts not yet translated).
 class CafeTurnContent {
   final CafeExerciseKind kind;
 
@@ -86,7 +87,7 @@ class CafeTurnContent {
     if (concept == null) return null;
 
     final kind = kindForRung(item.masteryRung);
-    final meaning = concept.glossKey;
+    final meaning = meaningForConcept(concept.id, fallback: concept.glossKey);
     final (promptText, expectedAnswer) = switch (kind) {
       CafeExerciseKind.recognition => (lex.writtenForm, meaning),
       CafeExerciseKind.readingInput => (lex.writtenForm, lex.reading),

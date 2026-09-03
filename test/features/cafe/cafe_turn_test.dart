@@ -70,9 +70,9 @@ void main() {
         () async {
       final content = await CafeTurnContent.forItem(db, await due(3));
       expect(content!.kind, CafeExerciseKind.productionInput);
-      expect(content.promptText, 'rain'); // glossKey (meaning) shown
+      expect(content.promptText, 'Regen'); // German meaning shown
       expect(content.expectedAnswer, 'あめ'); // learner produces the word
-      expect(content.meaning, 'rain');
+      expect(content.meaning, 'Regen');
     });
 
     test('rung 1 (recognition): prompt is the word, answer is the meaning',
@@ -80,7 +80,7 @@ void main() {
       final content = await CafeTurnContent.forItem(db, await due(1));
       expect(content!.kind, CafeExerciseKind.recognition);
       expect(content.promptText, 'あめ');
-      expect(content.expectedAnswer, 'rain');
+      expect(content.expectedAnswer, 'Regen');
     });
 
     test('a lexeme that is not in the DB yields null (skippable)', () async {
@@ -96,7 +96,7 @@ void main() {
       final content = await CafeTurnContent.forItem(db, await due(4));
       expect(content!.kind, CafeExerciseKind.comprehension);
       expect(content.writtenForm, 'あめ');
-      expect(content.expectedAnswer, 'rain'); // the comprehension reveal
+      expect(content.expectedAnswer, 'Regen'); // the comprehension reveal
     });
 
     test('rung 5 (free production): no expected answer', () async {

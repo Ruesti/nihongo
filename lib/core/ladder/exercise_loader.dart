@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../db/learning_db.dart';
+import '../i18n/concept_meaning.dart';
 import '../script_profile.dart';
 import 'encounter.dart';
 import 'exercise_content.dart';
@@ -79,7 +80,7 @@ class ExerciseLoader {
           writtenForm: lexeme.writtenForm,
           reading: lexeme.reading,
           audioText: lexeme.writtenForm,
-          meaning: concept.glossKey,
+          meaning: meaningForConcept(concept.id, fallback: concept.glossKey),
           conceptImagePath: asset?.path,
           exampleSentence: null,
         ),
@@ -89,13 +90,16 @@ class ExerciseLoader {
     return switch (type) {
       ExerciseType.encounter => throw StateError('handled above'),
       ExerciseType.recognition => RecognitionContent(
-          displayForm: lexeme.writtenForm, answer: concept.glossKey),
+          displayForm: lexeme.writtenForm,
+          answer: meaningForConcept(concept.id, fallback: concept.glossKey)),
       ExerciseType.readingInput => ReadingInputContent(
           displayForm: lexeme.writtenForm, expectedReading: lexeme.reading),
       ExerciseType.productionInput => ProductionInputContent(
-          prompt: concept.glossKey, expectedForm: lexeme.writtenForm),
+          prompt: meaningForConcept(concept.id, fallback: concept.glossKey),
+          expectedForm: lexeme.writtenForm),
       ExerciseType.writeTrace => ProductionInputContent(
-          prompt: concept.glossKey, expectedForm: lexeme.writtenForm),
+          prompt: meaningForConcept(concept.id, fallback: concept.glossKey),
+          expectedForm: lexeme.writtenForm),
     };
   }
 
