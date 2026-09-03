@@ -1,5 +1,3 @@
-import 'package:drift/drift.dart';
-
 import '../../core/db/learning_db.dart';
 import '../../core/srs/scheduler.dart';
 
