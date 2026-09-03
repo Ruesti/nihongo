@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/db/learning_db.dart';
 import '../../core/ladder/ladder_review.dart';
+import '../../core/pipeline/knowledge_bridge.dart';
 import 'cafe_guest_script.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
@@ -16,12 +17,14 @@ class CafeTurnScreen extends StatefulWidget {
   final LearningDb db;
   final CafeGuest guest;
   final String languageId;
+  final KnowledgeBridge? bridge;
 
   const CafeTurnScreen({
     super.key,
     required this.db,
     required this.guest,
     this.languageId = 'lang_ja',
+    this.bridge,
   });
 
   @override
@@ -29,7 +32,8 @@ class CafeTurnScreen extends StatefulWidget {
 }
 
 class _CafeTurnScreenState extends State<CafeTurnScreen> {
-  late final LadderReview _ladder = LadderReview(widget.db);
+  late final LadderReview _ladder =
+      LadderReview(widget.db, bridge: widget.bridge);
   late final CafeGuestScript _script = scriptFor(widget.guest);
 
   List<LearnItem> _queue = [];
