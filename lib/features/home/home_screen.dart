@@ -71,7 +71,7 @@ class HomeScreen extends ConsumerWidget {
                 // Due items banner
                 dueAsync.when(
                   data: (count) => count > 0
-                      ? _DueBanner(count: count, lang: lang)
+                      ? _DueBanner(count: count)
                       : const SizedBox.shrink(),
                   loading: () => const SizedBox.shrink(),
                   error: (_, _) => const SizedBox.shrink(),
@@ -245,9 +245,8 @@ class _MasteryBar extends StatelessWidget {
 
 class _DueBanner extends StatelessWidget {
   final int count;
-  final String lang;
 
-  const _DueBanner({required this.count, required this.lang});
+  const _DueBanner({required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +272,7 @@ class _DueBanner extends StatelessWidget {
           ),
           const Spacer(),
           InkWell(
-            onTap: () => context.push('/review/$lang'),
+            onTap: () => context.push('/review'),
             child: const Text(
               'Jetzt',
               style: TextStyle(
