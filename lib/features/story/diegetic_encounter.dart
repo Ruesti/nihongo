@@ -25,7 +25,10 @@ class DiegeticEncounter {
     final id = '$languageId:${refType.name}:$refId';
     final item = await ladder.learning.getLearnItem(id);
     if (item != null && item.masteryRung == 0) {
-      await ladder.markEncountered(item);
+      // Mining keys by BCP-47 code ('ja'), not the pack id ('lang_ja') —
+      // same convention as ReviewScreen/KnowledgeBoot/the café.
+      await ladder.markEncountered(item,
+          languageCode: languageId.replaceFirst('lang_', ''));
     }
   }
 }

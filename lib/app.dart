@@ -15,6 +15,7 @@ import 'features/onboarding/onboarding_flow.dart';
 import 'features/onboarding/onboarding_providers.dart';
 import 'features/progress/progress_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/story/story_route.dart';
 import 'features/travel/travel_screen.dart';
 
 export 'features/onboarding/onboarding_providers.dart'
@@ -74,6 +75,10 @@ final List<RouteBase> _routes = [
       final id = int.tryParse(state.pathParameters['id'] ?? '1') ?? 1;
       return LessonScreen(lessonId: id);
     },
+  ),
+  GoRoute(
+    path: '/story',
+    builder: (ctx, state) => const StoryRoute(),
   ),
   GoRoute(
     path: '/onboarding',
