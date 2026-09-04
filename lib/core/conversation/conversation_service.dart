@@ -28,7 +28,12 @@ class ConversationService {
       await review.introduce(span.languageId, span.refType, span.refId);
       return;
     }
-    await review.submit(existing, ReviewResult.again);
+    // Mining keys by BCP-47 code ('ja'), not the pack id ('lang_ja') —
+    // same convention as ReviewScreen/KnowledgeBoot/the café. ErrorSpan
+    // only carries the pack id, so strip the prefix (matches
+    // DiegeticEncounter's convention).
+    await review.submit(existing, ReviewResult.again,
+        languageCode: span.languageId.replaceFirst('lang_', ''));
   }
 
   Future<LearnItem?> _findItem(ErrorSpan span) async {
