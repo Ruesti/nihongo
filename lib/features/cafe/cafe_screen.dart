@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/db/learning_db.dart';
+import '../../core/pipeline/knowledge_bridge.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_turn_screen.dart';
 
@@ -16,8 +17,14 @@ import 'cafe_turn_screen.dart';
 class CafeScreen extends StatefulWidget {
   final LearningDb db;
   final String languageId;
+  final KnowledgeBridge? bridge;
 
-  const CafeScreen({super.key, required this.db, this.languageId = 'lang_ja'});
+  const CafeScreen({
+    super.key,
+    required this.db,
+    this.languageId = 'lang_ja',
+    this.bridge,
+  });
 
   @override
   State<CafeScreen> createState() => _CafeScreenState();
@@ -86,6 +93,7 @@ class _CafeScreenState extends State<CafeScreen> {
                                 db: widget.db,
                                 guest: guest,
                                 languageId: widget.languageId,
+                                bridge: widget.bridge,
                               ),
                             ));
                             // On return, the due state may have changed —

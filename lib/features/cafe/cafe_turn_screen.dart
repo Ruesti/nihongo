@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/db/learning_db.dart';
 import '../../core/ladder/ladder_review.dart';
+import '../../core/pipeline/knowledge_bridge.dart';
 import 'cafe_guest_script.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
@@ -16,12 +17,14 @@ class CafeTurnScreen extends StatefulWidget {
   final LearningDb db;
   final CafeGuest guest;
   final String languageId;
+  final KnowledgeBridge? bridge;
 
   const CafeTurnScreen({
     super.key,
     required this.db,
     required this.guest,
     this.languageId = 'lang_ja',
+    this.bridge,
   });
 
   @override
@@ -29,7 +32,8 @@ class CafeTurnScreen extends StatefulWidget {
 }
 
 class _CafeTurnScreenState extends State<CafeTurnScreen> {
-  late final LadderReview _ladder = LadderReview(widget.db);
+  late final LadderReview _ladder =
+      LadderReview(widget.db, bridge: widget.bridge);
   late final CafeGuestScript _script = scriptFor(widget.guest);
 
   List<LearnItem> _queue = [];
@@ -99,8 +103,11 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
       _input.text.trim() == content.expectedAnswer.trim();
 
   Future<void> _submitOutcome(CafeOutcome outcome) async {
+    // The mining store keys by BCP-47 code ('ja'), NOT the on-ramp pack id
+    // ('lang_ja') — same convention as ReviewScreen (review_screen.dart:124)
+    // and the KnowledgeBoot backfill (main.dart:56).
     await _ladder.submit(_queue[_index], resultForOutcome(outcome),
-        languageCode: widget.languageId);
+        languageCode: widget.languageId.replaceFirst('lang_', ''));
     if (!mounted) return;
     setState(() => _followUp = _script.followUp(outcome, _index));
   }
