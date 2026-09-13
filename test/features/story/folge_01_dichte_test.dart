@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/episodes/folge_01_regen.dart';
 
 void main() {
