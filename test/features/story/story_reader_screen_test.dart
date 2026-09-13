@@ -198,6 +198,47 @@ Episode _episodeWithDiegeticTraceOnSecondPanel() => Episode.fromJson({
       ],
     });
 
+Episode _episodeWithHitAreaBubble() => Episode.fromJson({
+      'id': 'ep_hit', 'seasonId': 's', 'orderIndex': 1, 'title': 'Hit',
+      'locale': 'ja', 'era': 'e',
+      'budget': {
+        'items': [
+          {'refType': 'lexeme', 'id': 'lex_ja_sumimasen'},
+        ],
+        'maxNew': 1,
+      },
+      'pages': [
+        {
+          'index': 0,
+          'panels': [
+            {
+              'index': 0,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {
+                  'speakerId': 'protagonist',
+                  'text': 'すみません',
+                  'hitArea': [
+                    {'x': 0.1, 'y': 0.1},
+                    {'x': 0.6, 'y': 0.1},
+                    {'x': 0.6, 'y': 0.3},
+                    {'x': 0.1, 'y': 0.3},
+                  ],
+                  'tokens': [
+                    {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
+                  ],
+                },
+              ],
+              'thoughts': [
+                {'text': 'Ich hätte anrufen sollen.'},
+              ],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+
 Future<StoryProgressStore> _freshStore() async {
   SharedPreferences.setMockInitialValues({});
   return StoryProgressStore(await SharedPreferences.getInstance());
@@ -1169,5 +1210,65 @@ void main() {
     // so it doesn't leak past this test.
     await tester.pump(kDiegeticSuccessAutoClose);
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('eine Bubble mit hitArea wird Tippflaeche im Bild: '
+      'kein Dialogtext unter dem Panel, Tap spricht und oeffnet das Woerterbuch',
+      (tester) async {
+    final spoken = <String>[];
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithHitAreaBubble(),
+        progressStore: await _freshStore(),
+        speak: (t) async => spoken.add(t),
+        dictionaryEntries: const [
+          DictionaryEntry(id: 'lex_ja_sumimasen', headword: 'すみません',
+              meaning: 'Entschuldigung'),
+        ],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('story-bubble-hit-0')), findsOneWidget);
+    // Kein Fallback-Text unter dem Bild:
+    expect(find.text('すみません'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
+    await tester.pumpAndSettle();
+    expect(spoken, ['すみません']);
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+  });
+
+  testWidgets('thoughts erscheinen als Erzaehlkasten-Overlay', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _episodeWithHitAreaBubble(),
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final box = find.byKey(const ValueKey('story-thought-box'));
+    expect(box, findsOneWidget);
+    expect(find.descendant(of: box,
+        matching: find.text('Ich hätte anrufen sollen.')), findsOneWidget);
+  });
+
+  testWidgets('eine Bubble OHNE hitArea rendert wie bisher unter dem Bild '
+      '(Uebergangs-Fallback)', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: _twoPanelEpisode(),
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-bubble-hit-0')), findsNothing);
   });
 }

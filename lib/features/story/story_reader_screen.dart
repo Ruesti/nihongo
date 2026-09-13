@@ -15,6 +15,20 @@ import 'trace_evaluator.dart';
 /// placeholder image.
 const double _panelAspectRatio = 0.7;
 
+/// Axis-aligned bounding box of a bubble's `hitArea` polygon, in the same
+/// normalized 0..1 panel space — the tap target is the box, not the exact
+/// polygon (good enough until real polygon hit-testing is worth the cost).
+Rect _bboxOf(StoryPolygon polygon) {
+  var minX = 1.0, minY = 1.0, maxX = 0.0, maxY = 0.0;
+  for (final p in polygon.points) {
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return Rect.fromLTRB(minX, minY, maxX, maxY);
+}
+
 /// Reads an [Episode] panel by panel, tap to advance. Tapping a lookupable
 /// token plays its audio and shows its reading (INV-2: audio + kana, never
 /// meaning). Tokens marked `lookupable: false` render as inert text — no
@@ -126,19 +140,23 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (!hasDictionaryInteraction) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (sheetContext) => SizedBox(
-          key: const ValueKey('dictionary-sheet'),
-          height: MediaQuery.of(sheetContext).size.height * 0.7,
-          child: DictionarySheet(
-            entries: widget.dictionaryEntries,
-            knownIds: widget.knownIds,
-          ),
-        ),
-      );
+      _openDictionary();
     });
+  }
+
+  void _openDictionary() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SizedBox(
+        key: const ValueKey('dictionary-sheet'),
+        height: MediaQuery.of(sheetContext).size.height * 0.7,
+        child: DictionarySheet(
+          entries: widget.dictionaryEntries,
+          knownIds: widget.knownIds,
+        ),
+      ),
+    );
   }
 
   void _maybeShowSpeak(int position) {
@@ -240,34 +258,71 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
             children: [
               AspectRatio(
                 aspectRatio: _panelAspectRatio,
-                child: Image.asset(
-                  panel.asset,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
-                      Container(color: const Color(0xFFEDEDED)),
-                ),
+                child: LayoutBuilder(builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final h = constraints.maxHeight;
+                  return Stack(fit: StackFit.expand, children: [
+                    Image.asset(
+                      panel.asset,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: const Color(0xFFEDEDED)),
+                    ),
+                    if (panel.thoughts.isNotEmpty)
+                      Positioned(
+                        top: 8, left: 8, right: 8,
+                        child: Container(
+                          key: const ValueKey('story-thought-box'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xF2FFF8E7),
+                            border: Border.all(color: const Color(0xFF444444)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (final thought in panel.thoughts)
+                                Text(thought.text,
+                                    style: const TextStyle(
+                                        fontStyle: FontStyle.italic)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    for (var i = 0; i < panel.bubbles.length; i++)
+                      if (panel.bubbles[i].hitArea.points.isNotEmpty)
+                        Positioned(
+                          left: _bboxOf(panel.bubbles[i].hitArea).left * w,
+                          top: _bboxOf(panel.bubbles[i].hitArea).top * h,
+                          width: _bboxOf(panel.bubbles[i].hitArea).width * w,
+                          height: _bboxOf(panel.bubbles[i].hitArea).height * h,
+                          child: GestureDetector(
+                            key: ValueKey('story-bubble-hit-$i'),
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              widget.speak(panel.bubbles[i].text);
+                              _openDictionary();
+                            },
+                          ),
+                        ),
+                  ]);
+                }),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final thought in panel.thoughts)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          thought.text,
-                          style: const TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                      ),
                     for (final bubble in panel.bubbles)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _BubbleContent(
-                          bubble: bubble,
-                          speak: widget.speak,
+                      if (bubble.hitArea.points.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _BubbleContent(
+                            bubble: bubble,
+                            speak: widget.speak,
+                          ),
                         ),
-                      ),
                   ],
                 ),
               ),
