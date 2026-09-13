@@ -7,6 +7,8 @@ import 'package:nihongo_app/core/db/mining_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/core/pipeline/fsrs_knowledge_source.dart';
 import 'package:nihongo_app/core/pipeline/sentence_scoring.dart' show Knowledge;
+import 'package:nihongo_app/features/story/diegetic_speak_sheet.dart'
+    show kDiegeticSuccessAutoClose;
 import 'package:nihongo_app/features/story/episodes/folge_01_regen.dart';
 import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_route.dart';
@@ -145,10 +147,16 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
     await tester.pumpAndSettle();
 
-    // The sheet stays open showing success feedback (not a gate — INV-1);
-    // dismiss it via "weiter" like a reader would.
-    await tester.tap(find.byKey(const ValueKey('diegetic-speak-skip')));
+    // The sheet shows success feedback, then auto-closes 900ms later
+    // (not a gate — INV-1). Give the auto-close room to fire, and only
+    // tap "weiter" ourselves if the sheet is somehow still around —
+    // mirrors the defensive sheet-dismiss loop above.
+    await tester.pump(kDiegeticSuccessAutoClose);
     await tester.pumpAndSettle();
+    if (find.byKey(const ValueKey('diegetic-speak-sheet')).evaluate().isNotEmpty) {
+      await tester.tap(find.byKey(const ValueKey('diegetic-speak-skip')));
+      await tester.pumpAndSettle();
+    }
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
 
     final item = await learning.getLearnItem('lang_ja:lexeme:lex_ja_sumimasen');

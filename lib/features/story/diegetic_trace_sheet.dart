@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'diegetic_speak_sheet.dart' show kDiegeticSuccessAutoClose;
 import 'trace_evaluator.dart';
 
 /// The skippable, in-fiction handwriting canvas shown at a `diegetic: true`
@@ -56,13 +57,17 @@ class _DiegeticTraceSheetState extends State<DiegeticTraceSheet> {
     final ok = await widget.evaluator.evaluate(widget.targetText, _strokes);
     if (!mounted) return;
     if (ok) {
-      setState(() => _feedback = 'よくできました ✓');
+      setState(() => _feedback = 'Gut! ✓');
       if (!_succeeded) {
         _succeeded = true;
         widget.onSuccess();
+        Future.delayed(kDiegeticSuccessAutoClose, () {
+          if (mounted) widget.onSkip();
+        });
       }
     } else {
-      setState(() => _feedback = 'もう一度どうぞ');
+      setState(() =>
+          _feedback = "Fast — hör noch einmal und versuch's gleich nochmal.");
     }
   }
 
@@ -75,8 +80,9 @@ class _DiegeticTraceSheetState extends State<DiegeticTraceSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('なぞって: ${widget.targetText}',
-              style: const TextStyle(fontSize: 22)),
+          const Text('Zeichne das Zeichen nach:'),
+          const SizedBox(height: 4),
+          Text(widget.targetText, style: const TextStyle(fontSize: 22)),
           const SizedBox(height: 12),
           GestureDetector(
             key: const ValueKey('diegetic-trace-canvas'),
@@ -90,9 +96,27 @@ class _DiegeticTraceSheetState extends State<DiegeticTraceSheet> {
                 color: const Color(0xFFFAFAFA),
                 border: Border.all(color: const Color(0xFFBBBBBB)),
               ),
-              child: CustomPaint(
-                painter: _InkPainter(_strokes, _current),
-                size: Size.infinite,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Center(
+                    child: FittedBox(
+                      key: const ValueKey('diegetic-trace-ghost'),
+                      fit: BoxFit.contain,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          widget.targetText,
+                          style: const TextStyle(color: Color(0xFFDDDDDD)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  CustomPaint(
+                    painter: _InkPainter(_strokes, _current),
+                    size: Size.infinite,
+                  ),
+                ],
               ),
             ),
           ),

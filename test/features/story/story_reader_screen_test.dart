@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/features/story/dictionary.dart';
+import 'package:nihongo_app/features/story/diegetic_speak_sheet.dart'
+    show kDiegeticSuccessAutoClose;
 import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
@@ -936,6 +938,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(received, ['lex_ja_sumimasen']);
+
+    // The sheet auto-closes 900ms after success; flush that pending timer
+    // so it doesn't leak past this test.
+    await tester.pump(kDiegeticSuccessAutoClose);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('a speak interaction with diegetic:false never opens the sheet '
@@ -1157,5 +1164,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(received, ['lex_ja_ame']);
+
+    // The sheet auto-closes 900ms after success; flush that pending timer
+    // so it doesn't leak past this test.
+    await tester.pump(kDiegeticSuccessAutoClose);
+    await tester.pumpAndSettle();
   });
 }
