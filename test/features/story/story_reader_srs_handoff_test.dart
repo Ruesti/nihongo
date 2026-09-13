@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' hide isNotNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
