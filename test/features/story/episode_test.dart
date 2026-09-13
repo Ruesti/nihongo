@@ -157,10 +157,10 @@ void main() {
   test('StoryInteraction traegt optionales Reaktions-Bild + Erzaehlzeile', () {
     final withReaction = StoryInteraction.fromJson({
       'type': 'speak', 'diegetic': true,
-      'reactionAsset': 'assets/story/p07_reaction.jpg',
+      'reactionAsset': 'assets/story/p05_reaction.jpg',
       'reactionCaption': 'Sie hat dich gehört.',
     });
-    expect(withReaction.reactionAsset, 'assets/story/p07_reaction.jpg');
+    expect(withReaction.reactionAsset, 'assets/story/p05_reaction.jpg');
     expect(withReaction.reactionCaption, 'Sie hat dich gehört.');
 
     final without = StoryInteraction.fromJson({'type': 'trace'});

@@ -34,7 +34,7 @@ Rect _bboxOf(StoryPolygon polygon) {
 /// meaning). Tokens marked `lookupable: false` render as inert text — no
 /// tap handler, no visual hint, no lock indicator (INV-7). Resumes from the
 /// last panel the reader reached, persisted via [progressStore]. A panel
-/// carrying a `dictionary` interaction (e.g. Folge 01's P09) automatically
+/// carrying a `dictionary` interaction automatically
 /// opens [DictionarySheet] as a dismissible sheet — no gate, no forced
 /// resolution (INV-1): the reader can dismiss it and keep reading exactly
 /// as with any other panel.
