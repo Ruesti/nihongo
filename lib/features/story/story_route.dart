@@ -43,7 +43,16 @@ final storyReaderDepsProvider = FutureProvider.autoDispose<
 /// ('lang_ja') und sichert die fire-and-forget-Callbacks des Readers ab.
 /// Muster: CafeRoute (W2).
 class StoryRoute extends ConsumerWidget {
-  const StoryRoute({super.key});
+  /// Test-only seam: overrides the real [SttSpeakEvaluator]/
+  /// [KanaTraceEvaluator] so a headless widget test can drive a diegetic
+  /// speak/trace moment to success without a real mic or trace canvas. The
+  /// running app never passes these — it always gets the real defaults
+  /// below, since `SttSpeakEvaluator()` isn't `const` and so can't be a
+  /// constructor default value.
+  final SpeakEvaluator? speakEvaluator;
+  final TraceEvaluator? traceEvaluator;
+
+  const StoryRoute({super.key, this.speakEvaluator, this.traceEvaluator});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,6 +83,10 @@ class StoryRoute extends ConsumerWidget {
         );
         Future<void> encounterAll(List<String> itemIds) async {
           for (final id in itemIds) {
+            // Folge 01 budgetiert nur Lexeme; Tokens tragen keine
+            // refType-Info.
+            // TODO(story): refType aus dem Budget ableiten, sobald eine
+            // Folge Nicht-Lexem-Items diegetisch produziert.
             await encounter.encounter(RefType.lexeme, id);
           }
         }
@@ -86,10 +99,10 @@ class StoryRoute extends ConsumerWidget {
           knownIds: d.knownIds,
           onEpisodeComplete: () => handoff.introduceEpisode(episode).catchError(
               (Object e) => debugPrint('story: SRS-Handoff fehlgeschlagen: $e')),
-          speakEvaluator: SttSpeakEvaluator(),
+          speakEvaluator: speakEvaluator ?? SttSpeakEvaluator(),
           onDiegeticSpeakSuccess: (ids) => encounterAll(ids).catchError(
               (Object e) => debugPrint('story: Speak-Encounter fehlgeschlagen: $e')),
-          traceEvaluator: const KanaTraceEvaluator(),
+          traceEvaluator: traceEvaluator ?? const KanaTraceEvaluator(),
           onDiegeticTraceSuccess: (ids) => encounterAll(ids).catchError(
               (Object e) => debugPrint('story: Trace-Encounter fehlgeschlagen: $e')),
         );

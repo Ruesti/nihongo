@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
+import 'package:nihongo_app/core/db/mining_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
+import 'package:nihongo_app/core/pipeline/fsrs_knowledge_source.dart';
+import 'package:nihongo_app/core/pipeline/sentence_scoring.dart' show Knowledge;
 import 'package:nihongo_app/features/story/episodes/folge_01_regen.dart';
+import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_route.dart';
 import 'package:nihongo_app/packs/ja/ja_seed.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +17,18 @@ Future<LearningDb> _seededDb() async {
   final db = LearningDb.forTesting();
   await seedJaPack(db);
   return db;
+}
+
+Future<Knowledge> _knows(MiningDb db, String lemma,
+        {required String languageCode}) async =>
+    (await FsrsKnowledgeSource.load(db, languageCode: languageCode))
+        .call(lemma);
+
+class _FakeSpeakEvaluator implements SpeakEvaluator {
+  final double score;
+  _FakeSpeakEvaluator(this.score);
+  @override
+  Future<double> evaluate(String target) async => score;
 }
 
 void main() {
@@ -92,5 +108,56 @@ void main() {
     final deps = await container.read(storyReaderDepsProvider.future);
     expect(deps.knownIds, contains('lex_ja_ame'));
     expect(deps.knownIds, isNot(contains('lex_ja_sumimasen')));
+  });
+
+  testWidgets(
+      'ein erfolgreicher diegetischer Speak durch die echte Route hebt das '
+      'Item auf Sprosse 1 und projiziert es unter ja, nicht lang_ja',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final learning = await _seededDb();
+    final mining = MiningDb.forTesting();
+    addTearDown(() async {
+      await learning.close();
+      await mining.close();
+    });
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        learningDbProvider.overrideWithValue(learning),
+        miningDbProvider.overrideWithValue(mining),
+      ],
+      child: MaterialApp(
+        home: StoryRoute(speakEvaluator: _FakeSpeakEvaluator(0.9)),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    // P07 (die erste diegetische Sprech-Gelegenheit) liegt an Panel-Position
+    // 6 (0-indiziert) — die ersten sechs Panels tragen keine Interaktionen,
+    // also oeffnet sich vorher kein Sheet, das weggetappt werden muesste.
+    for (var i = 0; i < 6; i++) {
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
+    await tester.pumpAndSettle();
+
+    // The sheet stays open showing success feedback (not a gate — INV-1);
+    // dismiss it via "weiter" like a reader would.
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-skip')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+
+    final item = await learning.getLearnItem('lang_ja:lexeme:lex_ja_sumimasen');
+    expect(item, isNotNull);
+    expect(item!.masteryRung, 1);
+
+    expect(await _knows(mining, 'すみません', languageCode: 'ja'),
+        Knowledge.learning);
+    expect(await _knows(mining, 'すみません', languageCode: 'lang_ja'),
+        Knowledge.unknown);
   });
 }
