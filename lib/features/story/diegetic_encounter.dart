@@ -18,14 +18,24 @@ class DiegeticEncounter {
   final LadderReview ladder;
   final String languageId;
 
-  const DiegeticEncounter({required this.ladder, required this.languageId});
+  /// BCP-47-Code für die Bridge-Projektion ('ja'), analog zum Café
+  /// (cafe_turn_screen.dart): ohne ihn fiele die Projektion auf die
+  /// Pack-ID ('lang_ja') zurück und landete im falschen Mining-Bucket.
+  final String? languageCode;
+
+  const DiegeticEncounter({
+    required this.ladder,
+    required this.languageId,
+    this.languageCode,
+  });
 
   Future<void> encounter(RefType refType, String refId) async {
-    await ladder.introduce(languageId, refType, refId);
+    await ladder.introduce(languageId, refType, refId,
+        languageCode: languageCode);
     final id = '$languageId:${refType.name}:$refId';
     final item = await ladder.learning.getLearnItem(id);
     if (item != null && item.masteryRung == 0) {
-      await ladder.markEncountered(item);
+      await ladder.markEncountered(item, languageCode: languageCode);
     }
   }
 }
