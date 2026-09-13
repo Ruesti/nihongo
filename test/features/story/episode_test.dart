@@ -131,4 +131,40 @@ void main() {
     expect(episode.budget.items, isEmpty);
     expect(episode.budget.glyphs, isEmpty);
   });
+
+  test('Episode traegt optionale deutsche intro/outro-Texte', () {
+    final withTexts = Episode.fromJson({
+      'id': 'ep_x', 'seasonId': 's', 'orderIndex': 1, 'title': 'T',
+      'locale': 'ja', 'era': 'e',
+      'budget': {'items': [], 'maxNew': 0},
+      'pages': [],
+      'intro': 'Eine junge Frau steigt aus dem Zug.',
+      'outro': 'Der Name kommt ihr bekannt vor …',
+    });
+    expect(withTexts.intro, 'Eine junge Frau steigt aus dem Zug.');
+    expect(withTexts.outro, 'Der Name kommt ihr bekannt vor …');
+
+    final without = Episode.fromJson({
+      'id': 'ep_y', 'seasonId': 's', 'orderIndex': 1, 'title': 'T',
+      'locale': 'ja', 'era': 'e',
+      'budget': {'items': [], 'maxNew': 0},
+      'pages': [],
+    });
+    expect(without.intro, isNull);
+    expect(without.outro, isNull);
+  });
+
+  test('StoryInteraction traegt optionales Reaktions-Bild + Erzaehlzeile', () {
+    final withReaction = StoryInteraction.fromJson({
+      'type': 'speak', 'diegetic': true,
+      'reactionAsset': 'assets/story/p07_reaction.jpg',
+      'reactionCaption': 'Sie hat dich gehört.',
+    });
+    expect(withReaction.reactionAsset, 'assets/story/p07_reaction.jpg');
+    expect(withReaction.reactionCaption, 'Sie hat dich gehört.');
+
+    final without = StoryInteraction.fromJson({'type': 'trace'});
+    expect(without.reactionAsset, isNull);
+    expect(without.reactionCaption, isNull);
+  });
 }
