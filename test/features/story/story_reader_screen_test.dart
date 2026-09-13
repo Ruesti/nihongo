@@ -450,22 +450,27 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    for (var i = 0; i < 23; i++) {
+    // Folge01 V2 has 10 panels (9 taps after the title card). No
+    // speak/traceEvaluator is wired into this screen, and V2 has no
+    // `dictionary` interaction anywhere (that was P09-specific in V1) —
+    // the dismiss-check below is a harmless no-op kept for parity with
+    // other read-through tests.
+    for (var i = 0; i < 9; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
 
-      // Panel 9 (P09, reached after the 8th tap) carries a dictionary
-      // interaction and auto-opens the dictionary sheet — dismiss it by
-      // tapping a point clearly above the sheet (which covers the bottom
-      // 70% of the screen) so the remaining taps keep advancing the story.
       if (find.byKey(const ValueKey('dictionary-sheet')).evaluate().isNotEmpty) {
         await tester.tapAt(const Offset(400, 50));
         await tester.pumpAndSettle();
       }
     }
 
+    // Panel 10 (the last panel) carries the Endkarten-Haken narration.
     expect(
-      find.text('(unleserliche Randnotiz, Kanji und Datum)'),
+      find.text(
+        'Auf dem Zettel standen einmal drei Zeilen. Mira kennt jetzt: ein '
+        'Zeichen und vier Wörter. Hinter dieser Tür fängt der Rest an.',
+      ),
       findsOneWidget,
     );
   });
@@ -857,7 +862,9 @@ void main() {
   });
 
   testWidgets(
-      'reading the real Folge 01 fixture: reaching P09 opens the dictionary with nothing resolvable yet',
+      'reading the real Folge 01 fixture: tapping a bubble opens the '
+      'dictionary with nothing resolvable yet (V2 hat keine automatische '
+      'Dictionary-Interaktion mehr — die gab es nur in V1 bei P09)',
       (tester) async {
     final store = await _freshStore();
     final episode = Episode.fromJson(pilot01RegenJson);
@@ -875,13 +882,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    for (var i = 0; i < 7; i++) {
-      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
-      await tester.pump();
-    }
-    // The 8th tap lands on P09 (position index 8), which carries the
-    // dictionary interaction in the real fixture.
-    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+
+    // Panel 1's signage bubble (みなみまち) carries a hitArea — tapping
+    // any bubble opens the dictionary, regardless of a dedicated
+    // `dictionary` interaction (that mechanic is gone in V2).
+    await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
@@ -894,7 +900,8 @@ void main() {
   });
 
   testWidgets(
-      'reading the real Folge 01 fixture: P10 shows the visible consequence after P09',
+      'reading the real Folge 01 fixture: closing a dictionary opened via '
+      'bubble tap and continuing reveals the next panel',
       (tester) async {
     final store = await _freshStore();
     final episode = Episode.fromJson(pilot01RegenJson);
@@ -912,20 +919,19 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    // Advance to P09 (position index 8), which auto-opens the dictionary.
-    for (var i = 0; i < 8; i++) {
-      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
-      await tester.pumpAndSettle();
-    }
+    await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
 
-    // Close the book and read on — the next panel carries the consequence.
+    // Close the book and read on — the next panel carries the story on.
     await tester.tapAt(const Offset(400, 50));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Weg.'), findsOneWidget);
+    // Position advances from Panel 1 (index 0) to Panel 2 (index 1), whose
+    // Erzählkasten carries the story on.
+    expect(find.text('Der Regen war schneller als sie.'), findsOneWidget);
   });
 
   testWidgets('fires onEpisodeComplete once when the last panel is reached',
@@ -1517,7 +1523,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final store = StoryProgressStore(prefs);
     final episode = Episode.fromJson(pilot01RegenJson);
-    await store.savePosition(episode.id, 23);
+    await store.savePosition(episode.id, 9); // letztes Panel (V2: 10 Panels)
     await store.markCompleted(episode.id);
 
     await tester.pumpWidget(MaterialApp(

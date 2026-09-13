@@ -65,20 +65,22 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    // Bis zum letzten Panel lesen. P09 oeffnet das Woerterbuch automatisch,
-    // P07/P22 den echten Sprech-Sheet (StoryRoute verdrahtet immer einen
-    // SttSpeakEvaluator) und P24 den Nachzeichnen-Sheet (KanaTraceEvaluator)
-    // — anders als die isolierten StoryReaderScreen-Tests, die diese
-    // Evaluatoren typischerweise weglassen, haengt die echte Route sie immer
-    // ein. Jeder dieser Sheets wird, wie im Muster
-    // story_reader_srs_handoff_test.dart fuer das Woerterbuch, per Tap
-    // oberhalb des Sheets geschlossen, statt eine Antwort abzugeben.
+    // Bis zum letzten Panel lesen (Folge01 V2: 10 Panels, 9 Taps). Panel 2
+    // traegt den Zettel-Trace, Panel 5 und Panel 8 je einen Sprech-Moment
+    // (StoryRoute verdrahtet immer einen SttSpeakEvaluator/
+    // KanaTraceEvaluator) — anders als die isolierten
+    // StoryReaderScreen-Tests, die diese Evaluatoren typischerweise
+    // weglassen, haengt die echte Route sie immer ein. V2 hat keine
+    // `dictionary`-Interaktion mehr (die gab es nur in V1 bei P09); der
+    // Dictionary-Check bleibt defensiv stehen, feuert aber nie. Jeder
+    // Sheet wird per Tap oberhalb geschlossen, statt eine Antwort
+    // abzugeben.
     const sheetKeys = [
       ValueKey('dictionary-sheet'),
       ValueKey('diegetic-speak-sheet'),
       ValueKey('diegetic-trace-sheet'),
     ];
-    for (var i = 0; i < 23; i++) {
+    for (var i = 0; i < 9; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
       for (final key in sheetKeys) {
@@ -141,12 +143,18 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    // P07 (die erste diegetische Sprech-Gelegenheit) liegt an Panel-Position
-    // 6 (0-indiziert) — die ersten sechs Panels tragen keine Interaktionen,
-    // also oeffnet sich vorher kein Sheet, das weggetappt werden muesste.
-    for (var i = 0; i < 6; i++) {
+    // Panel 5 (die erste diegetische Sprech-Gelegenheit) liegt an
+    // Panel-Position 4 (0-indiziert). Panel 2 (Position 1), auf dem Weg
+    // dorthin, traegt den Zettel-Trace und oeffnet daher ein
+    // diegetic-trace-sheet, das weggetappt werden muss, bevor die
+    // naechste Tap-auf-Panel-Geste wieder ankommt.
+    for (var i = 0; i < 4; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
+      if (find.byKey(const ValueKey('diegetic-trace-sheet')).evaluate().isNotEmpty) {
+        await tester.tapAt(const Offset(400, 50));
+        await tester.pumpAndSettle();
+      }
     }
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsOneWidget);
 
