@@ -8,7 +8,13 @@ import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
 void main() {
   late LearningDb db;
   setUp(() => db = LearningDb.forTesting());
-  tearDown(() async => db.close());
+  tearDown(() async {
+    // Panel-Bilder (Image.asset) laden asynchron; im Test fehlt das Asset und
+    // der globale imageCache wuerde sonst zwischen den Tests uebersprechen.
+    imageCache.clear();
+    imageCache.clearLiveImages();
+    await db.close();
+  });
 
   testWidgets('nothing due → the café is calmly empty, with no count or '
       '"0 due" message', (tester) async {

@@ -71,3 +71,5 @@ flutter:
     - assets/kanji_svg/
     - assets/slice/
     - assets/comic/
+    - assets/comic/folge01/
+    - assets/comic/cafe/
