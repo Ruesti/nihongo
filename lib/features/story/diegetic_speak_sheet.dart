@@ -20,6 +20,10 @@ class DiegeticSpeakSheet extends StatefulWidget {
   final VoidCallback onSkip;
   final double threshold;
 
+  /// Drehbuch-eigene Aufgabenzeile (überschreibt den Standardtext). Null =
+  /// generischer Text.
+  final String? taskText;
+
   const DiegeticSpeakSheet({
     super.key,
     required this.targetText,
@@ -28,6 +32,7 @@ class DiegeticSpeakSheet extends StatefulWidget {
     required this.onSuccess,
     required this.onSkip,
     this.threshold = 0.6,
+    this.taskText,
   });
 
   @override
@@ -65,7 +70,7 @@ class _DiegeticSpeakSheetState extends State<DiegeticSpeakSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Hör zu und sprich nach:'),
+          Text(widget.taskText ?? 'Hör zu und sprich nach:'),
           const SizedBox(height: 8),
           Text(widget.targetText, style: const TextStyle(fontSize: 24)),
           const SizedBox(height: 16),

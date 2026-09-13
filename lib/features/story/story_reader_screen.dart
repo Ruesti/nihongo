@@ -218,16 +218,24 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final evaluator = widget.speakEvaluator;
     if (evaluator == null) return;
     final panel = _panels[position];
-    final hasSpeak = panel.interactions
-        .any((i) => i.type == InteractionType.speak && i.diegetic);
-    if (!hasSpeak) return;
+    StoryInteraction? interaction;
+    for (final i in panel.interactions) {
+      if (i.type == InteractionType.speak && i.diegetic) {
+        interaction = i;
+        break;
+      }
+    }
+    if (interaction == null) return;
 
-    final targetText = panel.bubbles.map((b) => b.text).join(' ');
-    final itemIds = <String>[
+    final derivedItemIds = <String>[
       for (final b in panel.bubbles)
         for (final t in b.tokens)
           if (t.itemId != null) t.itemId!,
     ];
+    final targetText = interaction.target ??
+        panel.bubbles.map((b) => b.text).join(' ');
+    final itemIds = interaction.targetItemIds ?? derivedItemIds;
+    final taskText = interaction.promptText;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -237,6 +245,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           targetText: targetText,
           evaluator: evaluator,
           speak: widget.speak,
+          taskText: taskText,
           onSuccess: () {
             _markReacted(position);
             widget.onDiegeticSpeakSuccess?.call(itemIds);
@@ -251,21 +260,30 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final evaluator = widget.traceEvaluator;
     if (evaluator == null) return;
     final panel = _panels[position];
-    final hasTrace = panel.interactions
-        .any((i) => i.type == InteractionType.trace && i.diegetic);
-    if (!hasTrace) return;
+    StoryInteraction? interaction;
+    for (final i in panel.interactions) {
+      if (i.type == InteractionType.trace && i.diegetic) {
+        interaction = i;
+        break;
+      }
+    }
+    if (interaction == null) return;
 
     // Derive the trace target from tokens (surface + itemId), NOT bubble
     // text — P24 carries an inert margin-note bubble with no tokens that
-    // must be excluded.
-    final tokens = [
+    // must be excluded. Only used as a fallback when the interaction
+    // carries no explicit target/targetItemIds (bisheriges Verhalten).
+    final derivedTokens = [
       for (final b in panel.bubbles)
         for (final t in b.tokens)
           if (t.itemId != null) t,
     ];
-    if (tokens.isEmpty) return;
-    final targetText = tokens.map((t) => t.surface).join();
-    final itemIds = tokens.map((t) => t.itemId!).toList();
+    if (interaction.target == null && derivedTokens.isEmpty) return;
+    final targetText =
+        interaction.target ?? derivedTokens.map((t) => t.surface).join();
+    final itemIds = interaction.targetItemIds ??
+        derivedTokens.map((t) => t.itemId!).toList();
+    final taskText = interaction.promptText;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -275,6 +293,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         builder: (sheetContext) => DiegeticTraceSheet(
           targetText: targetText,
           evaluator: evaluator,
+          taskText: taskText,
           onSuccess: () {
             _markReacted(position);
             widget.onDiegeticTraceSuccess?.call(itemIds);

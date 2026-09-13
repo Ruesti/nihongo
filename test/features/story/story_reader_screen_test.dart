@@ -202,7 +202,7 @@ Map<String, dynamic> _episodeWithDiegeticSpeakOnSecondPanelJson() => {
 Episode _episodeWithDiegeticSpeakOnSecondPanel() =>
     Episode.fromJson(_episodeWithDiegeticSpeakOnSecondPanelJson());
 
-Episode _episodeWithDiegeticTraceOnSecondPanel() => Episode.fromJson({
+Map<String, dynamic> _episodeWithDiegeticTraceOnSecondPanelJson() => {
       'id': 'ep_trace_test',
       'seasonId': 'season_test',
       'orderIndex': 1,
@@ -250,7 +250,10 @@ Episode _episodeWithDiegeticTraceOnSecondPanel() => Episode.fromJson({
           ],
         },
       ],
-    });
+    };
+
+Episode _episodeWithDiegeticTraceOnSecondPanel() =>
+    Episode.fromJson(_episodeWithDiegeticTraceOnSecondPanelJson());
 
 Episode _episodeWithHitAreaBubble() => Episode.fromJson({
       'id': 'ep_hit', 'seasonId': 's', 'orderIndex': 1, 'title': 'Hit',
@@ -1547,5 +1550,80 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('story-bubble-hit-0')), findsNothing);
+  });
+
+  testWidgets('speak-Interaktion mit target/promptText/targetItemIds nutzt '
+      'genau diese statt der Bubble-Ableitung', (tester) async {
+    final json = _episodeWithDiegeticSpeakOnSecondPanelJson();
+    final panel = ((json['pages'] as List).first
+        as Map<String, dynamic>)['panels'][1] as Map<String, dynamic>;
+    (panel['interactions'] as List)[0] = {
+      'type': 'speak', 'diegetic': true,
+      'promptText': 'Mira braucht Hilfe.',
+      'target': 'すみません',
+      'targetItemIds': ['lex_ja_sumimasen'],
+    };
+    final received = <String>[];
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: Episode.fromJson(json),
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+        onDiegeticSpeakSuccess: (ids) async => received.addAll(ids),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.text('Mira braucht Hilfe.'), findsOneWidget);
+    expect(find.text('すみません'), findsWidgets); // das Ziel, nicht der Bubble-Text
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
+    await tester.pump(kDiegeticSuccessAutoClose);
+    await tester.pumpAndSettle();
+    expect(received, ['lex_ja_sumimasen']);
+  });
+
+  testWidgets('trace mit target und leeren targetItemIds: Aufgabe erscheint, '
+      'Erfolg reagiert, aber bucht nichts', (tester) async {
+    final json = _episodeWithDiegeticTraceOnSecondPanelJson();
+    final panel = ((json['pages'] as List).first
+        as Map<String, dynamic>)['panels'][1] as Map<String, dynamic>;
+    (panel['interactions'] as List)[0] = {
+      'type': 'trace', 'diegetic': true,
+      'promptText': 'Rette das Zeichen: め.',
+      'target': 'め',
+      'targetItemIds': <dynamic>[],
+      'reactionCaption': 'Jetzt gehört es ihr.',
+    };
+    final received = <String>[];
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: Episode.fromJson(json),
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        traceEvaluator: _FakeTraceEvaluator(true),
+        onDiegeticTraceSuccess: (ids) async => received.addAll(ids),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.text('Rette das Zeichen: め.'), findsOneWidget);
+    await tester.drag(find.byKey(const ValueKey('diegetic-trace-canvas')),
+        const Offset(30, 30));
+    await tester.tap(find.byKey(const ValueKey('diegetic-trace-done')));
+    await tester.pump(kDiegeticSuccessAutoClose);
+    await tester.pumpAndSettle();
+    expect(received, isEmpty);
+    expect(find.byKey(const ValueKey('story-reaction-caption')), findsOneWidget);
   });
 }

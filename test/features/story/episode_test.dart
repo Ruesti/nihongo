@@ -167,4 +167,20 @@ void main() {
     expect(without.reactionAsset, isNull);
     expect(without.reactionCaption, isNull);
   });
+
+  test('StoryInteraction traegt promptText, target und targetItemIds', () {
+    final it = StoryInteraction.fromJson({
+      'type': 'trace', 'diegetic': true,
+      'promptText': 'Rette das Zeichen.',
+      'target': 'め',
+      'targetItemIds': <dynamic>[],
+    });
+    expect(it.promptText, 'Rette das Zeichen.');
+    expect(it.target, 'め');
+    expect(it.targetItemIds, isEmpty);
+    final without = StoryInteraction.fromJson({'type': 'speak'});
+    expect(without.promptText, isNull);
+    expect(without.target, isNull);
+    expect(without.targetItemIds, isNull);
+  });
 }

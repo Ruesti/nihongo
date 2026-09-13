@@ -151,12 +151,28 @@ class StoryInteraction {
   /// Deutsche Erzählzeile zur Reaktion.
   final String? reactionCaption;
 
+  /// Deutsche Aufgabenzeile aus dem Drehbuch (ersetzt den Standardtext
+  /// des Sheets). Null = generischer Text.
+  final String? promptText;
+
+  /// Explizites Sprech-/Zeichenziel. Null = Ableitung aus den
+  /// Panel-Bubbles (bisheriges Verhalten).
+  final String? target;
+
+  /// Explizite SRS-Buchung bei Erfolg. Null = Ableitung aus den
+  /// Bubble-Tokens; leere Liste = Erfolg reagiert nur erzählerisch
+  /// (z. B. Glyph-Momente wie め, die kein Lexem sind).
+  final List<String>? targetItemIds;
+
   const StoryInteraction({
     required this.type,
     required this.diegetic,
     this.optional = true,
     this.reactionAsset,
     this.reactionCaption,
+    this.promptText,
+    this.target,
+    this.targetItemIds,
   });
 
   factory StoryInteraction.fromJson(Map<String, dynamic> j) => StoryInteraction(
@@ -165,6 +181,9 @@ class StoryInteraction {
         optional: j['optional'] as bool? ?? true,
         reactionAsset: j['reactionAsset'] as String?,
         reactionCaption: j['reactionCaption'] as String?,
+        promptText: j['promptText'] as String?,
+        target: j['target'] as String?,
+        targetItemIds: (j['targetItemIds'] as List?)?.cast<String>(),
       );
 }
 

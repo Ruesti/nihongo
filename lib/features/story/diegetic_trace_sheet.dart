@@ -15,12 +15,17 @@ class DiegeticTraceSheet extends StatefulWidget {
   final VoidCallback onSuccess;
   final VoidCallback onSkip;
 
+  /// Drehbuch-eigene Aufgabenzeile (überschreibt den Standardtext). Null =
+  /// generischer Text.
+  final String? taskText;
+
   const DiegeticTraceSheet({
     super.key,
     required this.targetText,
     required this.evaluator,
     required this.onSuccess,
     required this.onSkip,
+    this.taskText,
   });
 
   @override
@@ -80,7 +85,7 @@ class _DiegeticTraceSheetState extends State<DiegeticTraceSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Zeichne das Zeichen nach:'),
+          Text(widget.taskText ?? 'Zeichne das Zeichen nach:'),
           const SizedBox(height: 4),
           Text(widget.targetText, style: const TextStyle(fontSize: 22)),
           const SizedBox(height: 12),
