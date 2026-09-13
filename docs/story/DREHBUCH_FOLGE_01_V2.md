@@ -19,6 +19,12 @@ der Situation, nie umgekehrt.
   Japanisch = Welt (Blasen, Schilder, der Zettel).
 - Jede Interaktion (Antippen, Sprechen, Nachzeichnen) hat einen Grund in
   der Geschichte.
+- **Wiederholungs-Regel (bewusster Trade-off):** Gezählt werden
+  Gesamt-Vorkommen (Blasen + Sprech-/Zeichenziele), nicht mehr „in wie
+  vielen Panels". Natürliche Sprache wiederholt in Clustern
+  (「どうぞ、どうぞ！」) — das ist gewollt. ABER: Der Drehbuch-Autor bleibt
+  dafür verantwortlich, Wörter AUCH über Szenen zu streuen (wie あめ in
+  dieser Folge); der Validator erzwingt das nicht mehr.
 
 ---
 
@@ -114,7 +120,7 @@ lerne: über einen kaputten Schirm."*
 **Bild:** Er greift in den Korb, hält ihr einen Schirm hin — den
 schlichtesten, aber heilen.
 **Welt:** Er: 「はい。かさ。どうぞ」 — Mira: 「え？」 — Er (nachdrücklich,
-lächelnd): 「どうぞ、どうぞ！」
+lächelnd): 「どうぞ、どうぞ。かさ！」
 **Erzählkasten:** *„Sie hat nichts bestellt. Sie hat nichts bezahlt. Er
 gibt ihr den Schirm einfach so."*
 
@@ -126,7 +132,7 @@ jedem Film. Jetzt zählt es zum ersten Mal."*
 ありがとう."*
 **Reaktion bei Erfolg:** Er winkt ab, lacht: 「はいはい」 — Erzählzeile:
 *„Ihr zweites Wort. Es wird nicht das letzte sein."*
-Mira (im Gehen, leise übend): 「ありがとう… すみません… あめ…」
+Mira (im Gehen, leise übend): 「ありがとう… すみません… あめ… かさ…」
 
 ### P9 — Das Zeichen
 **Bild:** Weiter hinten in der Shotengai: ein kleines Café. Auf dem
