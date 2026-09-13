@@ -75,14 +75,31 @@ Dauerhafte Aufgabe: **System-Wissen**, also das, was aus reinem Lesen schlecht l
   Bewusst konservativ: ein automatisches Abschaltkriterium („Mining trägt, wenn der
   i+1-Ideal-Pool ≥ X Sätze liefert") wäre eleganter, ist aber schwerer zu treffen;
   fester Umfang zuerst, Automatik später falls nötig.
+  **Die Rampe läuft parallel zum Lesen, nicht davor** — sie ist die Eintrittskarte
+  für „wilde" Texte (§ Gleis 2), nicht für den Manga. Es gibt keinen Punkt, an dem
+  die Schule „fertig sein muss", bevor gelesen werden darf.
 
 ### Gleis 2 — Lesen (Mining)
 
 Bleibt mechanisch wie gebaut: i+1-Lesereihenfolge, Wörterbuch-Tap, In-Reading-Review
 (fällige Items erscheinen im sichtbaren Text-Abschnitt), Passage-Snapshots als ehrliche
-Messung. Die Story-Engine (Manga-Folgen mit diegetischem Sprechen/Nachzeichnen) ist die
-*reiche* Ausprägung dieses Gleises — ihre Verdrahtung in die App läuft als eigenes
-Arbeitspaket (W3) und wird hier nicht neu entworfen.
+Messung.
+
+**Prinzip: Lesen ab Tag 1 — der Manga wartet auf niemanden** (Uli-Anforderung, Review
+2026-09-13). Das Lesegleis hat zwei Stoffsorten mit verschiedenen Eintrittsbedingungen:
+
+- **Kuratierte Manga-Folgen (Story-Engine):** für Lerner geschrieben, setzen null
+  Vorwissen voraus — Folge 01 führt ihre Wörter selbst ein (Antippen, Audio,
+  diegetisches Sprechen/Nachzeichnen, Einführung bei Lese-Ende; INV-5). Sie sind der
+  Anfänger-Einstieg des Lesegleises, verfügbar **ab dem ersten Tag**. Der
+  Grundwortschatz-Anschub (§ Gleis 1) ist ausdrücklich KEINE Voraussetzung dafür.
+- **„Wilde" Texte** (nicht für Lerner geschrieben: Rashōmon-Slice, künftige Importe):
+  brauchen einen Wortschatz-Grundstock, damit i+1 überhaupt lesbare Sätze findet.
+  Sie schalten sich über das i+1-Fenster von selbst frei, sobald der Wortschatz trägt.
+
+Die Verdrahtung der Story-Engine in die App (Arbeitspaket W3) wird hier nicht neu
+entworfen — aber sie ist von der Scheduler-Fusion **unabhängig** und soll nicht hinter
+ihr warten (§9).
 
 ## 4. Verschmelzung unter der Haube
 
@@ -160,7 +177,9 @@ Eigene, spätere Brainstormings (hier nur als Anschlussstellen notiert):
    zur Loop-Struktur.
 2. **Produktion & Fehler:** Der Kernloop ist rezeptionslastig; die Invariante I7
    („Fehler erzeugt Item") ist unerfüllt. Kaiwa/STT als Produktionskanal.
-3. **Story-Engine-Verdrahtung (W3):** läuft als eigenes Wiring-Arbeitspaket.
+3. **Story-Engine-Verdrahtung (W3):** läuft als eigenes Wiring-Arbeitspaket —
+   wegen „Lesen ab Tag 1" (§3) aber mit hoher Priorität: unabhängig von der Fusion,
+   kann vor oder parallel zu §9 laufen.
 
 ## 8. Risiken
 
@@ -182,3 +201,7 @@ Eigene, spätere Brainstormings (hier nur als Anschlussstellen notiert):
 5. **Grundwortschatz-Auslauf** (Rampe endet bei N).
 
 Jeder Schritt ist einzeln shipbar und lässt die App jederzeit lauffähig.
+
+**Außerhalb dieser Sequenz, aber nicht dahinter:** Die Manga-Verdrahtung (W3) hängt an
+keinem dieser Schritte und soll parallel laufen — sie ist der schnellste Weg, das
+Prinzip „Lesen ab Tag 1" (§3) in der echten App erlebbar zu machen.
