@@ -21,6 +21,27 @@ class TtsService {
         debugPrint('TtsService: setLanguage($locale) fehlgeschlagen '
             '($langResult) — es spricht eine Fallback-Stimme.');
       }
+      // setLanguage(ok) heißt nur "Sprache bekannt" — nicht, dass eine
+      // Stimme samt Sprachdaten wirklich da ist. Deshalb: explizit eine
+      // Stimme der Ziel-Locale wählen und loggen, was verfügbar ist.
+      final voices = await _tts.getVoices;
+      final wanted = locale.split('-').first;
+      final matching = (voices as List)
+          .whereType<Map>()
+          .where((v) => v['locale'].toString().startsWith(wanted))
+          .toList();
+      debugPrint('TtsService: ${matching.length} Stimmen für $wanted: '
+          '${matching.take(3).map((v) => v['name']).toList()}');
+      if (matching.isNotEmpty) {
+        final v = matching.first;
+        await _tts.setVoice({
+          'name': v['name'].toString(),
+          'locale': v['locale'].toString(),
+        });
+      } else {
+        debugPrint('TtsService: KEINE $wanted-Stimme installiert — '
+            'Sprachdaten der TTS-Engine fehlen auf dem Gerät.');
+      }
       // In flutter_tts ist auf Android 0.5 die NORMALE Geschwindigkeit
       // (0.0–1.0 wird auf 0–2x gemappt). 0.8 war ~1.6x und klang gehetzt.
       await _tts.setSpeechRate(0.5);
