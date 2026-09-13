@@ -52,6 +52,9 @@ void main() {
     // Nothing has entered the SRS before the episode is finished (INV-5).
     expect(await learning.select(learning.learnItems).get(), isEmpty);
 
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+
     // Read to the last panel. P09 auto-opens the dictionary; dismiss it by
     // tapping above the sheet, exactly as the existing read-through test does.
     for (var i = 0; i < 23; i++) {

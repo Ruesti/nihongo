@@ -90,10 +90,16 @@ class StoryReaderScreen extends StatefulWidget {
   State<StoryReaderScreen> createState() => _StoryReaderScreenState();
 }
 
+/// Screen-level phase: a fresh or completed episode opens on the title
+/// card, then reads panel by panel, then closes on the end card once the
+/// last panel has been tapped again (Spec Reader-Erleben §2.1/§2.6/§2.7).
+enum _ReaderPhase { title, reading, end }
+
 class _StoryReaderScreenState extends State<StoryReaderScreen> {
   late final List<StoryPanel> _panels = widget.episode.allPanels.toList();
   int? _position;
   bool _completionFired = false;
+  _ReaderPhase _phase = _ReaderPhase.title;
 
   @override
   void initState() {
@@ -102,19 +108,39 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   }
 
   Future<void> _restorePosition() async {
-    final saved = await widget.progressStore.lastPosition(widget.episode.id);
+    final done = await widget.progressStore.isCompleted(widget.episode.id);
+    final saved =
+        done ? null : await widget.progressStore.lastPosition(widget.episode.id);
     if (!mounted) return;
     final clamped = saved == null ? 0 : saved.clamp(0, _panels.length - 1);
-    setState(() => _position = clamped);
-    _maybeShowDictionary(clamped);
-    _maybeShowSpeak(clamped);
-    _maybeShowTrace(clamped);
-    _maybeFireCompletion(clamped);
+    final resumeMidway = !done && saved != null && clamped > 0;
+    setState(() {
+      _position = clamped;
+      _phase = resumeMidway ? _ReaderPhase.reading : _ReaderPhase.title;
+    });
+    if (resumeMidway) {
+      _maybeShowDictionary(clamped);
+      _maybeShowSpeak(clamped);
+      _maybeShowTrace(clamped);
+      _maybeFireCompletion(clamped);
+    }
+  }
+
+  void _beginReading() {
+    setState(() => _phase = _ReaderPhase.reading);
+    _maybeShowDictionary(_position ?? 0);
+    _maybeShowSpeak(_position ?? 0);
+    _maybeShowTrace(_position ?? 0);
+    _maybeFireCompletion(_position ?? 0);
   }
 
   void _advance() {
     final current = _position;
-    if (current == null || current >= _panels.length - 1) return;
+    if (current == null) return;
+    if (current >= _panels.length - 1) {
+      setState(() => _phase = _ReaderPhase.end);
+      return;
+    }
     _goTo(current + 1);
   }
 
@@ -227,6 +253,9 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   void _maybeFireCompletion(int position) {
     if (position < _panels.length - 1 || _completionFired) return;
     _completionFired = true;
+    // Fire-and-forget: the reader must not stall reading to wait for a
+    // SharedPreferences write, and setBool practically never throws.
+    widget.progressStore.markCompleted(widget.episode.id);
     widget.onEpisodeComplete?.call();
   }
 
@@ -236,6 +265,63 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (position == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_phase == _ReaderPhase.title) {
+      return Scaffold(
+        body: GestureDetector(
+          key: const ValueKey('story-title-card'),
+          behavior: HitTestBehavior.opaque,
+          onTap: _beginReading,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(widget.episode.title,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      textAlign: TextAlign.center),
+                  if (widget.episode.intro != null) ...[
+                    const SizedBox(height: 16),
+                    Text(widget.episode.intro!, textAlign: TextAlign.center),
+                  ],
+                  const SizedBox(height: 32),
+                  Text('Tippe, um zu beginnen',
+                      style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (_phase == _ReaderPhase.end) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              key: const ValueKey('story-end-card'),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Ende der Folge',
+                    style: Theme.of(context).textTheme.titleLarge),
+                if (widget.episode.outro != null) ...[
+                  const SizedBox(height: 16),
+                  Text(widget.episode.outro!, textAlign: TextAlign.center),
+                ],
+                const SizedBox(height: 32),
+                FilledButton(
+                  key: const ValueKey('story-end-done'),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Zurück zum Lesen'),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 

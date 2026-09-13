@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../fixtures/story/folge_01_dictionary_fixture.dart';
 import '../../fixtures/story/pilot_01_regen_fixture.dart';
 
-Episode _twoPanelEpisode() => Episode.fromJson({
+Map<String, dynamic> _twoPanelEpisodeJson() => {
       'id': 'ep_test_reader',
       'seasonId': 'season_test',
       'orderIndex': 1,
@@ -47,6 +47,57 @@ Episode _twoPanelEpisode() => Episode.fromJson({
                   'text': 'Second panel text',
                   'tokens': [],
                 },
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+          ],
+        },
+      ],
+    };
+
+Episode _twoPanelEpisode() => Episode.fromJson(_twoPanelEpisodeJson());
+
+/// Three panels so a mid-episode position (index 1) is genuinely a resume
+/// point, distinct from the last panel — reaching the LAST panel always
+/// marks the episode completed (Reader-Erleben §2.7), which would otherwise
+/// make a "position persists across remounts" test collide with the
+/// "a completed episode reopens on the title card" behaviour.
+Episode _threePanelEpisode() => Episode.fromJson({
+      'id': 'ep_test_reader_mid',
+      'seasonId': 'season_test',
+      'orderIndex': 1,
+      'title': 'Test Episode Mid',
+      'locale': 'ja',
+      'era': '1996',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 1,
+          'panels': [
+            {
+              'index': 1,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'narrator', 'text': 'First panel text', 'tokens': []},
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 2,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'narrator', 'text': 'Second panel text', 'tokens': []},
+              ],
+              'thoughts': [],
+              'interactions': [],
+            },
+            {
+              'index': 3,
+              'asset': 'assets/comic/placeholder_page.png',
+              'bubbles': [
+                {'speakerId': 'narrator', 'text': 'Third panel text', 'tokens': []},
               ],
               'thoughts': [],
               'interactions': [],
@@ -276,6 +327,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     expect(find.text('First panel text'), findsOneWidget);
     expect(find.text('Second panel text'), findsNothing);
@@ -302,6 +355,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     final backButton = tester.widget<IconButton>(
       find.byKey(const ValueKey('story-reader-back')),
@@ -322,7 +377,9 @@ void main() {
     expect(find.text('First panel text'), findsOneWidget);
   });
 
-  testWidgets('does not advance past the last panel', (tester) async {
+  testWidgets(
+      'tapping the last panel again opens the end card instead of advancing '
+      'further', (tester) async {
     final store = await _freshStore();
 
     await tester.pumpWidget(MaterialApp(
@@ -335,6 +392,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pump();
@@ -343,7 +402,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pump();
 
-    expect(find.text('Second panel text'), findsOneWidget);
+    expect(find.byKey(const ValueKey('story-end-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsNothing);
   });
 
   testWidgets('resumes from a previously saved position', (tester) async {
@@ -360,7 +420,7 @@ void main() {
         knownIds: const {},
       ),
     ));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Second panel text'), findsOneWidget);
     expect(find.text('First panel text'), findsNothing);
@@ -381,6 +441,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     for (var i = 0; i < 23; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
@@ -406,7 +468,10 @@ void main() {
       'persists the position after advancing, so a fresh widget instance resumes there',
       (tester) async {
     final store = await _freshStore();
-    final episode = _twoPanelEpisode();
+    // Three panels: advancing to the middle one (index 1) leaves the
+    // episode un-completed, so the remount below hits the resumeMidway
+    // path, not the "completed episode → title card" path.
+    final episode = _threePanelEpisode();
 
     await tester.pumpWidget(MaterialApp(
       home: StoryReaderScreen(
@@ -418,6 +483,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pump();
@@ -439,6 +506,9 @@ void main() {
     ));
     await tester.pump();
 
+    // Resumes directly on the saved position — no title card, since the
+    // episode isn't completed (resumeMidway path).
+    expect(find.byKey(const ValueKey('story-title-card')), findsNothing);
     expect(find.text('Second panel text'), findsOneWidget);
     expect(find.text('First panel text'), findsNothing);
   });
@@ -503,6 +573,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('すみません'));
     await tester.tap(find.text('すみません'));
@@ -573,6 +645,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('駅'));
     await tester.tap(find.text('駅'));
@@ -630,6 +704,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     expect(find.text('これ'), findsOneWidget);
     expect(find.text('、'), findsOneWidget);
@@ -687,6 +763,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     expect(find.text('駅'), findsOneWidget);
     expect(find.text('えき'), findsOneWidget);
@@ -707,6 +785,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
 
@@ -730,6 +810,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
@@ -752,6 +834,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
@@ -782,6 +866,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     for (var i = 0; i < 7; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
@@ -817,6 +903,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     // Advance to P09 (position index 8), which auto-opens the dictionary.
     for (var i = 0; i < 8; i++) {
@@ -850,6 +938,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     // On the first panel — episode not finished yet.
     expect(completeCount, 0);
@@ -903,6 +993,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     // Not on the speak panel yet.
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
@@ -931,6 +1023,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
@@ -951,6 +1045,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
@@ -972,6 +1068,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
 
@@ -1047,6 +1145,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
@@ -1067,6 +1167,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
@@ -1092,6 +1194,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
@@ -1112,6 +1216,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
@@ -1174,6 +1280,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
@@ -1195,6 +1303,8 @@ void main() {
       ),
     ));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
 
@@ -1229,6 +1339,8 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('story-bubble-hit-0')), findsOneWidget);
     // Kein Fallback-Text unter dem Bild:
@@ -1251,10 +1363,96 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     final box = find.byKey(const ValueKey('story-thought-box'));
     expect(box, findsOneWidget);
     expect(find.descendant(of: box,
         matching: find.text('Ich hätte anrufen sollen.')), findsOneWidget);
+  });
+
+  testWidgets('Erstoeffnung zeigt die Titelkarte mit Titel und Anmoderation; '
+      'Tap startet das Lesen', (tester) async {
+    final episode = Episode.fromJson({
+      ...pilot01RegenJson,
+      'intro': 'Eine junge Frau steigt allein aus dem Zug.',
+    });
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-title-card')), findsOneWidget);
+    // Der Titel-String entspricht dem 'title'-Feld in
+    // lib/features/story/episodes/folge_01_regen.dart ('Regen') — dort
+    // steht nicht "Folge 1 — Regen", die Titelkarte zeigt episode.title
+    // unverändert.
+    expect(find.text('Regen'), findsOneWidget);
+    expect(find.text('Eine junge Frau steigt allein aus dem Zug.'),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
+  });
+
+  testWidgets('Tap auf dem letzten Panel oeffnet die Endkarte; '
+      'ihr Knopf verlaesst den Reader', (tester) async {
+    final episode = Episode.fromJson({
+      ..._twoPanelEpisodeJson(),
+      'outro': 'Der Name kommt ihr bekannt vor …',
+    });
+    final store = await _freshStore();
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel'))); // → Panel 2 (letztes)
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel'))); // → Endkarte
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-end-card')), findsOneWidget);
+    expect(find.text('Der Name kommt ihr bekannt vor …'), findsOneWidget);
+    expect(await store.isCompleted(episode.id), isTrue);
+  });
+
+  testWidgets('eine abgeschlossene Folge startet beim Wiederoeffnen auf der '
+      'Titelkarte — nicht auf dem letzten Panel mit offenem Sheet',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final store = StoryProgressStore(prefs);
+    final episode = Episode.fromJson(pilot01RegenJson);
+    await store.savePosition(episode.id, 23);
+    await store.markCompleted(episode.id);
+
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: episode,
+        progressStore: store,
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        traceEvaluator: _FakeTraceEvaluator(true),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-title-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
   });
 
   testWidgets('eine Bubble OHNE hitArea rendert wie bisher unter dem Bild '
@@ -1268,6 +1466,8 @@ void main() {
         knownIds: const {},
       ),
     ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('story-bubble-hit-0')), findsNothing);
   });

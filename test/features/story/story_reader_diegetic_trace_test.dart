@@ -97,6 +97,8 @@ void main() {
 
     expect(await learning.select(learning.learnItems).get(), isEmpty);
 
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     await tester.drag(

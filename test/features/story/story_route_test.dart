@@ -45,6 +45,8 @@ void main() {
       child: const MaterialApp(home: StoryRoute()),
     ));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
   });
@@ -59,6 +61,8 @@ void main() {
       overrides: [learningDbProvider.overrideWithValue(learning)],
       child: const MaterialApp(home: StoryRoute()),
     ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
     // Bis zum letzten Panel lesen. P09 oeffnet das Woerterbuch automatisch,
@@ -133,6 +137,8 @@ void main() {
         home: StoryRoute(speakEvaluator: _FakeSpeakEvaluator(0.9)),
       ),
     ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
     // P07 (die erste diegetische Sprech-Gelegenheit) liegt an Panel-Position
