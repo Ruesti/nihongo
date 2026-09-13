@@ -101,6 +101,13 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   bool _completionFired = false;
   _ReaderPhase _phase = _ReaderPhase.title;
 
+  /// Positions whose diegetic speak/trace interaction has succeeded — the
+  /// story "reacts" there (P?: reaction image + narration line), swapping
+  /// in `reactionAsset`/`reactionCaption` from the panel's interaction.
+  /// Without a success (or on skip), the panel stays exactly as authored
+  /// (INV-1: no story-critical gate).
+  final Set<int> _reactedPositions = {};
+
   @override
   void initState() {
     super.initState();
@@ -185,6 +192,28 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     );
   }
 
+  StoryInteraction? _diegeticInteractionOf(StoryPanel panel) {
+    for (final it in panel.interactions) {
+      if (it.diegetic &&
+          (it.type == InteractionType.speak ||
+              it.type == InteractionType.trace)) {
+        return it;
+      }
+    }
+    return null;
+  }
+
+  void _markReacted(int position) {
+    if (!mounted) return;
+    setState(() => _reactedPositions.add(position));
+  }
+
+  String _effectiveAssetFor(StoryPanel panel) {
+    final reacted = _reactedPositions.contains(_position);
+    final reaction = _diegeticInteractionOf(panel)?.reactionAsset;
+    return (reacted && reaction != null) ? reaction : panel.asset;
+  }
+
   void _maybeShowSpeak(int position) {
     final evaluator = widget.speakEvaluator;
     if (evaluator == null) return;
@@ -208,7 +237,10 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           targetText: targetText,
           evaluator: evaluator,
           speak: widget.speak,
-          onSuccess: () => widget.onDiegeticSpeakSuccess?.call(itemIds),
+          onSuccess: () {
+            _markReacted(position);
+            widget.onDiegeticSpeakSuccess?.call(itemIds);
+          },
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
@@ -243,7 +275,10 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         builder: (sheetContext) => DiegeticTraceSheet(
           targetText: targetText,
           evaluator: evaluator,
-          onSuccess: () => widget.onDiegeticTraceSuccess?.call(itemIds),
+          onSuccess: () {
+            _markReacted(position);
+            widget.onDiegeticTraceSuccess?.call(itemIds);
+          },
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
@@ -348,11 +383,15 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                   final w = constraints.maxWidth;
                   final h = constraints.maxHeight;
                   return Stack(fit: StackFit.expand, children: [
-                    Image.asset(
-                      panel.asset,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          Container(color: const Color(0xFFEDEDED)),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 400),
+                      child: Image.asset(
+                        _effectiveAssetFor(panel),
+                        key: ValueKey(_effectiveAssetFor(panel)),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            Container(color: const Color(0xFFEDEDED)),
+                      ),
                     ),
                     if (panel.thoughts.isNotEmpty)
                       Positioned(
@@ -373,6 +412,25 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                                     style: const TextStyle(
                                         fontStyle: FontStyle.italic)),
                             ],
+                          ),
+                        ),
+                      ),
+                    if (_reactedPositions.contains(_position) &&
+                        _diegeticInteractionOf(panel)?.reactionCaption != null)
+                      Positioned(
+                        bottom: 8, left: 8, right: 8,
+                        child: Container(
+                          key: const ValueKey('story-reaction-caption'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xF2FFF8E7),
+                            border: Border.all(color: const Color(0xFF444444)),
+                          ),
+                          child: Text(
+                            _diegeticInteractionOf(panel)!.reactionCaption!,
+                            style: const TextStyle(
+                                fontStyle: FontStyle.italic),
                           ),
                         ),
                       ),

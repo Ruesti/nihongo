@@ -152,7 +152,7 @@ Episode _episodeWithDictionaryOnSecondPanel() => Episode.fromJson({
       ],
     });
 
-Episode _episodeWithDiegeticSpeakOnSecondPanel() => Episode.fromJson({
+Map<String, dynamic> _episodeWithDiegeticSpeakOnSecondPanelJson() => {
       'id': 'ep_speak_test',
       'seasonId': 'season_test',
       'orderIndex': 1,
@@ -197,7 +197,10 @@ Episode _episodeWithDiegeticSpeakOnSecondPanel() => Episode.fromJson({
           ],
         },
       ],
-    });
+    };
+
+Episode _episodeWithDiegeticSpeakOnSecondPanel() =>
+    Episode.fromJson(_episodeWithDiegeticSpeakOnSecondPanelJson());
 
 Episode _episodeWithDiegeticTraceOnSecondPanel() => Episode.fromJson({
       'id': 'ep_trace_test',
@@ -1082,6 +1085,80 @@ void main() {
     // so it doesn't leak past this test.
     await tester.pump(kDiegeticSuccessAutoClose);
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('nach erfolgreichem Sprechen reagiert das Panel: '
+      'Reaktionsbild + Erzaehlzeile', (tester) async {
+    final json = _episodeWithDiegeticSpeakOnSecondPanelJson();
+    // Reaktion an die speak-Interaktion des zweiten Panels haengen:
+    final panel = ((json['pages'] as List).first
+        as Map<String, dynamic>)['panels'][1] as Map<String, dynamic>;
+    (panel['interactions'] as List)[0] = {
+      'type': 'speak', 'diegetic': true,
+      'reactionAsset': 'assets/comic/placeholder_page.png',
+      'reactionCaption': 'Sie hat dich gehört.',
+    };
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: Episode.fromJson(json),
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-reaction-caption')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
+    await tester.pumpAndSettle();
+    // Wie in den bestehenden Erfolgs-Tests (Task 3): pumpAndSettle() allein
+    // erkennt den ausstehenden Future.delayed(900ms) nicht als "laufenden
+    // Frame" — ohne laufende Animation bleibt hasScheduledFrame nach dem
+    // ersten Rebuild false. Den Auto-Close-Timer explizit verstreichen
+    // lassen, dann den Crossfade fertig einschwingen lassen.
+    await tester.pump(kDiegeticSuccessAutoClose);
+    await tester.pumpAndSettle(); // Auto-Close + Crossfade
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('story-reaction-caption')), findsOneWidget);
+    expect(find.text('Sie hat dich gehört.'), findsOneWidget);
+  });
+
+  testWidgets('Skip statt erfolgreichem Sprechen: keine Reaktion, Original '
+      'bleibt (INV-1)', (tester) async {
+    final json = _episodeWithDiegeticSpeakOnSecondPanelJson();
+    final panel = ((json['pages'] as List).first
+        as Map<String, dynamic>)['panels'][1] as Map<String, dynamic>;
+    (panel['interactions'] as List)[0] = {
+      'type': 'speak', 'diegetic': true,
+      'reactionAsset': 'assets/comic/placeholder_page.png',
+      'reactionCaption': 'Sie hat dich gehört.',
+    };
+    await tester.pumpWidget(MaterialApp(
+      home: StoryReaderScreen(
+        episode: Episode.fromJson(json),
+        progressStore: await _freshStore(),
+        speak: _noopSpeak,
+        dictionaryEntries: const [],
+        knownIds: const {},
+        speakEvaluator: _FakeSpeakEvaluator(0.9),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-skip')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('story-reaction-caption')), findsNothing);
   });
 
   testWidgets('a speak interaction with diegetic:false never opens the sheet '
