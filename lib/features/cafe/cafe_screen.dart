@@ -59,6 +59,25 @@ class _CafeScreenState extends State<CafeScreen> {
     CafeGuest.gleichaltrige: 'cafe-guest-gleichaltrige',
   };
 
+  static const _assets = <CafeGuest, String>{
+    CafeGuest.wirtin: 'assets/comic/cafe/cafe_wirtin.jpg',
+    CafeGuest.schulkind: 'assets/comic/cafe/cafe_schulkind.jpg',
+    CafeGuest.vielredner: 'assets/comic/cafe/cafe_vielredner.jpg',
+    CafeGuest.gleichaltrige: 'assets/comic/cafe/cafe_gleichaltrige.jpg',
+  };
+
+  /// Panel-Bild; fehlendes Asset zeigt einen neutralen Platzhalter, nie Crash.
+  static Widget _panel(String asset, {double? height}) => Image.asset(
+        asset,
+        height: height,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(
+          height: height ?? 160,
+          color: const Color(0xFF2A3035),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final occupancy = _occupancy;
@@ -68,23 +87,32 @@ class _CafeScreenState extends State<CafeScreen> {
       body: occupancy == null
           ? const Center(child: CircularProgressIndicator())
           : occupancy.isEmpty
-              ? const Center(
-                  key: ValueKey('cafe-empty'),
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text(
-                      'Die Wirtin wischt den Tresen und nickt dir zu.',
-                      textAlign: TextAlign.center,
+              ? ListView(
+                  key: const ValueKey('cafe-empty'),
+                  children: [
+                    _panel(_assets[CafeGuest.wirtin]!),
+                    const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text(
+                        'Die Wirtin wischt den Tresen und nickt dir zu.',
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
+                  ],
                 )
               : ListView(
                   key: const ValueKey('cafe-guest-list'),
                   children: [
+                    _panel('assets/comic/cafe/cafe_empty.jpg'),
                     for (final guest in CafeGuest.values)
                       if (occupancy.present.contains(guest))
                         ListTile(
                           key: ValueKey(_keys[guest]!),
+                          leading: SizedBox(
+                            width: 96,
+                            height: 64,
+                            child: _panel(_assets[guest]!, height: 64),
+                          ),
                           title: Text(_labels[guest]!),
                           onTap: () async {
                             await Navigator.of(context)

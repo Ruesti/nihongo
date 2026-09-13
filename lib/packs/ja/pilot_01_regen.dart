@@ -30,7 +30,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 1,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P01.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -41,7 +41,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 2,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P02.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -52,7 +52,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 3,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P03.jpg',
           'bubbles': [],
           'thoughts': [
             {'text': 'Ich hätte anrufen sollen.'},
@@ -64,7 +64,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 4,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P04.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -80,7 +80,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 5,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P05.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -92,7 +92,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 6,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P06.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -108,7 +108,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 7,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P07.jpg',
           'bubbles': [
             {
               'speakerId': 'protagonist',
@@ -129,7 +129,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 8,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P08.jpg',
           'bubbles': [
             {
               'speakerId': 'passantin',
@@ -148,7 +148,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 9,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P09.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [
@@ -162,7 +162,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 10,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P10.jpg',
           'bubbles': [],
           'thoughts': [
             {'text': 'Weg.'},
@@ -181,7 +181,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 11,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P11.jpg',
           'bubbles': [
             {
               'speakerId': 'signage',
@@ -203,7 +203,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 12,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P12.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -213,7 +213,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 13,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P13.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -223,7 +223,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 14,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P14.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -241,7 +241,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 15,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P15.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -253,7 +253,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 16,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P16.jpg',
           'bubbles': [],
           'thoughts': [],
           'interactions': [],
@@ -265,7 +265,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 17,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P17.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
@@ -286,7 +286,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 18,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P18.jpg',
           'bubbles': [
             {
               'speakerId': 'protagonist',
@@ -307,7 +307,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 19,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P19.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
@@ -332,7 +332,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 20,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P20.jpg',
           'bubbles': [
             {
               'speakerId': 'protagonist',
@@ -352,7 +352,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 21,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P21.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
@@ -374,7 +374,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 22,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P22.jpg',
           'bubbles': [
             {
               'speakerId': 'protagonist',
@@ -397,7 +397,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 23,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P23.jpg',
           'bubbles': [
             {
               'speakerId': 'protagonist',
@@ -417,7 +417,7 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 24,
-          'asset': 'assets/comic/placeholder_page.png',
+          'asset': 'assets/comic/folge01/P24.jpg',
           'bubbles': [
             {
               'speakerId': 'buch',

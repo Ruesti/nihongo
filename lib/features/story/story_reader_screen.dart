@@ -13,7 +13,8 @@ import 'trace_evaluator.dart';
 /// for the earlier comic-page model (`comic_pack.dart`). Real per-panel
 /// dimensions don't exist yet; every panel currently renders the shared
 /// placeholder image.
-const double _panelAspectRatio = 0.7;
+// Panels von Folge 01 sind 1216x832 (Querformat); BoxFit.cover wuerde bei 0.7 stark beschneiden.
+const double _panelAspectRatio = 1216 / 832;
 
 /// Reads an [Episode] panel by panel, tap to advance. Tapping a lookupable
 /// token plays its audio and shows its reading (INV-2: audio + kana, never
