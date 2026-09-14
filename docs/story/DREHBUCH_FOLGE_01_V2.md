@@ -8,8 +8,11 @@ der Situation, nie umgekehrt.
 
 **Format-Regeln (neu, gelten ab jetzt für alle Folgen):**
 - 10 Panels statt 24 — jedes Panel trägt Sprache oder treibt die Handlung.
-- Ziel ≥ 30 japanische Wort-Vorkommen pro Folge; jedes neue Wort kommt
-  mindestens 3× vor (Wiederholung in neuen Situationen = das Lernen).
+- Sprachdichte: Folge 01 trägt 35 Blasen-Vorkommen + 2 Sprechziele;
+  **ab Folge 02 ist das Ziel 40–50 Vorkommen** (Uli-Vorgabe:
+  „Lerninhalt größer“). Jedes neue Wort kommt mehrfach vor, bevorzugt
+  in verschiedenen Szenen — und Mira benutzt Gelerntes selbst
+  (Echo-Zeilen).
 - Max. 8 neue Wörter (Budget wie gehabt). Folge 01:
   あめ (Regen) · かさ (Schirm) · すみません (Entschuldigung) ·
   ありがとう (danke) · これ (das hier) · こわれた (kaputt) ·
@@ -76,7 +79,7 @@ holt."* (Graue Vorlage in der Zeichenfläche.)
 ### P3 — Ame
 **Bild:** Leere Straße, sie geht; zwei Passanten flüchten unter ein
 Vordach.
-**Welt:** Passant A: 「あめ！」 Passantin B: 「あめ、あめ…」 (lachend,
+**Welt:** Passant A: 「あめ！あめ！」 Passantin B: 「あめ、あめ…」 (lachend,
 schulterzuckend).
 **Erzählkasten:** *„Ein Wort fliegt an ihr vorbei. Alle sagen es heute."*
 **Gedanke:** *„Ame. …Der Regen?"*
@@ -90,7 +93,8 @@ halb tot: drei von zehn Läden offen. Vor einem Laden ein Korb voller
 Schirme, darüber ein Schild: 「かさ」.
 **Erzählkasten:** *„Drinnen: trocken. Und zum ersten Mal ein Schild, das
 sich selbst erklärt."*
-**Welt:** Schild 「かさ」 über dem Schirmkorb (antippbar).
+**Welt:** Schild 「かさ」 über dem Schirmkorb (antippbar). Mira (leise,
+ihr neues Wort testend): 「…あめ」
 **Gedanke:** *„Kasa. Schirme. Das ist ja fast fair."*
 
 ### P5 — Kaputt
@@ -98,7 +102,7 @@ sich selbst erklärt."*
 gebrochen. Der alte Ladenbesitzer tritt heraus, sieht den Schirm, lacht
 nicht unfreundlich.
 **Welt:** Ladenbesitzer: 「あめ、あめ！」 (deutet zum Himmel) — dann auf
-ihren Schirm: 「これ？」
+ihren Schirm: 「これ？かさ？」
 **Erzählkasten:** *„Sie versteht kein Wort. Aber sie versteht alles."*
 **Gedanke:** *„Sag irgendwas. Das eine Wort, das die Frau im Zug zum
 Schaffner gesagt hat — sag es."*
@@ -110,7 +114,7 @@ und es funktioniert."*
 
 ### P6 — Die Diagnose
 **Bild:** Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn fachmännisch.
-**Welt:** Er: 「これ、こわれた」 (zeigt auf die Streben) — 「こわれた、
+**Welt:** Er: 「これ、こわれた」 (zeigt auf die Streben) — 「はい、こわれた、
 こわれた」 (kopfschüttelnd, fast zärtlich).
 Mira (leise): 「…こわれた…？」
 **Gedanke:** *„Kowareta. Kaputt. Wie ich das erste Wort meiner Großmutter
@@ -120,7 +124,8 @@ lerne: über einen kaputten Schirm."*
 **Bild:** Er greift in den Korb, hält ihr einen Schirm hin — den
 schlichtesten, aber heilen.
 **Welt:** Er: 「はい。かさ。どうぞ」 — Mira: 「え？」 — Er (nachdrücklich,
-lächelnd): 「どうぞ、どうぞ。かさ！」
+lächelnd): 「どうぞ、どうぞ。かさ！」 — Mira (verwirrt
+zurückfragend): 「…どうぞ？」
 **Erzählkasten:** *„Sie hat nichts bestellt. Sie hat nichts bezahlt. Er
 gibt ihr den Schirm einfach so."*
 
@@ -139,8 +144,8 @@ Mira (im Gehen, leise übend): 「ありがとう… すみません… あめ�
 handgemalten Schild ein Wort — und Mira erstarrt: Das zweite Zeichen darauf
 ist 「め」. Dasselbe Zeichen wie auf ihrem Handrücken. Sie hält die Hand
 neben das Schild.
-**Welt:** Caféschild 「あめやどり」 (antippbar; vorgelesen — verstehen muss
-sie es noch nicht).
+**Welt:** Caféschild 「あめやどり」 (antippbar). Mira (halblaut lesend):
+「あめ…やどり？」
 **Erzählkasten:** *„Das Zeichen vom Zettel. Hier, auf einem Caféschild, in
 der Straße, zu der ihre Großmutter sie geschickt hat."*
 **Gedanke:** *„Das ist kein Zufall. Oder?"*
@@ -158,17 +163,17 @@ fängt der Rest an."*
 
 | Wort | Vorkommen | Situationen |
 |---|---|---|
-| あめ | 6× | Passanten (2), Ladenbesitzer (2), Caféschild-Bestandteil, Miras Üben |
-| かさ | 3× | Schild, Geschenk-Satz, Miras Schirm-Kontext |
-| すみません | 3× | Zug-Erinnerung, gesprochen (Speak), Miras Üben |
-| ありがとう | 3× | gesprochen (Speak), Miras Üben, (Echo Endkarte) |
-| これ | 2× + Folge 02 | Frage, Diagnose |
-| こわれた | 4× | Diagnose (3), Miras Wiederholung |
-| どうぞ | 3× | Geschenk (3, bewusst gedrängt) |
-| はい | 3× | Geschenk-Satz, はいはい-Abwinken |
+| あめ | 10× | Passanten (3), Mira-Echos P4/P9 (2), Ladenbesitzer (2), Caféschild, Üben, Schild-Lesen |
+| かさ | 5× | Schild, Ladenbesitzer-Frage, Geschenk-Satz (2), Üben |
+| こわれた | 5× | Diagnose (4), Miras Wiederholung |
+| どうぞ | 4× | Geschenk (3), Miras Rückfrage |
+| はい | 4× | Diagnose, Geschenk-Satz, はいはい (2) |
+| すみません | 2× | gesprochen (Speak-Ziel), Üben |
+| ありがとう | 2× | gesprochen (Speak-Ziel), Üben |
+| これ | 2× | Frage, Diagnose |
 | **Zeichen め** | 3 Momente | Zettel-Rettung (Trace), Handrücken, Caféschild-Wiedererkennen |
 
-**Gesamt: ~30 japanische Wort-Vorkommen in 10 Panels** (V1: ~12 in 24) —
+**Gesamt: 35 Blasen-Vorkommen + 2 Sprechziele = 37 in 10 Panels** (V1: ~12 in 24) —
 plus durchgehende deutsche Erzählstimme, die Ulis Bild-1-Fragen (wer, warum,
 was fühlt sie, warum kann sie die Sprache nicht, will sie lernen)
 **explizit im ersten Panel** beantwortet und die richtigen Fragen offen

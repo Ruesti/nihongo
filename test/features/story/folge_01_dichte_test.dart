@@ -22,9 +22,9 @@ void main() {
         tokenCounts[id] = (tokenCounts[id] ?? 0) + 1;
       }
     }
-    expect(bubbleTokens, greaterThanOrEqualTo(28),
+    expect(bubbleTokens, greaterThanOrEqualTo(34),
         reason: 'zu wenig Sprache in den Blasen');
-    expect(bubbleTokens + targetHits, greaterThanOrEqualTo(30));
+    expect(bubbleTokens + targetHits, greaterThanOrEqualTo(36));
     for (final ref in episode.budget.items) {
       expect(tokenCounts[ref.id] ?? 0, greaterThanOrEqualTo(2),
           reason: '${ref.id} kommt zu selten vor (Wiederholung ist das Lernen)');

@@ -1,15 +1,25 @@
 #!/usr/bin/env python3
-"""Prototyp-Lettering fuer Folge 01 V2 (Spec Reader-Erleben,
-docs/superpowers/plans/2026-09-13-folge01-v2.md, Panel-Bauplan).
+"""Lettering fuer Folge 01 V2 auf den FINALEN Renders (PR #46).
 
-Komponiert Sprechblasen + japanischen Text auf die Original-Renders und
-erzeugt getoente Reaktions-Varianten fuer die 10 dichten V2-Panels.
-Haesslich ist erlaubt — beurteilt wird das Erlebnis, nicht das Artwork.
-Idempotent: liest immer die Originale aus SRC, schreibt nach DST.
+Quelle der Wahrheit fuer die Bilder ist der Branch comic/folge01-panels;
+SRC neu befuellen mit:
+  git fetch origin comic/folge01-panels
+  git archive origin/comic/folge01-panels assets/comic/folge01 \
+    | tar -x --strip-components=2 -C <SRC-Elternverzeichnis>
+
+Komponiert Sprechblasen + japanischen Text und erzeugt getoente
+Reaktions-Varianten fuer die 10 dichten V2-Panels. Das Blasen-Lettering
+bleibt Skript-Provisorium, bis echtes Lettering Teil der Bild-Produktion
+ist. Idempotent: liest immer die Originale aus SRC, schreibt nach DST.
 """
+import os
+
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
-SRC = '/home/uli/.claude/jobs/df1342e0/tmp/final'
+SRC = os.environ.get(
+    'LETTER_SRC',
+    '/home/uli/.claude/jobs/c9abf868/tmp/final_renders/folge01')
+EXT = 'jpg'
 DST = 'assets/story'
 FONT = '/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf'
 WIDTH = 1080
@@ -21,6 +31,7 @@ MAPPING = {1: 1, 2: 2, 3: 4, 4: 5, 5: 7, 6: 17, 7: 21, 8: 22, 9: 11, 10: 3}
 S1 = (0.52, 0.05, 0.42, 0.13)   # oben rechts
 S2 = (0.06, 0.05, 0.42, 0.13)   # oben links
 S2B = (0.06, 0.20, 0.36, 0.11)  # links darunter
+S1B = (0.56, 0.20, 0.36, 0.11)  # rechts darunter
 M = (0.30, 0.36, 0.40, 0.13)    # mittig
 
 # Panel (neu) -> Liste von (text, slot) — MUSS mit den hitAreas in
@@ -28,21 +39,21 @@ M = (0.30, 0.36, 0.40, 0.13)    # mittig
 # P2 und P10 tragen bewusst kein Lettering (keine Bubbles im Bauplan).
 BUBBLES = {
     1: [('みなみまち', M)],
-    3: [('あめ！', S2), ('あめ、あめ…', S1)],
-    4: [('かさ', M)],
-    5: [('あめ、あめ！', S2), ('これ？', S2B)],
-    6: [('これ、こわれた', S2), ('こわれた、こわれた', S2B),
+    3: [('あめ！あめ！', S2), ('あめ、あめ…', S1)],
+    4: [('かさ', M), ('…あめ', S1)],
+    5: [('あめ、あめ！', S2), ('これ？かさ？', S2B)],
+    6: [('これ、こわれた', S2), ('はい、こわれた、こわれた', S2B),
         ('…こわれた…？', S1)],
     7: [('はい。かさ。どうぞ', S2), ('え？', S1),
-        ('どうぞ、どうぞ。かさ！', S2B)],
+        ('どうぞ、どうぞ。かさ！', S2B), ('…どうぞ？', S1B)],
     8: [('はいはい', S2), ('ありがとう… すみません… あめ… かさ…', S1)],
-    9: [('あめやどり', M)],
+    9: [('あめやどり', M), ('あめ…やどり？', S1)],
 }
 REACTIONS = [2, 5, 8]
 
 
 def load(n):
-    img = Image.open(f'{SRC}/P{n:02d}.png').convert('RGB')
+    img = Image.open(f'{SRC}/P{n:02d}.{EXT}').convert('RGB')
     w, h = img.size
     return img.resize((WIDTH, int(h * WIDTH / w)), Image.LANCZOS)
 

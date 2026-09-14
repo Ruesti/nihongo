@@ -132,7 +132,7 @@ const Map<String, dynamic> pilot01RegenJson = {
           'bubbles': [
             {
               'speakerId': 'passant_a',
-              'text': 'あめ！',
+              'text': 'あめ！あめ！',
               'hitArea': [
                 {'x': 0.06, 'y': 0.05},
                 {'x': 0.48, 'y': 0.05},
@@ -140,6 +140,7 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'x': 0.06, 'y': 0.18},
               ],
               'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
               ],
             },
@@ -185,6 +186,19 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
             },
+            {
+              'speakerId': 'protagonist',
+              'text': '…あめ',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+              ],
+            },
           ],
           'thoughts': [
             {
@@ -226,7 +240,7 @@ const Map<String, dynamic> pilot01RegenJson = {
             },
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'これ？',
+              'text': 'これ？かさ？',
               'hitArea': [
                 {'x': 0.06, 'y': 0.20},
                 {'x': 0.42, 'y': 0.20},
@@ -235,6 +249,7 @@ const Map<String, dynamic> pilot01RegenJson = {
               ],
               'tokens': [
                 {'surface': 'これ', 'itemId': 'lex_ja_kore'},
+                {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
             },
           ],
@@ -287,7 +302,7 @@ const Map<String, dynamic> pilot01RegenJson = {
             },
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'こわれた、こわれた',
+              'text': 'はい、こわれた、こわれた',
               'hitArea': [
                 {'x': 0.06, 'y': 0.20},
                 {'x': 0.42, 'y': 0.20},
@@ -295,6 +310,7 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'x': 0.06, 'y': 0.31},
               ],
               'tokens': [
+                {'surface': 'はい', 'itemId': 'lex_ja_hai'},
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
               ],
@@ -372,6 +388,19 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
                 {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
+              ],
+            },
+            {
+              'speakerId': 'protagonist',
+              'text': '…どうぞ？',
+              'hitArea': [
+                {'x': 0.56, 'y': 0.20},
+                {'x': 0.92, 'y': 0.20},
+                {'x': 0.92, 'y': 0.31},
+                {'x': 0.56, 'y': 0.31},
+              ],
+              'tokens': [
+                {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
               ],
             },
           ],
@@ -466,6 +495,20 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'x': 0.70, 'y': 0.36},
                 {'x': 0.70, 'y': 0.49},
                 {'x': 0.30, 'y': 0.49},
+              ],
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'やどり', 'itemId': null},
+              ],
+            },
+            {
+              'speakerId': 'protagonist',
+              'text': 'あめ…やどり？',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
               ],
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
