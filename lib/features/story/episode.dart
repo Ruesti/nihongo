@@ -145,16 +145,45 @@ class StoryInteraction {
   /// Always true in story mode (INV-1) — no interaction may gate reading.
   final bool optional;
 
+  /// Panel-Variante, die nach Erfolg dieser Interaktion einblendet (§2.4).
+  final String? reactionAsset;
+
+  /// Deutsche Erzählzeile zur Reaktion.
+  final String? reactionCaption;
+
+  /// Deutsche Aufgabenzeile aus dem Drehbuch (ersetzt den Standardtext
+  /// des Sheets). Null = generischer Text.
+  final String? promptText;
+
+  /// Explizites Sprech-/Zeichenziel. Null = Ableitung aus den
+  /// Panel-Bubbles (bisheriges Verhalten).
+  final String? target;
+
+  /// Explizite SRS-Buchung bei Erfolg. Null = Ableitung aus den
+  /// Bubble-Tokens; leere Liste = Erfolg reagiert nur erzählerisch
+  /// (z. B. Glyph-Momente wie め, die kein Lexem sind).
+  final List<String>? targetItemIds;
+
   const StoryInteraction({
     required this.type,
     required this.diegetic,
     this.optional = true,
+    this.reactionAsset,
+    this.reactionCaption,
+    this.promptText,
+    this.target,
+    this.targetItemIds,
   });
 
   factory StoryInteraction.fromJson(Map<String, dynamic> j) => StoryInteraction(
         type: InteractionType.values.byName(j['type'] as String),
         diegetic: j['diegetic'] as bool? ?? false,
         optional: j['optional'] as bool? ?? true,
+        reactionAsset: j['reactionAsset'] as String?,
+        reactionCaption: j['reactionCaption'] as String?,
+        promptText: j['promptText'] as String?,
+        target: j['target'] as String?,
+        targetItemIds: (j['targetItemIds'] as List?)?.cast<String>(),
       );
 }
 
@@ -227,6 +256,12 @@ class Episode {
   final EpisodeBudget budget;
   final List<StoryPage> pages;
 
+  /// Deutsche Anmoderation der Titelkarte (Spec Reader-Erleben §2.1).
+  final String? intro;
+
+  /// Deutscher Erzählhaken der Endkarte (§2.6).
+  final String? outro;
+
   const Episode({
     required this.id,
     required this.seasonId,
@@ -236,6 +271,8 @@ class Episode {
     required this.era,
     required this.budget,
     required this.pages,
+    this.intro,
+    this.outro,
   });
 
   factory Episode.fromJson(Map<String, dynamic> j) => Episode(
@@ -250,6 +287,8 @@ class Episode {
           for (final p in (j['pages'] as List? ?? const []))
             StoryPage.fromJson(p as Map<String, dynamic>),
         ],
+        intro: j['intro'] as String?,
+        outro: j['outro'] as String?,
       );
 
   /// All panels across all pages, in reading order.

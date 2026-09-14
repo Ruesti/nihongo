@@ -1,10 +1,11 @@
-import 'package:drift/drift.dart' hide isNotNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/ladder_review.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/features/story/diegetic_encounter.dart';
+import 'package:nihongo_app/features/story/diegetic_speak_sheet.dart'
+    show kDiegeticSuccessAutoClose;
 import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:nihongo_app/features/story/story_reader_screen.dart';
@@ -95,12 +96,19 @@ void main() {
 
     expect(await learning.select(learning.learnItems).get(), isEmpty);
 
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
     await tester.drag(
         find.byKey(const ValueKey('diegetic-trace-canvas')), const Offset(60, 40));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('diegetic-trace-done')));
+    await tester.pumpAndSettle();
+
+    // The sheet auto-closes 900ms after success; flush that pending timer
+    // so it doesn't leak past this test.
+    await tester.pump(kDiegeticSuccessAutoClose);
     await tester.pumpAndSettle();
 
     final item = await (learning.select(learning.learnItems)

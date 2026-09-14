@@ -131,4 +131,56 @@ void main() {
     expect(episode.budget.items, isEmpty);
     expect(episode.budget.glyphs, isEmpty);
   });
+
+  test('Episode traegt optionale deutsche intro/outro-Texte', () {
+    final withTexts = Episode.fromJson({
+      'id': 'ep_x', 'seasonId': 's', 'orderIndex': 1, 'title': 'T',
+      'locale': 'ja', 'era': 'e',
+      'budget': {'items': [], 'maxNew': 0},
+      'pages': [],
+      'intro': 'Eine junge Frau steigt aus dem Zug.',
+      'outro': 'Der Name kommt ihr bekannt vor …',
+    });
+    expect(withTexts.intro, 'Eine junge Frau steigt aus dem Zug.');
+    expect(withTexts.outro, 'Der Name kommt ihr bekannt vor …');
+
+    final without = Episode.fromJson({
+      'id': 'ep_y', 'seasonId': 's', 'orderIndex': 1, 'title': 'T',
+      'locale': 'ja', 'era': 'e',
+      'budget': {'items': [], 'maxNew': 0},
+      'pages': [],
+    });
+    expect(without.intro, isNull);
+    expect(without.outro, isNull);
+  });
+
+  test('StoryInteraction traegt optionales Reaktions-Bild + Erzaehlzeile', () {
+    final withReaction = StoryInteraction.fromJson({
+      'type': 'speak', 'diegetic': true,
+      'reactionAsset': 'assets/story/p05_reaction.jpg',
+      'reactionCaption': 'Sie hat dich gehört.',
+    });
+    expect(withReaction.reactionAsset, 'assets/story/p05_reaction.jpg');
+    expect(withReaction.reactionCaption, 'Sie hat dich gehört.');
+
+    final without = StoryInteraction.fromJson({'type': 'trace'});
+    expect(without.reactionAsset, isNull);
+    expect(without.reactionCaption, isNull);
+  });
+
+  test('StoryInteraction traegt promptText, target und targetItemIds', () {
+    final it = StoryInteraction.fromJson({
+      'type': 'trace', 'diegetic': true,
+      'promptText': 'Rette das Zeichen.',
+      'target': 'め',
+      'targetItemIds': <dynamic>[],
+    });
+    expect(it.promptText, 'Rette das Zeichen.');
+    expect(it.target, 'め');
+    expect(it.targetItemIds, isEmpty);
+    final without = StoryInteraction.fromJson({'type': 'speak'});
+    expect(without.promptText, isNull);
+    expect(without.target, isNull);
+    expect(without.targetItemIds, isNull);
+  });
 }

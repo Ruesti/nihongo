@@ -15,12 +15,26 @@ import 'trace_evaluator.dart';
 /// placeholder image.
 const double _panelAspectRatio = 0.7;
 
+/// Axis-aligned bounding box of a bubble's `hitArea` polygon, in the same
+/// normalized 0..1 panel space — the tap target is the box, not the exact
+/// polygon (good enough until real polygon hit-testing is worth the cost).
+Rect _bboxOf(StoryPolygon polygon) {
+  var minX = 1.0, minY = 1.0, maxX = 0.0, maxY = 0.0;
+  for (final p in polygon.points) {
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return Rect.fromLTRB(minX, minY, maxX, maxY);
+}
+
 /// Reads an [Episode] panel by panel, tap to advance. Tapping a lookupable
 /// token plays its audio and shows its reading (INV-2: audio + kana, never
 /// meaning). Tokens marked `lookupable: false` render as inert text — no
 /// tap handler, no visual hint, no lock indicator (INV-7). Resumes from the
 /// last panel the reader reached, persisted via [progressStore]. A panel
-/// carrying a `dictionary` interaction (e.g. Folge 01's P09) automatically
+/// carrying a `dictionary` interaction automatically
 /// opens [DictionarySheet] as a dismissible sheet — no gate, no forced
 /// resolution (INV-1): the reader can dismiss it and keep reading exactly
 /// as with any other panel.
@@ -76,10 +90,23 @@ class StoryReaderScreen extends StatefulWidget {
   State<StoryReaderScreen> createState() => _StoryReaderScreenState();
 }
 
+/// Screen-level phase: a fresh or completed episode opens on the title
+/// card, then reads panel by panel, then closes on the end card once the
+/// last panel has been tapped again (Spec Reader-Erleben §2.1/§2.6/§2.7).
+enum _ReaderPhase { title, reading, end }
+
 class _StoryReaderScreenState extends State<StoryReaderScreen> {
   late final List<StoryPanel> _panels = widget.episode.allPanels.toList();
   int? _position;
   bool _completionFired = false;
+  _ReaderPhase _phase = _ReaderPhase.title;
+
+  /// Positions whose diegetic speak/trace interaction has succeeded — the
+  /// story "reacts" there (P?: reaction image + narration line), swapping
+  /// in `reactionAsset`/`reactionCaption` from the panel's interaction.
+  /// Without a success (or on skip), the panel stays exactly as authored
+  /// (INV-1: no story-critical gate).
+  final Set<int> _reactedPositions = {};
 
   @override
   void initState() {
@@ -88,19 +115,39 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   }
 
   Future<void> _restorePosition() async {
-    final saved = await widget.progressStore.lastPosition(widget.episode.id);
+    final done = await widget.progressStore.isCompleted(widget.episode.id);
+    final saved =
+        done ? null : await widget.progressStore.lastPosition(widget.episode.id);
     if (!mounted) return;
     final clamped = saved == null ? 0 : saved.clamp(0, _panels.length - 1);
-    setState(() => _position = clamped);
-    _maybeShowDictionary(clamped);
-    _maybeShowSpeak(clamped);
-    _maybeShowTrace(clamped);
-    _maybeFireCompletion(clamped);
+    final resumeMidway = !done && saved != null && clamped > 0;
+    setState(() {
+      _position = clamped;
+      _phase = resumeMidway ? _ReaderPhase.reading : _ReaderPhase.title;
+    });
+    if (resumeMidway) {
+      _maybeShowDictionary(clamped);
+      _maybeShowSpeak(clamped);
+      _maybeShowTrace(clamped);
+      _maybeFireCompletion(clamped);
+    }
+  }
+
+  void _beginReading() {
+    setState(() => _phase = _ReaderPhase.reading);
+    _maybeShowDictionary(_position ?? 0);
+    _maybeShowSpeak(_position ?? 0);
+    _maybeShowTrace(_position ?? 0);
+    _maybeFireCompletion(_position ?? 0);
   }
 
   void _advance() {
     final current = _position;
-    if (current == null || current >= _panels.length - 1) return;
+    if (current == null) return;
+    if (current >= _panels.length - 1) {
+      setState(() => _phase = _ReaderPhase.end);
+      return;
+    }
     _goTo(current + 1);
   }
 
@@ -126,35 +173,69 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (!hasDictionaryInteraction) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (sheetContext) => SizedBox(
-          key: const ValueKey('dictionary-sheet'),
-          height: MediaQuery.of(sheetContext).size.height * 0.7,
-          child: DictionarySheet(
-            entries: widget.dictionaryEntries,
-            knownIds: widget.knownIds,
-          ),
-        ),
-      );
+      _openDictionary();
     });
+  }
+
+  void _openDictionary() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SizedBox(
+        key: const ValueKey('dictionary-sheet'),
+        height: MediaQuery.of(sheetContext).size.height * 0.7,
+        child: DictionarySheet(
+          entries: widget.dictionaryEntries,
+          knownIds: widget.knownIds,
+        ),
+      ),
+    );
+  }
+
+  StoryInteraction? _diegeticInteractionOf(StoryPanel panel) {
+    for (final it in panel.interactions) {
+      if (it.diegetic &&
+          (it.type == InteractionType.speak ||
+              it.type == InteractionType.trace)) {
+        return it;
+      }
+    }
+    return null;
+  }
+
+  void _markReacted(int position) {
+    if (!mounted) return;
+    setState(() => _reactedPositions.add(position));
+  }
+
+  String _effectiveAssetFor(StoryPanel panel) {
+    final reacted = _reactedPositions.contains(_position);
+    final reaction = _diegeticInteractionOf(panel)?.reactionAsset;
+    return (reacted && reaction != null) ? reaction : panel.asset;
   }
 
   void _maybeShowSpeak(int position) {
     final evaluator = widget.speakEvaluator;
     if (evaluator == null) return;
     final panel = _panels[position];
-    final hasSpeak = panel.interactions
-        .any((i) => i.type == InteractionType.speak && i.diegetic);
-    if (!hasSpeak) return;
+    StoryInteraction? interaction;
+    for (final i in panel.interactions) {
+      if (i.type == InteractionType.speak && i.diegetic) {
+        interaction = i;
+        break;
+      }
+    }
+    if (interaction == null) return;
 
-    final targetText = panel.bubbles.map((b) => b.text).join(' ');
-    final itemIds = <String>[
+    final derivedItemIds = <String>[
       for (final b in panel.bubbles)
         for (final t in b.tokens)
           if (t.itemId != null) t.itemId!,
     ];
+    final targetText = interaction.target ??
+        panel.bubbles.map((b) => b.text).join(' ');
+    final itemIds = interaction.targetItemIds ?? derivedItemIds;
+    final taskText = interaction.promptText;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -164,7 +245,11 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           targetText: targetText,
           evaluator: evaluator,
           speak: widget.speak,
-          onSuccess: () => widget.onDiegeticSpeakSuccess?.call(itemIds),
+          taskText: taskText,
+          onSuccess: () {
+            _markReacted(position);
+            widget.onDiegeticSpeakSuccess?.call(itemIds);
+          },
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
@@ -175,21 +260,30 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final evaluator = widget.traceEvaluator;
     if (evaluator == null) return;
     final panel = _panels[position];
-    final hasTrace = panel.interactions
-        .any((i) => i.type == InteractionType.trace && i.diegetic);
-    if (!hasTrace) return;
+    StoryInteraction? interaction;
+    for (final i in panel.interactions) {
+      if (i.type == InteractionType.trace && i.diegetic) {
+        interaction = i;
+        break;
+      }
+    }
+    if (interaction == null) return;
 
     // Derive the trace target from tokens (surface + itemId), NOT bubble
     // text — P24 carries an inert margin-note bubble with no tokens that
-    // must be excluded.
-    final tokens = [
+    // must be excluded. Only used as a fallback when the interaction
+    // carries no explicit target/targetItemIds (bisheriges Verhalten).
+    final derivedTokens = [
       for (final b in panel.bubbles)
         for (final t in b.tokens)
           if (t.itemId != null) t,
     ];
-    if (tokens.isEmpty) return;
-    final targetText = tokens.map((t) => t.surface).join();
-    final itemIds = tokens.map((t) => t.itemId!).toList();
+    if (interaction.target == null && derivedTokens.isEmpty) return;
+    final targetText =
+        interaction.target ?? derivedTokens.map((t) => t.surface).join();
+    final itemIds = interaction.targetItemIds ??
+        derivedTokens.map((t) => t.itemId!).toList();
+    final taskText = interaction.promptText;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -199,7 +293,11 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         builder: (sheetContext) => DiegeticTraceSheet(
           targetText: targetText,
           evaluator: evaluator,
-          onSuccess: () => widget.onDiegeticTraceSuccess?.call(itemIds),
+          taskText: taskText,
+          onSuccess: () {
+            _markReacted(position);
+            widget.onDiegeticTraceSuccess?.call(itemIds);
+          },
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
@@ -209,6 +307,9 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   void _maybeFireCompletion(int position) {
     if (position < _panels.length - 1 || _completionFired) return;
     _completionFired = true;
+    // Fire-and-forget: the reader must not stall reading to wait for a
+    // SharedPreferences write, and setBool practically never throws.
+    widget.progressStore.markCompleted(widget.episode.id);
     widget.onEpisodeComplete?.call();
   }
 
@@ -218,6 +319,63 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (position == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_phase == _ReaderPhase.title) {
+      return Scaffold(
+        body: GestureDetector(
+          key: const ValueKey('story-title-card'),
+          behavior: HitTestBehavior.opaque,
+          onTap: _beginReading,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(widget.episode.title,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      textAlign: TextAlign.center),
+                  if (widget.episode.intro != null) ...[
+                    const SizedBox(height: 16),
+                    Text(widget.episode.intro!, textAlign: TextAlign.center),
+                  ],
+                  const SizedBox(height: 32),
+                  Text('Tippe, um zu beginnen',
+                      style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (_phase == _ReaderPhase.end) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              key: const ValueKey('story-end-card'),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Ende der Folge',
+                    style: Theme.of(context).textTheme.titleLarge),
+                if (widget.episode.outro != null) ...[
+                  const SizedBox(height: 16),
+                  Text(widget.episode.outro!, textAlign: TextAlign.center),
+                ],
+                const SizedBox(height: 32),
+                FilledButton(
+                  key: const ValueKey('story-end-done'),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Zurück zum Lesen'),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -240,34 +398,94 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
             children: [
               AspectRatio(
                 aspectRatio: _panelAspectRatio,
-                child: Image.asset(
-                  panel.asset,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
-                      Container(color: const Color(0xFFEDEDED)),
-                ),
+                child: LayoutBuilder(builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final h = constraints.maxHeight;
+                  return Stack(fit: StackFit.expand, children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 400),
+                      child: Image.asset(
+                        _effectiveAssetFor(panel),
+                        key: ValueKey(_effectiveAssetFor(panel)),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            Container(color: const Color(0xFFEDEDED)),
+                      ),
+                    ),
+                    if (panel.thoughts.isNotEmpty)
+                      Positioned(
+                        top: 8, left: 8, right: 8,
+                        child: Container(
+                          key: const ValueKey('story-thought-box'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xF2FFF8E7),
+                            border: Border.all(color: const Color(0xFF444444)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (final thought in panel.thoughts)
+                                Text(thought.text,
+                                    style: const TextStyle(
+                                        fontStyle: FontStyle.italic)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (_reactedPositions.contains(_position) &&
+                        _diegeticInteractionOf(panel)?.reactionCaption != null)
+                      Positioned(
+                        bottom: 8, left: 8, right: 8,
+                        child: Container(
+                          key: const ValueKey('story-reaction-caption'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xF2FFF8E7),
+                            border: Border.all(color: const Color(0xFF444444)),
+                          ),
+                          child: Text(
+                            _diegeticInteractionOf(panel)!.reactionCaption!,
+                            style: const TextStyle(
+                                fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ),
+                    for (var i = 0; i < panel.bubbles.length; i++)
+                      if (panel.bubbles[i].hitArea.points.isNotEmpty)
+                        Positioned(
+                          left: _bboxOf(panel.bubbles[i].hitArea).left * w,
+                          top: _bboxOf(panel.bubbles[i].hitArea).top * h,
+                          width: _bboxOf(panel.bubbles[i].hitArea).width * w,
+                          height: _bboxOf(panel.bubbles[i].hitArea).height * h,
+                          child: GestureDetector(
+                            key: ValueKey('story-bubble-hit-$i'),
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              widget.speak(panel.bubbles[i].text);
+                              _openDictionary();
+                            },
+                          ),
+                        ),
+                  ]);
+                }),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final thought in panel.thoughts)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          thought.text,
-                          style: const TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                      ),
                     for (final bubble in panel.bubbles)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _BubbleContent(
-                          bubble: bubble,
-                          speak: widget.speak,
+                      if (bubble.hitArea.points.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _BubbleContent(
+                            bubble: bubble,
+                            speak: widget.speak,
+                          ),
                         ),
-                      ),
                   ],
                 ),
               ),

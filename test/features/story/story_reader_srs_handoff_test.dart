@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' hide isNotNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
@@ -52,9 +51,16 @@ void main() {
     // Nothing has entered the SRS before the episode is finished (INV-5).
     expect(await learning.select(learning.learnItems).get(), isEmpty);
 
-    // Read to the last panel. P09 auto-opens the dictionary; dismiss it by
-    // tapping above the sheet, exactly as the existing read-through test does.
-    for (var i = 0; i < 23; i++) {
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+
+    // Read to the last panel (Folge01 V2: 10 panels, so 9 taps after the
+    // title card). V2 has no `dictionary` interaction anywhere — that
+    // mechanic was P09-specific in V1 and is gone — and no speak/trace
+    // evaluator is wired into this screen, so no sheet ever opens along
+    // the way; the dismiss-check below is a harmless no-op kept for
+    // parity with story_route_test.dart's real-route variant.
+    for (var i = 0; i < 9; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
       if (find.byKey(const ValueKey('dictionary-sheet')).evaluate().isNotEmpty) {
