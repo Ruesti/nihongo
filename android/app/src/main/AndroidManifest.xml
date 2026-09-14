@@ -1,4 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Mikrofon für die Sprech-Momente (speech_to_text). Ohne diesen
+         Eintrag kann Android den Laufzeit-Dialog nie zeigen und die
+         Erkennung schlägt still fehl. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Ab Android 11 muss die App den Recognition-Service abfragen
+         dürfen, sonst findet speech_to_text keinen Erkenner. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+    </queries>
     <application
         android:label="nihongo_app"
         android:name="${applicationName}"
