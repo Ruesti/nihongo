@@ -8,16 +8,19 @@ der Situation, nie umgekehrt.
 
 **Format-Regeln (neu, gelten ab jetzt für alle Folgen):**
 - 10 Panels statt 24 — jedes Panel trägt Sprache oder treibt die Handlung.
-- Sprachdichte: Folge 01 trägt 35 Blasen-Vorkommen + 2 Sprechziele;
-  **ab Folge 02 ist das Ziel 40–50 Vorkommen** (Uli-Vorgabe:
-  „Lerninhalt größer“). Jedes neue Wort kommt mehrfach vor, bevorzugt
-  in verschiedenen Szenen — und Mira benutzt Gelerntes selbst
-  (Echo-Zeilen).
-- Max. 8 neue Wörter (Budget wie gehabt). Folge 01:
-  あめ (Regen) · かさ (Schirm) · すみません (Entschuldigung) ·
-  ありがとう (danke) · これ (das hier) · こわれた (kaputt) ·
-  どうぞ (bitte, hier) · はい (ja) — dieselben 8 wie bisher, die App-Daten
-  bleiben kompatibel.
+- **Lernstoff pro Folge: 15–20 neue Wörter + 2–4 Zeichen** (Uli, 14.9.:
+  „Lerninhalt größer“ — die alte 8-Wörter-Grenze hätte 100 Folgen für
+  800 Wörter bedeutet). Folge 01 trägt **18 Wörter + 2 Kanji**:
+  あめ (Regen) · かさ (Schirm, Kanji 傘) · すみません (Entschuldigung) ·
+  ありがとう (danke) · これ (das hier) · こわれた (kaputt) · どうぞ (bitte,
+  hier) · はい (ja) · えき (Bahnhof, Kanji 駅) · さむい (kalt) · みせ (Laden) ·
+  ひとり (allein) · だめ (geht nicht) · いくら (wie viel?) · いいえ (nein) ·
+  ほんとう (wirklich?) · だいじょうぶ (alles gut) · ここ (hier).
+- Sprachdichte: Folge 01 = 55 Blasen-Vorkommen + 2 Sprechziele. Jedes
+  Wort kommt mehrfach vor — und Mira benutzt Gelerntes selbst
+  (Echo-Zeilen, ihr Übungs-Murmeln in P8).
+- **Kanji on the fly:** Kanji kommen als Schilder in der Welt, mit kleiner
+  Kana-Lesehilfe darüber (Furigana) — 駅 am Bahnhof, 傘 am Schirmladen.
 - Deutsch = Erzählstimme (Kästen: Kontext, Innenleben, Fragen).
   Japanisch = Welt (Blasen, Schilder, der Zettel).
 - Jede Interaktion (Antippen, Sprechen, Nachzeichnen) hat einen Grund in
@@ -52,15 +55,15 @@ entziffert Stück für Stück den Zettel — jede Folge legt ein Fragment frei.
 ### P1 — Der Bahnsteig
 **Bild:** Bestehendes Motiv (kleiner Bahnsteig, Regen schräg durch
 Neonlicht, Mira mit Tasche, Kopf gesenkt). Neu: das Stationsschild
-「みなみまち」 sichtbar im Hintergrund.
+「みなみまち駅」 (Kanji 駅 mit Furigana えき) sichtbar im Hintergrund.
 **Erzählkästen (deutsch):**
 1. *„Das ist Mira. Vor drei Wochen fand sie im Nachlass ihrer Großmutter
    einen Zettel: eine Adresse, irgendwo hier."*
 2. *„Ihre Großmutter hat nie über Japan gesprochen. Kein Wort — auch nicht
    in ihrer eigenen Sprache. Mira hat nie erfahren, warum."*
 3. *„Sie kann nichts lesen. Nicht einmal den Namen dieser Station."*
-**Welt (japanisch):** Stationsschild 「みなみまち」 (antippbar: wird
-vorgelesen — kein Lernstoff, aber die Welt klingt).
+**Welt (japanisch):** Stationsschild 「みなみまち駅」 (antippbar) — ihr erstes
+Kanji: 駅 (えき, Bahnhof).
 **Gedanke (deutsch):** *„Ich hätte anrufen sollen. Aber wen?"*
 
 ### P2 — Der Zettel stirbt
@@ -79,8 +82,8 @@ holt."* (Graue Vorlage in der Zeichenfläche.)
 ### P3 — Ame
 **Bild:** Leere Straße, sie geht; zwei Passanten flüchten unter ein
 Vordach.
-**Welt:** Passant A: 「あめ！あめ！」 Passantin B: 「あめ、あめ…」 (lachend,
-schulterzuckend).
+**Welt:** Passant A: 「あめ！あめ！」 Passantin B: 「あめ、あめ… さむい、さむい」
+(lachend, fröstelnd).
 **Erzählkasten:** *„Ein Wort fliegt an ihr vorbei. Alle sagen es heute."*
 **Gedanke:** *„Ame. …Der Regen?"*
 **Interaktion:** Blasen antippbar (anhören + nachschlagen) — der erste
@@ -90,10 +93,10 @@ im Kontext.
 ### P4 — Das überdachte Licht
 **Bild:** Eingang der Shotengai (Einkaufsstraße), innen warm und trocken,
 halb tot: drei von zehn Läden offen. Vor einem Laden ein Korb voller
-Schirme, darüber ein Schild: 「かさ」.
+Schirme, darüber ein Schild: 「傘」 (Kanji, Furigana かさ).
 **Erzählkasten:** *„Drinnen: trocken. Und zum ersten Mal ein Schild, das
 sich selbst erklärt."*
-**Welt:** Schild 「かさ」 über dem Schirmkorb (antippbar). Mira (leise,
+**Welt:** Schild 「傘」 (かさ) über dem Schirmkorb (antippbar). Mira (leise,
 ihr neues Wort testend): 「…あめ」
 **Gedanke:** *„Kasa. Schirme. Das ist ja fast fair."*
 
@@ -102,7 +105,8 @@ ihr neues Wort testend): 「…あめ」
 gebrochen. Der alte Ladenbesitzer tritt heraus, sieht den Schirm, lacht
 nicht unfreundlich.
 **Welt:** Ladenbesitzer: 「あめ、あめ！」 (deutet zum Himmel) — dann auf
-ihren Schirm: 「これ？かさ？」
+ihren Schirm: 「これ？かさ？みせ！」 (deutet auf seinen Laden) — dann,
+sie musternd: 「ひとり？」 — Mira nickt: 「…はい。ひとり」
 **Erzählkasten:** *„Sie versteht kein Wort. Aber sie versteht alles."*
 **Gedanke:** *„Sag irgendwas. Das eine Wort, das die Frau im Zug zum
 Schaffner gesagt hat — sag es."*
@@ -115,7 +119,7 @@ und es funktioniert."*
 ### P6 — Die Diagnose
 **Bild:** Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn fachmännisch.
 **Welt:** Er: 「これ、こわれた」 (zeigt auf die Streben) — 「はい、こわれた、
-こわれた」 (kopfschüttelnd, fast zärtlich).
+こわれた。だめ、だめ」 (kopfschüttelnd, fast zärtlich).
 Mira (leise): 「…こわれた…？」
 **Gedanke:** *„Kowareta. Kaputt. Wie ich das erste Wort meiner Großmutter
 lerne: über einen kaputten Schirm."*
@@ -123,9 +127,9 @@ lerne: über einen kaputten Schirm."*
 ### P7 — Das Geschenk
 **Bild:** Er greift in den Korb, hält ihr einen Schirm hin — den
 schlichtesten, aber heilen.
-**Welt:** Er: 「はい。かさ。どうぞ」 — Mira: 「え？」 — Er (nachdrücklich,
-lächelnd): 「どうぞ、どうぞ。かさ！」 — Mira (verwirrt
-zurückfragend): 「…どうぞ？」
+**Welt:** Er: 「はい。かさ。どうぞ」 — Mira (greift zum Geldbeutel):
+「え？いくら？いくら？」 — Er (winkt ab): 「いいえ、いいえ。どうぞ、どうぞ。
+かさ！」 — Mira: 「…ほんとう？」 — Er: 「ほんとう。だいじょうぶ、だいじょうぶ」
 **Erzählkasten:** *„Sie hat nichts bestellt. Sie hat nichts bezahlt. Er
 gibt ihr den Schirm einfach so."*
 
@@ -137,7 +141,8 @@ jedem Film. Jetzt zählt es zum ersten Mal."*
 ありがとう."*
 **Reaktion bei Erfolg:** Er winkt ab, lacht: 「はいはい」 — Erzählzeile:
 *„Ihr zweites Wort. Es wird nicht das letzte sein."*
-Mira (im Gehen, leise übend): 「ありがとう… すみません… あめ… かさ…」
+Mira (im Gehen, leise übend — ihre Beute des Tages): 「ありがとう…
+すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…」
 
 ### P9 — Das Zeichen
 **Bild:** Weiter hinten in der Shotengai: ein kleines Café. Auf dem
@@ -145,7 +150,7 @@ handgemalten Schild ein Wort — und Mira erstarrt: Das zweite Zeichen darauf
 ist 「め」. Dasselbe Zeichen wie auf ihrem Handrücken. Sie hält die Hand
 neben das Schild.
 **Welt:** Caféschild 「あめやどり」 (antippbar). Mira (halblaut lesend):
-「あめ…やどり？」
+「ここ…？あめ…やどり？」
 **Erzählkasten:** *„Das Zeichen vom Zettel. Hier, auf einem Caféschild, in
 der Straße, zu der ihre Großmutter sie geschickt hat."*
 **Gedanke:** *„Das ist kein Zufall. Oder?"*
@@ -153,27 +158,38 @@ der Straße, zu der ihre Großmutter sie geschickt hat."*
 ### P10 — Vor der Tür (Schluss)
 **Bild:** Mira vor der Cafétür, die Hand am Griff, drinnen warmes Licht,
 eine Silhouette hinter dem Tresen.
+**Welt:** Mira, die Hand am Griff: 「ここ…」
 **Erzählkasten (Endkarten-Haken):** *„Auf dem Zettel standen einmal drei
-Zeilen. Mira kennt jetzt: ein Zeichen und vier Wörter. Hinter dieser Tür
-fängt der Rest an."*
+Zeilen. Mira kennt jetzt: zwei Zeichen und achtzehn Wörter. Hinter dieser
+Tür fängt der Rest an."*
 
 ---
 
 ## Dichte-Bilanz (das Lern-Soll dieser Folge)
 
-| Wort | Vorkommen | Situationen |
-|---|---|---|
-| あめ | 10× | Passanten (3), Mira-Echos P4/P9 (2), Ladenbesitzer (2), Caféschild, Üben, Schild-Lesen |
-| かさ | 5× | Schild, Ladenbesitzer-Frage, Geschenk-Satz (2), Üben |
-| こわれた | 5× | Diagnose (4), Miras Wiederholung |
-| どうぞ | 4× | Geschenk (3), Miras Rückfrage |
-| はい | 4× | Diagnose, Geschenk-Satz, はいはい (2) |
-| すみません | 2× | gesprochen (Speak-Ziel), Üben |
-| ありがとう | 2× | gesprochen (Speak-Ziel), Üben |
-| これ | 2× | Frage, Diagnose |
-| **Zeichen め** | 3 Momente | Zettel-Rettung (Trace), Handrücken, Caféschild-Wiedererkennen |
+| Wort | Vorkommen |
+|---|---|
+| あめ | 10× |
+| かさ | 5× (+ Kanji 傘) |
+| こわれた | 5× |
+| はい | 5× |
+| どうぞ | 3× |
+| いいえ | 3× |
+| だいじょうぶ | 3× |
+| ここ | 3× |
+| すみません | 2× |
+| ありがとう | 2× |
+| これ | 2× |
+| えき | 2× (+ Kanji 駅) |
+| さむい | 2× |
+| みせ | 2× |
+| ひとり | 2× |
+| だめ | 2× |
+| いくら | 2× |
+| ほんとう | 2× |
+| **Zeichen め** | 3 Momente (Trace, Handrücken, Caféschild) |
 
-**Gesamt: 35 Blasen-Vorkommen + 2 Sprechziele = 37 in 10 Panels** (V1: ~12 in 24) —
+**Gesamt: 55 Blasen-Vorkommen + 2 Sprechziele = 57 in 10 Panels, 18 Wörter + 2 Kanji** (V1: ~12 Vorkommen, 8 Wörter, 24 Panels) —
 plus durchgehende deutsche Erzählstimme, die Ulis Bild-1-Fragen (wer, warum,
 was fühlt sie, warum kann sie die Sprache nicht, will sie lernen)
 **explizit im ersten Panel** beantwortet und die richtigen Fragen offen

@@ -48,7 +48,7 @@ void main() {
   test('INV-4: rejects a non-singleton item whose occurrences drop below two',
       () {
     // これ occurs exactly twice in the real fixture: once in Panel 5
-    // (これ？かさ？) and once in Panel 6 (これ、こわれた). Dropping the
+    // (これ？かさ？みせ！) and once in Panel 6 (これ、こわれた). Dropping the
     // Panel-5 bubble
     // leaves a single occurrence — below the ≥2 floor for a non-singleton
     // item (INV-4 counts total occurrences, not distinct panels, since V2's
@@ -58,7 +58,7 @@ void main() {
     final page1 = (tampered['pages'] as List)[1] as Map<String, dynamic>;
     final panel5 = (page1['panels'] as List)[0] as Map<String, dynamic>;
     (panel5['bubbles'] as List)
-        .removeWhere((b) => (b as Map)['text'] == 'これ？かさ？');
+        .removeWhere((b) => (b as Map)['text'] == 'これ？かさ？みせ！');
 
     final episode = Episode.fromJson(tampered);
 
