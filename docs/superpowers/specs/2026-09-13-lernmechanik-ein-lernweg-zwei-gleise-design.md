@@ -67,7 +67,11 @@ Dauerhafte Aufgabe: **System-Wissen**, also das, was aus reinem Lesen schlecht l
   (`Characters`, `CharComponents`) existiert bereits.
 - **Grammatik:** `GrammarPoints` werden erstklassige Lern-Items mit eigener Fälligkeit
   (heute existieren sie nur als Inhalte ohne Scheduling-Anschluss an die Brücke).
-  Vermittlung in kleinen Lektionen auf dem Gleis, Abruf im Café (§5).
+  Vermittlung in kleinen Lektionen auf dem Gleis — das ist die **systematische
+  Reihe** (`sequenceIndex`), unabhängig vom Manga. **Zusätzlich** erklärt die Wirtin
+  im Café die Grammatik, die eine Manga-Folge einführt, in der Szene dieser Folge
+  (Nachbesprechung; eigene Spec `2026-09-15-cafe-nachbesprechung-design.md`, Ulis
+  Entscheidung 15.9.: das Café ersetzt die Reihe nicht). Abruf beider im Café (§5).
 - **Grundwortschatz-Anschub (endlich):** Die kuratierten Häufigkeits-Vokabeln
   (heute `vocab_800`) bleiben als Rampe, damit i+1 beim Lesen überhaupt Sätze findet.
   Die Rampe **endet** beim festen Umfang N (aktuell 800); danach stellt das Gleis keine
@@ -153,6 +157,12 @@ Heute bricht die Brücke bei allem ab, was kein Lexem ist. Künftig:
 - **Lesen räumt ab:** Wer liest, bedient fällige Items inline (heute schon gebaut als
   `dueInView`); nach der Fusion gilt das automatisch auch für Ex-On-Ramp-Wörter. Das
   Café ist danach entsprechend leerer. Ein Item, ein Termin, egal wo bedient.
+- **Nachbesprechung (Ergänzung 15.9.):** Das Café hat neben der Fälligkeit eine
+  zweite Item-Quelle — das Manifest der gerade zu Ende gelesenen Folge. Direkt nach
+  der Folge erklärt die Wirtin deren Wörter, Zeichen und Grammatikpunkte (Bedeutung,
+  Stelle in der Folge, Gebrauch, „man kann auch sagen …") und fragt sie dann ab.
+  Beide Quellen liefern ausschließlich eingeführte Items; Varianten sind Wissen am
+  Item, keine neuen Karteikarten. Details: `2026-09-15-cafe-nachbesprechung-design.md`.
 - **Café-Invarianten bleiben unangetastet:** INV-8 (führt nichts Neues ein), INV-9
   (kein un-eingeführtes Item an der Oberfläche), INV-10 (kein Level/Währung/Streak).
   Die Fusion vergrößert nur die Item-Quelle, nicht den Charakter des Cafés.
@@ -180,6 +190,9 @@ Eigene, spätere Brainstormings (hier nur als Anschlussstellen notiert):
 3. **Story-Engine-Verdrahtung (W3):** läuft als eigenes Wiring-Arbeitspaket —
    wegen „Lesen ab Tag 1" (§3) aber mit hoher Priorität: unabhängig von der Fusion,
    kann vor oder parallel zu §9 laufen.
+4. **Café als Nachbesprechung** (Folge → Café, Erklären vor Wiederholen, Café-Einführung
+   in Folge 01): eigene Spec `2026-09-15-cafe-nachbesprechung-design.md`; sie ergänzt
+   §3 (Grammatik) und §5 (zweite Item-Quelle) dieses Dokuments.
 
 ## 8. Risiken
 
