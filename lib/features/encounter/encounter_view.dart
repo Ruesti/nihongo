@@ -35,7 +35,7 @@ class EncounterView extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: _body(context),
         ),
-        if (extras != null) extras!,
+        ?extras,
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
