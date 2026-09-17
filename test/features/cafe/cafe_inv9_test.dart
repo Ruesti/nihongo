@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
+import 'package:nihongo_app/features/cafe/cafe_debrief.dart';
 import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
 import 'package:nihongo_app/features/cafe/cafe_screen.dart';
 import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
+import 'package:nihongo_app/features/story/episode.dart';
 
 void main() {
   late LearningDb db;
@@ -59,5 +61,30 @@ void main() {
     final due = await db.getDueItems('lang_ja', limit: 500);
     expect(due.where((i) => i.refId == 'lex_ja_himitsu'), isNotEmpty);
     expect(CafeOccupancy.fromDueItems(due).present, contains(CafeGuest.wirtin));
+  });
+
+  test('die Nachbesprechung hat dieselbe einzige Quelle: ein Budget-Item ohne '
+      'learn_item erscheint auch dort nicht (INV-11)', () async {
+    final episode = Episode.fromJson({
+      'id': 'ep_inv',
+      'seasonId': 's',
+      'orderIndex': 1,
+      'title': 'T',
+      'locale': 'ja',
+      'era': 'e',
+      'budget': {
+        'items': [
+          {'id': 'lex_ja_himitsu', 'refType': 'lexeme'},
+        ],
+        'glyphs': [],
+      },
+      'pages': [],
+    });
+    expect(await debriefItemsFor(db, episode, 'lang_ja'), isEmpty);
+    // Positiv-Kontrolle: erst die Übergabe (learn_item) legt es auf den Tisch.
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_himitsu',
+        rung: 0);
+    expect((await debriefItemsFor(db, episode, 'lang_ja')).single.refId,
+        'lex_ja_himitsu');
   });
 }
