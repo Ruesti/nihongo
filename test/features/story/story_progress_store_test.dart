@@ -50,4 +50,26 @@ void main() {
     expect(await store.isCompleted('ep_a'), isTrue);
     expect(await store.isCompleted('ep_b'), isFalse);
   });
+
+  test('debriefIndex startet bei 0 und wird pro Folge gespeichert', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = StoryProgressStore(await SharedPreferences.getInstance());
+    expect(await store.debriefIndex('ep_a'), 0);
+    await store.saveDebriefIndex('ep_a', 5);
+    expect(await store.debriefIndex('ep_a'), 5);
+    expect(await store.debriefIndex('ep_b'), 0);
+  });
+
+  test('isDebriefPending: nur nach Folgen-Ende und vor markDebriefDone',
+      () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = StoryProgressStore(await SharedPreferences.getInstance());
+    // Nicht gelesen → nie offen (INV-11).
+    expect(await store.isDebriefPending('ep_a'), isFalse);
+    await store.markCompleted('ep_a');
+    expect(await store.isDebriefPending('ep_a'), isTrue);
+    await store.markDebriefDone('ep_a');
+    expect(await store.isDebriefDone('ep_a'), isTrue);
+    expect(await store.isDebriefPending('ep_a'), isFalse);
+  });
 }
