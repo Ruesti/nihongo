@@ -135,6 +135,7 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
         bridge: widget.bridge,
         initialQueue: refreshed,
         doneLine: wirtinDebriefClosing(refreshed.length),
+        episodes: [widget.episode],
       ),
     ));
   }

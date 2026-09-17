@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/db/learning_db.dart';
 import '../../core/ladder/ladder_review.dart';
 import '../../core/pipeline/knowledge_bridge.dart';
+import '../story/episode.dart';
+import 'cafe_debrief.dart';
+import 'cafe_debrief_card.dart';
 import 'cafe_guest_script.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
@@ -29,6 +32,11 @@ class CafeTurnScreen extends StatefulWidget {
   /// (Nachbesprechung). Null = nur der Knopf zurück ins Café.
   final String? doneLine;
 
+  /// Folgen, aus denen die Erklärungskarte Stelle-in-der-Folge und
+  /// Erklärungsblock ziehen darf (Nachbesprechung: die eine Folge; normaler
+  /// Besuch: alle gebündelten). Leer = Karte zeigt, was sie hat (§3.5).
+  final List<Episode> episodes;
+
   const CafeTurnScreen({
     super.key,
     required this.db,
@@ -37,6 +45,7 @@ class CafeTurnScreen extends StatefulWidget {
     this.bridge,
     this.initialQueue,
     this.doneLine,
+    this.episodes = const [],
   });
 
   @override
@@ -57,6 +66,16 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   bool _hintUsed = false;
   bool _revealed = false;
   String? _followUp;
+
+  /// Sprosse 0 = noch nie erklärt: erst die Karte, dann der Turn — die Regel
+  /// der Empfang-Spec („nie kalt"), jetzt auch im Café (Spec §3.5).
+  DebriefCardContent? _encounterCard;
+
+  /// Re-Entrancy-Guard für „Verstanden" auf der Begegnungskarte (Task 7
+  /// Review-Auflage): der Knopf bleibt während der Awaits in [_encounterDone]
+  /// aktiv, ein zweiter, schneller Tapp darf kein doppeltes markEncountered
+  /// und kein doppeltes Queue-Update auslösen.
+  bool _advancing = false;
 
   @override
   void initState() {
@@ -100,8 +119,16 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
       await _prepareTurn();
       return;
     }
+    final item = _queue[_index];
+    DebriefCardContent? encounterCard;
+    if (item.masteryRung == 0) {
+      encounterCard = await loadDebriefCard(widget.db, item,
+          episode: episodeIntroducing(widget.episodes, item.refId));
+      if (!mounted) return;
+    }
     setState(() {
       _content = content;
+      _encounterCard = encounterCard;
       _hintUsed = false;
       _revealed = false;
       _followUp = null;
@@ -113,6 +140,51 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
         _hintUsed = true;
         _revealed = true;
       });
+
+  Future<void> _encounterDone() async {
+    if (_advancing) return;
+    _advancing = true;
+    try {
+      final item = _queue[_index];
+      await _ladder.markEncountered(item,
+          languageCode: widget.languageId.replaceFirst('lang_', ''));
+      // `submit` rechnet mit den Zeilenwerten — nach der Begegnung frisch lesen.
+      final refreshed = await widget.db.getLearnItem(item.id);
+      if (!mounted) return;
+      setState(() {
+        if (refreshed != null) _queue[_index] = refreshed;
+        _encounterCard = null;
+      });
+    } finally {
+      _advancing = false;
+    }
+  }
+
+  /// „Erklär's mir nochmal" (Spec §3.5): die volle Erklärungskarte — zählt
+  /// als Hinweis (→ hinted → hard, Brief §4.4), nicht als Fehler, nicht
+  /// folgenlos. Ohne Karte (Lexem fehlt) passiert nichts.
+  Future<void> _explainAgain() async {
+    final item = _queue[_index];
+    final card = await loadDebriefCard(widget.db, item,
+        episode: episodeIntroducing(widget.episodes, item.refId));
+    if (card == null || !mounted) return;
+    setState(() {
+      _hintUsed = true;
+      _revealed = true;
+    });
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => SizedBox(
+        key: const ValueKey('cafe-turn-explain-sheet'),
+        height: MediaQuery.of(sheetContext).size.height * 0.85,
+        child: DebriefCardView(
+          content: card,
+          onDone: () => Navigator.of(sheetContext).pop(),
+        ),
+      ),
+    );
+  }
 
   // Only called for typed turns (recognition grades via the gewusst/nicht
   // self-report buttons, which pass an explicit flag to _grade).
@@ -172,7 +244,29 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
                     ],
                   ),
                 )
-              : _buildTurn(_content!),
+              : _encounterCard != null
+                  ? _buildEncounter(_encounterCard!)
+                  : _buildTurn(_content!),
+    );
+  }
+
+  Widget _buildEncounter(DebriefCardContent card) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+          child: Text('Das hier ist neu für dich — hör erst mal zu.',
+              style: TextStyle(fontStyle: FontStyle.italic)),
+        ),
+        Expanded(
+          child: DebriefCardView(
+            key: const ValueKey('cafe-turn-encounter'),
+            content: card,
+            onDone: _encounterDone,
+          ),
+        ),
+      ],
     );
   }
 
@@ -201,6 +295,15 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
             Text('→ ${content.expectedAnswer}',
                 style: const TextStyle(fontStyle: FontStyle.italic)),
           const SizedBox(height: 16),
+          if (followUp == null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                key: const ValueKey('cafe-turn-explain'),
+                onPressed: _explainAgain,
+                child: const Text("Erklär's mir nochmal"),
+              ),
+            ),
           if (followUp == null)
             ..._buildAnswerControls(content)
           else ...[
