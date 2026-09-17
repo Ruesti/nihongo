@@ -105,7 +105,13 @@ class StoryRoute extends ConsumerWidget {
             // Wirtin den Tisch deckt, muss jedes Budget-Item im Karteikasten
             // liegen. introduce() ist idempotent — ein zweiter Lauf kostet nur
             // Lookups und führt nichts Neues ein (INV-8: nur Manifest-Items).
-            await handoff.introduceEpisode(episode);
+            // Scheitert sie, geht es trotzdem ins Café: ein normaler Besuch
+            // ist besser als ein Knopf, der nichts tut.
+            try {
+              await handoff.introduceEpisode(episode);
+            } catch (e) {
+              debugPrint('story: SRS-Handoff vor dem Café fehlgeschlagen: $e');
+            }
             if (!context.mounted) return;
             Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
               builder: (_) => CafeRoute(debriefEpisodeId: episode.id),
