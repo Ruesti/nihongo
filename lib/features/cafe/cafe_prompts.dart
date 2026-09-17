@@ -33,13 +33,16 @@ String gleichaltrigeOpener(String word, int index) {
 const String wirtinDebriefInvite = 'Wollen wir über die Folge reden?';
 
 /// Was die Wirtin vor einer Erklärungskarte sagt; rotiert nach Kartenindex.
+/// „Setz dich." ist die Eröffnung und fällt genau einmal — ab der zweiten
+/// Karte rotieren die Anschlusszeilen.
 String wirtinDebriefLine(int index) {
+  if (index <= 0) return 'Setz dich. Das hier hattest du in der Folge:';
   const lines = [
-    'Setz dich. Das hier hattest du in der Folge:',
     'Und dann war da noch das — erinnerst du dich?',
     'Das nächste. Lass dir Zeit.',
+    'Das hier kam auch vor. Hör noch einmal hin.',
   ];
-  return lines[index % lines.length];
+  return lines[(index - 1) % lines.length];
 }
 
 /// Schlusszeile nach Akt 2 (mindestens drei, rotierend — Brief §4.5).

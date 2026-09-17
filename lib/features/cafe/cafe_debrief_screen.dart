@@ -138,7 +138,10 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
         languageId: widget.languageId,
         bridge: widget.bridge,
         initialQueue: refreshed,
-        doneLine: wirtinDebriefClosing(refreshed.length),
+        // Nach Sitzung rotieren, nicht nach Item-Anzahl: an der Anzahl
+        // hängend hörte man bei gleich langen Folgen immer denselben Satz.
+        doneLine:
+            wirtinDebriefClosing(DateTime.now().millisecondsSinceEpoch ~/ 60000),
         episodes: [widget.episode],
       ),
     ));
