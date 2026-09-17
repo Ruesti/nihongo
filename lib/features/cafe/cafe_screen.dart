@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../core/db/learning_db.dart';
 import '../../core/pipeline/knowledge_bridge.dart';
+import '../story/episode.dart';
+import '../story/story_progress_store.dart';
+import 'cafe_debrief_screen.dart';
 import 'cafe_occupancy.dart';
+import 'cafe_prompts.dart';
 import 'cafe_turn_screen.dart';
 
 /// The café — the repetition mode that replaces the bare SRS feed (brief §4).
@@ -19,11 +23,28 @@ class CafeScreen extends StatefulWidget {
   final String languageId;
   final KnowledgeBridge? bridge;
 
+  /// Alle gebündelten Folgen — Kontext für „Erklär's mir nochmal" im Turn.
+  final List<Episode> episodes;
+
+  /// Die Folge mit offener Nachbesprechung (von der Route ermittelt), sonst
+  /// null. Zusammen mit [progressStore] macht sie die Wirtin anwesend und
+  /// ihren Tisch zur Einladung (Spec Café-Nachbesprechung §3.6).
+  final Episode? debriefEpisode;
+  final StoryProgressStore? progressStore;
+
+  /// True = die Nachbesprechung öffnet sich beim Betreten von selbst (Weg
+  /// „Ins Café" von der Endkarte, §3.2). Danach: der normale Café-Raum.
+  final bool openDebriefOnEntry;
+
   const CafeScreen({
     super.key,
     required this.db,
     this.languageId = 'lang_ja',
     this.bridge,
+    this.episodes = const [],
+    this.debriefEpisode,
+    this.progressStore,
+    this.openDebriefOnEntry = false,
   });
 
   @override
@@ -32,6 +53,8 @@ class CafeScreen extends StatefulWidget {
 
 class _CafeScreenState extends State<CafeScreen> {
   CafeOccupancy? _occupancy;
+  bool _debriefPending = false;
+  bool _autoOpened = false;
 
   @override
   void initState() {
@@ -41,8 +64,38 @@ class _CafeScreenState extends State<CafeScreen> {
 
   Future<void> _load() async {
     final due = await widget.db.getDueItems(widget.languageId, limit: 500);
+    final pending = await _isDebriefPending();
     if (!mounted) return;
-    setState(() => _occupancy = CafeOccupancy.fromDueItems(due));
+    setState(() {
+      _debriefPending = pending;
+      _occupancy = CafeOccupancy.fromDueItems(due, pendingDebrief: pending);
+    });
+    if (pending && widget.openDebriefOnEntry && !_autoOpened) {
+      _autoOpened = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _openDebrief();
+      });
+    }
+  }
+
+  Future<bool> _isDebriefPending() async {
+    final episode = widget.debriefEpisode;
+    final store = widget.progressStore;
+    if (episode == null || store == null) return false;
+    return store.isDebriefPending(episode.id);
+  }
+
+  Future<void> _openDebrief() async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => CafeDebriefScreen(
+        db: widget.db,
+        episode: widget.debriefEpisode!,
+        progressStore: widget.progressStore!,
+        languageId: widget.languageId,
+        bridge: widget.bridge,
+      ),
+    ));
+    if (mounted) _load();
   }
 
   static const _labels = {
@@ -86,7 +139,15 @@ class _CafeScreenState extends State<CafeScreen> {
                         ListTile(
                           key: ValueKey(_keys[guest]!),
                           title: Text(_labels[guest]!),
+                          subtitle: guest == CafeGuest.wirtin && _debriefPending
+                              ? const Text(wirtinDebriefInvite,
+                                  key: ValueKey('cafe-debrief-invite'))
+                              : null,
                           onTap: () async {
+                            if (guest == CafeGuest.wirtin && _debriefPending) {
+                              await _openDebrief();
+                              return;
+                            }
                             await Navigator.of(context)
                                 .push(MaterialPageRoute<void>(
                               builder: (_) => CafeTurnScreen(
@@ -94,6 +155,7 @@ class _CafeScreenState extends State<CafeScreen> {
                                 guest: guest,
                                 languageId: widget.languageId,
                                 bridge: widget.bridge,
+                                episodes: widget.episodes,
                               ),
                             ));
                             // On return, the due state may have changed —
