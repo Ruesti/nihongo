@@ -79,6 +79,17 @@ void validateEpisode(Episode episode) {
   // Budget-Items; Varianten („man kann auch sagen") sind Wissen am Item, keine
   // Items — höchstens zwei, und keine Variante darf selbst ein Budget-Item
   // dieser Folge sein (dann gehört sie ins Budget, nicht in die Randnotiz).
+  //
+  // Bewusste Abweichung: Geprüft wird gegen [budgetSurfaces] — die
+  // Token-Oberflächen der Budget-Items —, nicht gegen `lexemes.writtenForm`.
+  // Das Folgen-JSON hat keinen Zugriff auf die Lexem-Tabelle, die Oberflächen
+  // in der Folge sind der Stellvertreter dafür, der im Prozess verfügbar ist.
+  // Zwei Folgen daraus: ein Item, das nur über `targetItemIds` eines
+  // Sprechmoments getragen wird, steuert keine Oberfläche bei und wird so
+  // nicht erkannt; und eine Variante, die zwar ein Budget-Item ist, aber in
+  // der Folge in einer anderen Schreibung steht, rutscht durch. Die exakte
+  // Prüfung gegen `writtenForm` gehört in einen späteren Schritt mit
+  // DB-Zugriff (Spec §5.6, Notiz).
   for (final entry in episode.debrief.entries) {
     final itemId = entry.key;
     final note = entry.value;
