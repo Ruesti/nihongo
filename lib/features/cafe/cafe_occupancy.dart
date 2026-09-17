@@ -24,13 +24,20 @@ CafeGuest guestForRung(int rung) {
 class CafeOccupancy {
   final Set<CafeGuest> present;
 
-  const CafeOccupancy(this.present);
+  /// Eine Nachbesprechung ist offen (Spec Café-Nachbesprechung §3.6): die
+  /// Wirtin ist dann anwesend, auch wenn sonst nichts fällig ist, und lädt
+  /// ein statt abzufragen. Belegung, kein Zähler (INV-10).
+  final bool pendingDebrief;
+
+  const CafeOccupancy(this.present, {this.pendingDebrief = false});
 
   bool get isEmpty => present.isEmpty;
 
-  factory CafeOccupancy.fromDueItems(List<LearnItem> dueItems) {
+  factory CafeOccupancy.fromDueItems(List<LearnItem> dueItems,
+      {bool pendingDebrief = false}) {
     return CafeOccupancy({
       for (final item in dueItems) guestForRung(item.masteryRung),
-    });
+      if (pendingDebrief) CafeGuest.wirtin,
+    }, pendingDebrief: pendingDebrief);
   }
 }

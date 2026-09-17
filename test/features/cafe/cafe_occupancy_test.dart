@@ -52,5 +52,15 @@ void main() {
       final due = await db.getDueItems('lang_ja', limit: 500);
       expect(CafeOccupancy.fromDueItems(due).present, {CafeGuest.wirtin});
     });
+
+    test('offene Nachbesprechung → die Wirtin ist da, auch wenn nichts fällig '
+        'ist; ohne bleibt der Leerzustand', () async {
+      final due = await db.getDueItems('lang_ja', limit: 500);
+      final occ = CafeOccupancy.fromDueItems(due, pendingDebrief: true);
+      expect(occ.present, {CafeGuest.wirtin});
+      expect(occ.pendingDebrief, isTrue);
+      expect(occ.isEmpty, isFalse);
+      expect(CafeOccupancy.fromDueItems(due).isEmpty, isTrue);
+    });
   });
 }

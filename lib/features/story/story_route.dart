@@ -6,8 +6,10 @@ import '../../app/knowledge_providers.dart';
 import '../../core/ladder/ladder_review.dart';
 import '../../core/ladder/rung_defs.dart';
 import '../../core/tts_service.dart';
+import '../cafe/cafe_route.dart';
 import 'diegetic_encounter.dart';
 import 'episode.dart';
+import 'episode_registry.dart';
 import 'episode_srs_handoff.dart';
 import 'episodes/folge_01_regen.dart';
 import 'speak_evaluator.dart';
@@ -15,10 +17,9 @@ import 'story_progress_store.dart';
 import 'story_reader_screen.dart';
 import 'trace_evaluator.dart';
 
-/// Folge 01, beim ersten Zugriff validiert. Ein Schema-Verstoss wirft —
-/// und erscheint damit ehrlich als Fehler in der Route statt still
-/// falschen Inhalt zu zeigen.
-final storyEpisodeProvider = Provider<Episode>((ref) => loadFolge01());
+/// Folge 01 — die erste Folge der Registry (W3 kennt genau eine Route).
+final storyEpisodeProvider =
+    Provider<Episode>((ref) => ref.watch(storyEpisodesProvider).first);
 
 /// Async-Abhaengigkeiten des Readers: Fortschritts-Store + die IDs, deren
 /// Bedeutung aufgedeckt werden darf (= Budget-Items, die je eingefuehrt
@@ -99,6 +100,23 @@ class StoryRoute extends ConsumerWidget {
           knownIds: d.knownIds,
           onEpisodeComplete: () => handoff.introduceEpisode(episode).catchError(
               (Object e) => debugPrint('story: SRS-Handoff fehlgeschlagen: $e')),
+          onEnterCafe: () async {
+            // Die Übergabe am Folgen-Ende läuft fire-and-forget; bevor die
+            // Wirtin den Tisch deckt, muss jedes Budget-Item im Karteikasten
+            // liegen. introduce() ist idempotent — ein zweiter Lauf kostet nur
+            // Lookups und führt nichts Neues ein (INV-8: nur Manifest-Items).
+            // Scheitert sie, geht es trotzdem ins Café: ein normaler Besuch
+            // ist besser als ein Knopf, der nichts tut.
+            try {
+              await handoff.introduceEpisode(episode);
+            } catch (e) {
+              debugPrint('story: SRS-Handoff vor dem Café fehlgeschlagen: $e');
+            }
+            if (!context.mounted) return;
+            Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
+              builder: (_) => CafeRoute(debriefEpisodeId: episode.id),
+            ));
+          },
           speakEvaluator: speakEvaluator ?? SttSpeakEvaluator(),
           onDiegeticSpeakSuccess: (ids) => encounterAll(ids).catchError(
               (Object e) => debugPrint('story: Speak-Encounter fehlgeschlagen: $e')),

@@ -64,4 +64,16 @@ void main() {
     // meaning text still renders.
     expect(find.text('cat'), findsOneWidget);
   });
+
+  testWidgets('extras werden zwischen Begegnung und Weiter-Knopf gezeigt',
+      (tester) async {
+    await tester.pumpWidget(_wrap(EncounterView(
+      encounter: const LexemeEncounter(
+          writtenForm: 'あめ', reading: 'あめ', audioText: 'あめ', meaning: 'Regen'),
+      extras: const Text('Zusatz', key: ValueKey('extras')),
+      onDone: () {},
+    )));
+    expect(find.byKey(const ValueKey('extras')), findsOneWidget);
+    expect(find.byKey(const ValueKey('encounter-next')), findsOneWidget);
+  });
 }

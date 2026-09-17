@@ -72,6 +72,12 @@ class StoryReaderScreen extends StatefulWidget {
   /// accepted (P6b). The caller turns this into the SRS encounter (rung 1).
   final Future<void> Function(List<String> itemIds)? onDiegeticTraceSuccess;
 
+  /// Weg von der Endkarte ins Café (Spec Café-Nachbesprechung §3.2). Gesetzt
+  /// → die Endkarte zeigt „Ins Café" (primär) und „Später" (zurück); null →
+  /// „Zurück zum Lesen" wie bisher. Kein Gate: die Folge gilt in jedem Fall
+  /// als gelesen (INV-1).
+  final Future<void> Function()? onEnterCafe;
+
   const StoryReaderScreen({
     super.key,
     required this.episode,
@@ -84,6 +90,7 @@ class StoryReaderScreen extends StatefulWidget {
     this.onDiegeticSpeakSuccess,
     this.traceEvaluator,
     this.onDiegeticTraceSuccess,
+    this.onEnterCafe,
   });
 
   @override
@@ -367,11 +374,24 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                   Text(widget.episode.outro!, textAlign: TextAlign.center),
                 ],
                 const SizedBox(height: 32),
-                FilledButton(
-                  key: const ValueKey('story-end-done'),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Zurück zum Lesen'),
-                ),
+                if (widget.onEnterCafe != null) ...[
+                  FilledButton(
+                    key: const ValueKey('story-end-cafe'),
+                    onPressed: () => widget.onEnterCafe!(),
+                    child: const Text('Ins Café'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    key: const ValueKey('story-end-done'),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Später'),
+                  ),
+                ] else
+                  FilledButton(
+                    key: const ValueKey('story-end-done'),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Zurück zum Lesen'),
+                  ),
               ],
             ),
           ),

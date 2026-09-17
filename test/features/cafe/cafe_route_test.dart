@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/features/cafe/cafe_route.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('CafeRoute builds the café from the on-ramp providers',
       (tester) async {
+    SharedPreferences.setMockInitialValues({});
     final db = LearningDb.forTesting();
     addTearDown(() async => db.close());
 
