@@ -1,6 +1,5 @@
-import 'package:drift/drift.dart';
-
 import '../../core/db/learning_db.dart';
+import '../../core/db/lexeme_lookup.dart';
 import '../../core/i18n/concept_meaning.dart';
 import '../../core/ladder/encounter.dart';
 import '../../core/ladder/rung_defs.dart';
@@ -86,9 +85,10 @@ class DebriefCardContent {
   });
 }
 
-/// Baut die Karte aus Lexemes + Concepts (+ Assets) — dieselben Tabellen wie
-/// `ExerciseLoader` und `CafeTurnContent.forItem`. Null, wenn das Lexem oder
-/// sein Konzept fehlt (der Aufrufer überspringt das Item, kein Absturz).
+/// Baut die Karte aus Lexemes + Concepts (+ Assets) über
+/// [loadLexemeWithConcept] — dieselbe Abfrage wie `CafeTurnContent.forItem`.
+/// Null, wenn das Lexem oder sein Konzept fehlt (der Aufrufer überspringt das
+/// Item, kein Absturz).
 /// [episode] optional: liefert Stelle-in-der-Folge und Erklärungsblock; im
 /// normalen Besuch ohne Folgen-Kontext zeigt die Karte, was sie hat (§3.5).
 Future<DebriefCardContent?> loadDebriefCard(
@@ -97,25 +97,18 @@ Future<DebriefCardContent?> loadDebriefCard(
   Episode? episode,
 }) async {
   if (item.refType != RefType.lexeme.name) return null;
-  final lex = await (db.select(db.lexemes)
-        ..where((t) => t.id.equals(item.refId)))
-      .getSingleOrNull();
-  if (lex == null) return null;
-  final concept = await (db.select(db.concepts)
-        ..where((t) => t.id.equals(lex.conceptId)))
-      .getSingleOrNull();
-  if (concept == null) return null;
-  final asset = await (db.select(db.assets)
-        ..where((t) =>
-            t.conceptId.equals(lex.conceptId) & t.type.equals('image')))
-      .getSingleOrNull();
+  final found =
+      await loadLexemeWithConcept(db, item.refId, withImageAsset: true);
+  if (found == null) return null;
+  final lex = found.lexeme;
   return DebriefCardContent(
     encounter: LexemeEncounter(
       writtenForm: lex.writtenForm,
       reading: lex.reading,
       audioText: lex.writtenForm,
-      meaning: meaningForConcept(concept.id, fallback: concept.glossKey),
-      conceptImagePath: asset?.path,
+      meaning: meaningForConcept(found.concept.id,
+          fallback: found.concept.glossKey),
+      conceptImagePath: found.imageAsset?.path,
     ),
     firstPanel:
         episode == null ? null : firstAppearancePanel(episode, item.refId),

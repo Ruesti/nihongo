@@ -1,4 +1,5 @@
 import '../../core/db/learning_db.dart';
+import '../../core/db/lexeme_lookup.dart';
 import '../../core/i18n/concept_meaning.dart';
 import '../../core/srs/scheduler.dart';
 
@@ -45,8 +46,8 @@ CafeExerciseKind kindForRung(int rung) {
   return CafeExerciseKind.freeProduction; // rung 5 (and any higher)
 }
 
-/// The content of one café turn, built from a due lexeme [LearnItem] by a
-/// café-scoped Lexemes+Concepts query (the same data `ExerciseLoader` reads).
+/// The content of one café turn, built from a due lexeme [LearnItem] via
+/// [loadLexemeWithConcept] (the same data `ExerciseLoader` reads).
 /// [meaning] is the German meaning via [meaningForConcept] (falling back to
 /// the concept's English `glossKey` for concepts not yet translated).
 class CafeTurnContent {
@@ -77,17 +78,13 @@ class CafeTurnContent {
   /// lexeme or its concept is missing — the caller skips such an item rather
   /// than crashing the café.
   static Future<CafeTurnContent?> forItem(LearningDb db, LearnItem item) async {
-    final lex = await (db.select(db.lexemes)
-          ..where((t) => t.id.equals(item.refId)))
-        .getSingleOrNull();
-    if (lex == null) return null;
-    final concept = await (db.select(db.concepts)
-          ..where((t) => t.id.equals(lex.conceptId)))
-        .getSingleOrNull();
-    if (concept == null) return null;
+    final found = await loadLexemeWithConcept(db, item.refId);
+    if (found == null) return null;
+    final lex = found.lexeme;
 
     final kind = kindForRung(item.masteryRung);
-    final meaning = meaningForConcept(concept.id, fallback: concept.glossKey);
+    final meaning = meaningForConcept(found.concept.id,
+        fallback: found.concept.glossKey);
     final (promptText, expectedAnswer) = switch (kind) {
       CafeExerciseKind.recognition => (lex.writtenForm, meaning),
       CafeExerciseKind.readingInput => (lex.writtenForm, lex.reading),
