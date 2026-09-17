@@ -67,6 +67,10 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
     _items = items;
     _index = start.clamp(0, items.length);
     if (items.isEmpty) {
+      // Akt 1 ohne Items ist vollständig gesehen: sonst bliebe die
+      // Nachbesprechung für immer offen und die Wirtin lüde ewig ein.
+      await widget.progressStore.markDebriefDone(widget.episode.id);
+      if (!mounted) return;
       setState(() => _phase = _DebriefPhase.empty);
       return;
     }

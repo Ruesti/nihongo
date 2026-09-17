@@ -221,4 +221,12 @@ void main() {
     expect(find.byKey(const ValueKey('cafe-debrief-empty')), findsOneWidget);
     expect(find.textContaining('0'), findsNothing);
   });
+
+  testWidgets('die leere Nachbesprechung gilt als erledigt — sonst lädt die '
+      'Wirtin für immer ein', (tester) async {
+    await tester.pumpWidget(screen());
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-debrief-empty')), findsOneWidget);
+    expect(await store.isDebriefDone(episode.id), isTrue);
+  });
 }

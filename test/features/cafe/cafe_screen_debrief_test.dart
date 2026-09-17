@@ -78,5 +78,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('cafe-screen')), findsOneWidget);
     expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsNothing);
+    // Eine leere Nachbesprechung ist gesehen und damit erledigt: die Wirtin
+    // lädt nicht ewig weiter ein, das Café ist wieder das normale Café.
+    expect(find.byKey(const ValueKey('cafe-debrief-invite')), findsNothing);
+    expect(find.byKey(const ValueKey('cafe-empty')), findsOneWidget);
   });
 }
