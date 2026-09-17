@@ -8,6 +8,7 @@ import '../../core/ladder/rung_defs.dart';
 import '../../core/tts_service.dart';
 import 'diegetic_encounter.dart';
 import 'episode.dart';
+import 'episode_registry.dart';
 import 'episode_srs_handoff.dart';
 import 'episodes/folge_01_regen.dart';
 import 'speak_evaluator.dart';
@@ -15,10 +16,9 @@ import 'story_progress_store.dart';
 import 'story_reader_screen.dart';
 import 'trace_evaluator.dart';
 
-/// Folge 01, beim ersten Zugriff validiert. Ein Schema-Verstoss wirft —
-/// und erscheint damit ehrlich als Fehler in der Route statt still
-/// falschen Inhalt zu zeigen.
-final storyEpisodeProvider = Provider<Episode>((ref) => loadFolge01());
+/// Folge 01 — die erste Folge der Registry (W3 kennt genau eine Route).
+final storyEpisodeProvider =
+    Provider<Episode>((ref) => ref.watch(storyEpisodesProvider).first);
 
 /// Async-Abhaengigkeiten des Readers: Fortschritts-Store + die IDs, deren
 /// Bedeutung aufgedeckt werden darf (= Budget-Items, die je eingefuehrt
