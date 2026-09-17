@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../widgets/audio_button.dart';
 import '../encounter/encounter_view.dart';
 import '../story/episode.dart';
@@ -25,11 +26,33 @@ class DebriefCardView extends StatelessWidget {
     final panel = content.firstPanel;
     final note = content.note;
     final hasExtras = panel != null || note != null;
+    // „Verstanden" ist eine angeheftete Fußzeile: die Karte kann mit Panel,
+    // Gebrauch und zwei Varianten länger werden als der Schirm, der Knopf
+    // darf deswegen nie unter der Falz verschwinden.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: _scrollableCard(context, panel, note, hasExtras)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: FilledButton(
+            key: const ValueKey('encounter-next'),
+            onPressed: onDone,
+            child: Text(AppLocalizations.of(context)!.encounterNext),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _scrollableCard(BuildContext context, StoryPanel? panel,
+      DebriefNote? note, bool hasExtras) {
     return SingleChildScrollView(
       key: const ValueKey('cafe-debrief-card'),
       child: EncounterView(
         encounter: content.encounter,
         onDone: onDone,
+        showButton: false,
         extras: !hasExtras
             ? null
             : Padding(

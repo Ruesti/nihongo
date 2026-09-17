@@ -17,11 +17,17 @@ class EncounterView extends StatelessWidget {
   /// Café-Nachbesprechung §5.4). Null = Lektions-Begegnung wie bisher.
   final Widget? extras;
 
+  /// False = die Begegnung rendert ohne ihren „Verstanden"-Knopf; der
+  /// Aufrufer setzt ihn selbst — das Café heftet ihn als Fußzeile unter die
+  /// scrollende Karte, damit er nie unter der Falz liegt.
+  final bool showButton;
+
   const EncounterView({
     super.key,
     required this.encounter,
     required this.onDone,
     this.extras,
+    this.showButton = true,
   });
 
   @override
@@ -36,15 +42,17 @@ class EncounterView extends StatelessWidget {
           child: _body(context),
         ),
         ?extras,
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: FilledButton(
-            key: const ValueKey('encounter-next'),
-            onPressed: onDone,
-            child: Text(l.encounterNext),
+        if (showButton) ...[
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FilledButton(
+              key: const ValueKey('encounter-next'),
+              onPressed: onDone,
+              child: Text(l.encounterNext),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
