@@ -16,7 +16,8 @@ Widget _wrap(Widget child) => MaterialApp(
       home: child,
     );
 
-/// かさ zuerst (P0), あめ ab P1 — Auftrittsreihenfolge kasa, ame.
+/// ゆき (Geister-Item, nie als Lexem gesät) zuerst, dann かさ (P0), あめ ab P1
+/// — Auftrittsreihenfolge ghost, kasa, ame.
 Map<String, dynamic> _episodeJson() => {
       'id': 'ep_test_debrief',
       'seasonId': 's',
@@ -28,6 +29,7 @@ Map<String, dynamic> _episodeJson() => {
         'items': [
           {'id': 'lex_ja_ame', 'refType': 'lexeme'},
           {'id': 'lex_ja_kasa', 'refType': 'lexeme'},
+          {'id': 'lex_ja_ghost', 'refType': 'lexeme'},
         ],
         'glyphs': [],
       },
@@ -49,8 +51,9 @@ Map<String, dynamic> _episodeJson() => {
               'bubbles': [
                 {
                   'speakerId': 'x',
-                  'text': 'かさ',
+                  'text': 'ゆき、かさ',
                   'tokens': [
+                    {'surface': 'ゆき', 'itemId': 'lex_ja_ghost'},
                     {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
                   ],
                 },
@@ -212,6 +215,27 @@ void main() {
     final after = (await db.getLearnItem('lang_ja:lexeme:lex_ja_kasa'))!;
     expect(after.masteryRung, 1);
     expect(after.dueAt, before.dueAt);
+  });
+
+  testWidgets('ein Karteikasten-Item ohne Lexem-Zeile wird übersprungen — die '
+      'Wirtin fängt mit der nächsten Karte an', (tester) async {
+    // ゆき steht als erstes in der Auftrittsreihenfolge und liegt als
+    // Karteikarte auf Sprosse 0, hat aber keine Lexem-Zeile: die
+    // Erklärungskarte fällt aus (Spec §5.3) — überspringen statt abstürzen.
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ghost',
+        rung: 0);
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_kasa', rung: 0);
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame', rung: 0);
+
+    await tester.pumpWidget(screen());
+    await tester.pumpAndSettle();
+    expect(find.text('ゆき'), findsNothing);
+    expect(find.text('かさ'), findsWidgets);
+
+    await tapVerstanden(tester);
+    expect(find.text('あめ'), findsWidgets);
+    await tapVerstanden(tester);
+    expect(await store.isDebriefDone(episode.id), isTrue);
   });
 
   testWidgets('kein eingeführtes Item → die Wirtin nickt nur (leer, ohne Zahl)',
