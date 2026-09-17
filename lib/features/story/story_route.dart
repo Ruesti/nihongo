@@ -6,6 +6,7 @@ import '../../app/knowledge_providers.dart';
 import '../../core/ladder/ladder_review.dart';
 import '../../core/ladder/rung_defs.dart';
 import '../../core/tts_service.dart';
+import '../cafe/cafe_route.dart';
 import 'diegetic_encounter.dart';
 import 'episode.dart';
 import 'episode_registry.dart';
@@ -99,6 +100,17 @@ class StoryRoute extends ConsumerWidget {
           knownIds: d.knownIds,
           onEpisodeComplete: () => handoff.introduceEpisode(episode).catchError(
               (Object e) => debugPrint('story: SRS-Handoff fehlgeschlagen: $e')),
+          onEnterCafe: () async {
+            // Die Übergabe am Folgen-Ende läuft fire-and-forget; bevor die
+            // Wirtin den Tisch deckt, muss jedes Budget-Item im Karteikasten
+            // liegen. introduce() ist idempotent — ein zweiter Lauf kostet nur
+            // Lookups und führt nichts Neues ein (INV-8: nur Manifest-Items).
+            await handoff.introduceEpisode(episode);
+            if (!context.mounted) return;
+            Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
+              builder: (_) => CafeRoute(debriefEpisodeId: episode.id),
+            ));
+          },
           speakEvaluator: speakEvaluator ?? SttSpeakEvaluator(),
           onDiegeticSpeakSuccess: (ids) => encounterAll(ids).catchError(
               (Object e) => debugPrint('story: Speak-Encounter fehlgeschlagen: $e')),
