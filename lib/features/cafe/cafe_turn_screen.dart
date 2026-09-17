@@ -19,12 +19,24 @@ class CafeTurnScreen extends StatefulWidget {
   final String languageId;
   final KnowledgeBridge? bridge;
 
+  /// Vorgegebene Warteschlange statt Fälligkeits-Abfrage — Akt 2 der
+  /// Nachbesprechung fragt die Items der Folge sofort ab („unmittelbares
+  /// Abrufen, aber nie kalt", Spec Café-Nachbesprechung §3.4), auch wenn ihr
+  /// erster Termin erst morgen wäre. Null = wie bisher: was fällig ist.
+  final List<LearnItem>? initialQueue;
+
+  /// Schlusszeile der Wirtin, wenn die Warteschlange abgearbeitet ist
+  /// (Nachbesprechung). Null = nur der Knopf zurück ins Café.
+  final String? doneLine;
+
   const CafeTurnScreen({
     super.key,
     required this.db,
     required this.guest,
     this.languageId = 'lang_ja',
     this.bridge,
+    this.initialQueue,
+    this.doneLine,
   });
 
   @override
@@ -59,15 +71,20 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   }
 
   Future<void> _load() async {
-    final due = await widget.db.getDueItems(widget.languageId, limit: 500);
-    final mine =
-        due.where((i) => guestForRung(i.masteryRung) == widget.guest).toList();
+    final queue = widget.initialQueue ?? await _dueForGuest();
     if (!mounted) return;
     setState(() {
-      _queue = mine;
+      _queue = List.of(queue);
       _loading = false;
     });
     await _prepareTurn();
+  }
+
+  Future<List<LearnItem>> _dueForGuest() async {
+    final due = await widget.db.getDueItems(widget.languageId, limit: 500);
+    return due
+        .where((i) => guestForRung(i.masteryRung) == widget.guest)
+        .toList();
   }
 
   Future<void> _prepareTurn() async {
@@ -138,9 +155,21 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
           : _content == null
               ? Center(
                   key: const ValueKey('cafe-turn-done'),
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    child: const Text('Zurück ins Café'),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.doneLine != null)
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(widget.doneLine!,
+                              key: const ValueKey('cafe-turn-done-line'),
+                              textAlign: TextAlign.center),
+                        ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        child: const Text('Zurück ins Café'),
+                      ),
+                    ],
                   ),
                 )
               : _buildTurn(_content!),
