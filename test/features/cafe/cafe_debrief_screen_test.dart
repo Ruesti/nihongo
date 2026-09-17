@@ -152,6 +152,24 @@ void main() {
     expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsNothing);
   });
 
+  testWidgets('Doppeltipp auf „Verstanden" überspringt keine Karte '
+      '(Re-Entrancy-Guard)', (tester) async {
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame', rung: 0);
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_kasa', rung: 0);
+
+    await tester.pumpWidget(screen());
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('encounter-next')));
+    await tester.tap(find.byKey(const ValueKey('encounter-next')));
+    await tester.tap(find.byKey(const ValueKey('encounter-next')));
+    await tester.pumpAndSettle();
+
+    expect(await store.debriefIndex(episode.id), 1);
+    expect(find.text('あめ'), findsWidgets);
+    expect(find.text('かさ'), findsNothing);
+    expect(await rungOf('lex_ja_ame'), 0);
+  });
+
   testWidgets('Akt 2 endet mit der Schlusszeile der Wirtin; Varianten wurden '
       'nie zu Items', (tester) async {
     await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame', rung: 0);

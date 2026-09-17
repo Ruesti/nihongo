@@ -49,6 +49,7 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
   int _index = 0;
   DebriefCardContent? _card;
   _DebriefPhase _phase = _DebriefPhase.loading;
+  bool _advancing = false;
 
   String get _languageCode => widget.languageId.replaceFirst('lang_', '');
 
@@ -93,17 +94,27 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
   }
 
   Future<void> _cardDone() async {
-    final item = _items[_index];
-    // Erst-Erklärung = Begegnung: Sprosse 0 → 1 wie in der Lektion. Items,
-    // die ein diegetischer Moment schon auf Sprosse 1 gehoben hat, bleiben
-    // unberührt — die Karte ist keine zweite Einführung (Spec §3.3).
-    if (item.masteryRung == 0) {
-      await _ladder.markEncountered(item, languageCode: _languageCode);
+    // Re-Entrancy-Guard: „Verstanden" bleibt während der Awaits unten
+    // aktiv (EncounterView bleibt unverändert) — ein zweiter, schneller Tapp
+    // darf keine zweite Karte überspringen (derselbe Index, doppeltes
+    // markEncountered, doppeltes _index++).
+    if (_advancing) return;
+    _advancing = true;
+    try {
+      final item = _items[_index];
+      // Erst-Erklärung = Begegnung: Sprosse 0 → 1 wie in der Lektion. Items,
+      // die ein diegetischer Moment schon auf Sprosse 1 gehoben hat, bleiben
+      // unberührt — die Karte ist keine zweite Einführung (Spec §3.3).
+      if (item.masteryRung == 0) {
+        await _ladder.markEncountered(item, languageCode: _languageCode);
+      }
+      _index++;
+      await widget.progressStore.saveDebriefIndex(widget.episode.id, _index);
+      if (!mounted) return;
+      await _prepareCard();
+    } finally {
+      _advancing = false;
     }
-    _index++;
-    await widget.progressStore.saveDebriefIndex(widget.episode.id, _index);
-    if (!mounted) return;
-    await _prepareCard();
   }
 
   Future<void> _finishExplain() async {
