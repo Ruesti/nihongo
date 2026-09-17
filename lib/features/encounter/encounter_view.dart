@@ -12,10 +12,16 @@ class EncounterView extends StatelessWidget {
   final Encounter encounter;
   final VoidCallback onDone;
 
+  /// Optionaler Zusatz zwischen Begegnung und „Verstanden" — das Café hängt
+  /// hier Stelle-in-der-Folge, Gebrauch und Varianten an (Spec
+  /// Café-Nachbesprechung §5.4). Null = Lektions-Begegnung wie bisher.
+  final Widget? extras;
+
   const EncounterView({
     super.key,
     required this.encounter,
     required this.onDone,
+    this.extras,
   });
 
   @override
@@ -29,6 +35,7 @@ class EncounterView extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: _body(context),
         ),
+        if (extras != null) extras!,
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
