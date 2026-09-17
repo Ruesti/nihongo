@@ -152,6 +152,9 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
       final refreshed = await widget.db.getLearnItem(item.id);
       if (!mounted) return;
       setState(() {
+        // `_content` wurde auf Sprosse 0 gebaut und bleibt absichtlich
+        // stehen: kindForRung(0) == kindForRung(1) == recognition
+        // (cafe_turn.dart), die Begegnung ändert die Turn-Form also nicht.
         if (refreshed != null) _queue[_index] = refreshed;
         _encounterCard = null;
       });
@@ -209,6 +212,11 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
 
   Future<void> _gradeFree() async {
     if (_content == null) return;
+    // Bewusst kein [CafeOutcome.hinted], auch wenn ein Hinweis lief: das
+    // Skript der Gleichaltrigen (cafe_guest_script.dart) trägt nur
+    // freeProduced-Zeilen, und beide Ausgänge terminieren ohnehin als `hard`
+    // (Brief §4.4). Sollte sich die Benotung je unterscheiden, gehört diese
+    // Stelle noch einmal angesehen.
     await _submitOutcome(CafeOutcome.freeProduced);
   }
 
