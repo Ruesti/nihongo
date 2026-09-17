@@ -291,7 +291,9 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
                   isMonologue ? 'cafe-turn-monologue' : 'cafe-turn-prompt'),
               style: TextStyle(fontSize: isMonologue ? 18 : 28)),
           const SizedBox(height: 16),
-          if (_revealed)
+          // Freie Produktion (Sprosse 5) hat keine erwartete Antwort — dort
+          // stünde sonst nach einem Hinweis ein nacktes „→ ".
+          if (_revealed && content.expectedAnswer.isNotEmpty)
             Text('→ ${content.expectedAnswer}',
                 style: const TextStyle(fontStyle: FontStyle.italic)),
           const SizedBox(height: 16),
