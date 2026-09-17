@@ -15,6 +15,14 @@ erklärt werden wie ‚danke heißt arigatou, man kann aber auch sagen …'"*
 2. Die Wirtin darf **Varianten** nennen („man kann auch sagen …"), ohne dass daraus
    neue Karteikarten werden (siehe §4, Präzisierung von INV-8).
 
+**Stand-Korrektur 17.9. (nach Ulis Freigabe, vor dem Umsetzungsplan):** Die Erstfassung
+bezog sich auf die 24-Panel-Pilotfassung V1 (8 Wörter, 3 Kana). PR #45 trägt inzwischen
+**Folge 01 V3** (Drehbuch V2: 10 Panels, **18 Wörter, 5 Zeichen** あ め か 駅 傘), und
+die Folge **endet bereits vor dem Café** (§3.1). Zahlen und Panel-Verweise sind
+entsprechend angepasst; am Design ändert das nichts. Der Umsetzungsplan liegt in
+`docs/superpowers/plans/2026-09-17-cafe-nachbesprechung-woerter.md` (Wörter zuerst,
+Zeichen und Grammatik als eigene Schritte, §11).
+
 **Baut auf:** dem Story-Brief (`docs/story/BRIEF_STORY_ENGINE.md`, §4 Café), der
 Lernmechanik-Spec (`2026-09-13-lernmechanik-ein-lernweg-zwei-gleise-design.md`,
 PR #43 — wird in §7 an drei Stellen angepasst), der Reader-Erleben-Spec
@@ -25,21 +33,21 @@ Begegnungs-Ritual der Empfang-Spec (`2026-08-17-empfang-erste-begegnung-design.m
 
 ## 1. Ausgangslage: die Lücke zwischen Folge und Café
 
-Heute passiert nach dem letzten Panel sichtbar nichts. Die acht Wörter der Folge wandern
+Heute passiert nach dem letzten Panel sichtbar nichts. Die 18 Wörter der Folge wandern
 still in den Karteikasten (sofort als „fällig"), PR #45 ergänzt eine Endkarte mit
-Erzählhaken und schickt zurück zum Lesen-Tab. Das Café erreicht man getrennt davon über
-den Hinweis auf der Startseite. Dort sitzt dann zwar tatsächlich die Wirtin mit genau
-diesen Wörtern — aber niemand hat dem Lerner gezeigt, dass Folge und Café zusammengehören.
+Erzählhaken („Hinter dieser Tür fängt der Rest an.") und schickt zurück zum Lesen-Tab.
+Das Café erreicht man getrennt davon über den Hinweis auf der Startseite. Dort sitzt
+dann zwar tatsächlich die Wirtin mit genau diesen Wörtern — aber niemand hat dem Lerner
+gezeigt, dass Folge und Café zusammengehören.
 
 Drei Dinge fehlen konkret:
 
-- **Das Café kommt in Folge 01 nicht vor.** Es kam erst nach dem Pilot-Drehbuch ins
-  Konzept; das Skript-Ende (`PILOT_01_REGEN.md`, „Auslauf") redet noch vom alten
-  Kartenfeed. Einzige Brücke ist der Erzählhaken der Endkarte („… der Name des Cafés
-  kommt ihr bekannt vor").
+- **Die Folge führt vor die Café-Tür, aber nicht hinein.** Folge 01 V3 endet mit dem
+  Caféschild (P9) und Miras Hand am Türgriff (P10). Der Eintritt fehlt: Die Endkarte
+  schickt zurück zum Lesen-Tab statt durch die Tür.
 - **Das Café erklärt nichts.** Es wiederholt Wörter (vier Gäste = vier Sprossen),
   Bedeutung ist frei antippbar und zählt als Hinweis. Zeichen und Grammatik kennt es
-  nicht; die Übergabe am Folgen-Ende führt nur Wörter ein, die drei Kana der Folge
+  nicht; die Übergabe am Folgen-Ende führt nur Wörter ein, die fünf Zeichen der Folge
   gar nicht.
 - **Grammatik hat keinen Ort.** `GrammarPoints` existiert als Tabelle ohne Lehrtext,
   ohne Anschluss an die Leiter, ohne Inhalt.
@@ -62,22 +70,24 @@ hilft dir jemand — draußen auf der Straße bist du allein mit dem Buch").
 
 ## 3. Das Erlebnis, Schritt für Schritt
 
-### 3.1 Folge 01 führt das Café ein
+### 3.1 Folge 01 führt das Café ein — und tut es schon
 
-Das Vordach, unter dem sie in P23/P24 stehen bleibt und das Wörterbuch aufschlägt,
-**ist das Vordach des Cafés.** Über ihr das Schild mit dem Namen, den sie vom Zettel
-kennt. Sie geht hinein.
+**Stand V3 (Drehbuch V2, PR #45):** Die Folge endet bereits vor dem Café. P9 zeigt das
+handgemalte Caféschild 「あめやどり」 (wörtlich „Unterschlupf vor dem Regen" — Mira
+erkennt darauf das め vom Zettel), P10 Mira mit der Hand am Türgriff, drinnen warmes
+Licht, eine Silhouette hinter dem Tresen. Der Erzählhaken der Endkarte lautet: *„Auf
+dem Zettel standen einmal drei Zeilen. Mira kennt jetzt: ein Zeichen und vier Wörter.
+Hinter dieser Tür fängt der Rest an."* **Die Einführung des Cafés ist damit vorhanden;
+die Wirtin ist die Silhouette hinter dem Tresen.**
 
-- **Neues Epilog-Panel P25** (Ankerachse `A7`, Café innen): Sie tritt ein, nass, das
-  Wörterbuch unter dem Arm. Die Wirtin hinter dem Tresen blickt auf, nickt. **Kein
+- **Der Eintritt ist die Endkarte** (§3.2): „Ins Café" öffnet die Tür, hinter der der
+  Rest anfängt. Kein neues Panel nötig.
+- **Optionales Epilog-Panel P11** (Ankerachse `A7`, Café innen): Sie tritt ein, nass,
+  das Wörterbuch unter dem Arm. Die Wirtin hinter dem Tresen blickt auf, nickt. **Kein
   Dialog** — damit kein neues Wort ins Budget der Folge rutscht (INV-3). Ein deutscher
-  Gedanke reicht: *„Warm. Und jemand, der nicht wegschaut."*
-- Die Endkarte (`outro`, PR #45) endet an der Café-Tür, nicht davor: *„Der Zettel ist
-  unleserlich. Aber das Wort auf dem Schild über ihr kennt sie. Drinnen brennt Licht."*
-- **Übergang ohne Neurender:** Solange P25 nicht gerendert ist, trägt die Endkarte den
-  Eintritt allein („Sie geht hinein." + Weg ins Café). Das Panel ist später reiner
-  Asset-Tausch. Kein Café-Erzählbogen entsteht (§6 des Briefs bleibt gewahrt): P25 ist
-  das letzte Panel der Folge, keine Nebenhandlung.
+  Gedanke reicht: *„Warm. Und jemand, der nicht wegschaut."* Reiner Asset-Tausch, wenn
+  Uli es rendern mag; nichts hängt daran. Kein Café-Erzählbogen entsteht (§6 des Briefs
+  bleibt gewahrt): P11 wäre das letzte Panel der Folge, keine Nebenhandlung.
 
 ### 3.2 Folgen-Ende → Café (kein Gate)
 
@@ -204,7 +214,7 @@ Folgen-Szene — Erklären ist keine Einführung.
 |---|---|
 | **INV-1** (kein Gate) | Die Endkarte hat „Später". Die Folge ist gelesen, egal was danach kommt. |
 | **INV-2** (Story: nie Bedeutung) | Erklärungen gibt es nur im Café. Der Reader zeigt weiterhin Audio + Kana. |
-| **INV-3** (Budget) | P25 ist wortlos. Zeichen stehen schon im Manifest (`glyphs`), Grammatik kommt als eigene Liste dazu; der Validator prüft beide mit. |
+| **INV-3** (Budget) | Ein etwaiges P11 ist wortlos. Zeichen stehen schon im Manifest (`glyphs`), Grammatik kommt als eigene Liste dazu; der Validator prüft beide mit. |
 | **INV-5** (keine Sprosse > 2 vor Ende) | Die Nachbesprechung öffnet erst nach dem letzten Panel; Akt 2 bewertet Sprosse 1–2. |
 | **INV-6** (Produktion nicht im Story-Modus) | Nachzeichnen und Abfragen finden im Café statt, nicht im Reader. |
 | **INV-8** (Café führt nichts ein) | Quelle der Nachbesprechung = Manifest der Folge **∩** Karteikasten. Nur was die Übergabe am Folgen-Ende eingeführt hat, liegt auf dem Tisch. Siehe Präzisierung unten. |
@@ -252,7 +262,10 @@ ausschließlich die Schnittmenge aus Folgen-Manifest und Karteikasten.*
 `introduceEpisode` führt neben `budget.items` (Wörter) künftig auch `budget.glyphs`
 als `RefType.character` und `budget.grammar` als `RefType.grammar` ein — alle auf
 Sprosse 0, idempotent wie heute. Erst dadurch liegen Zeichen und Grammatik der Folge
-überhaupt im Karteikasten und damit auf dem Tisch der Wirtin (INV-8-konform).
+überhaupt im Karteikasten und damit auf dem Tisch der Wirtin (INV-8-konform). **Zeitpunkt:
+erst in den Schritten 3 (Zeichen) bzw. 4 (Grammatik) von §11**, jeweils zusammen mit
+den Karten und Turns, die sie bedienen — nie vorher, sonst stünde die Wirtin mit Items
+da, die sie weder erklären noch abfragen kann.
 
 Bekannte Vorbelastung, unverändert: die Kopplung `cando_ja_a1_kana` an alle
 A1-Lexeme (Folge-Ticket, siehe Story-Engine-Notizen).
@@ -267,10 +280,12 @@ A1-Lexeme (Folge-Ticket, siehe Story-Engine-Notizen).
 - **Belegung** (`CafeOccupancy`): bekommt zusätzlich `pendingDebrief: episodeId?`.
   Ist eine Nachbesprechung offen, ist die Wirtin anwesend, mit Einladungs-Prompt statt
   Turn-Prompt.
-- **Route** (`CafeRoute`, `/review`): optionaler Parameter `debrief=<episodeId>`.
-  Mit Parameter startet die Nachbesprechung dieser Folge; ohne wie heute. Ist die
-  Folge nicht abgeschlossen oder ihre Nachbesprechung schon erledigt
-  (`debriefDone`), fällt die Route auf den normalen Besuch zurück.
+- **Route** (`CafeRoute`): optionaler Konstruktor-Parameter `debriefEpisodeId`. Die
+  Endkarte öffnet `CafeRoute(debriefEpisodeId: …)` direkt (anstelle des Readers); der
+  `/review`-Tab bleibt `const CafeRoute()` wie heute. Mit Parameter startet die
+  Nachbesprechung dieser Folge; ohne wie heute. Ist die Folge nicht abgeschlossen oder
+  ihre Nachbesprechung schon erledigt (`debriefDone`), fällt die Route auf den normalen
+  Besuch zurück.
 - **Nachbesprechungs-Ablauf** (`CafeDebriefScreen`, neu): Akt 1 = Sequenz von
   Erklärungskarten (§5.4) mit „Weiter"; nach jeder Karte eines **Sprosse-0-Items**
   `markEncountered` (Sprosse 0 → 1, wie die Lektions-Begegnung), Items auf höherer
@@ -323,26 +338,39 @@ Sinne von INV-10: Es schaltet nichts frei und wird nirgends gezählt.
 
 ## 6. Content für Folge 01 (Ulis Anteil, Claude entwirft die Texte)
 
-**Panel P25** (neu, `A7` Café innen): siehe §3.1. Bis zum Render trägt die Endkarte den
-Eintritt.
+**Panel P11** (optional, `A7` Café innen): siehe §3.1. Die Endkarte trägt den Eintritt;
+das Panel ist Kür.
 
-**Endkarte (`outro`):** Entwurf siehe §3.1, Uli formuliert nach Geschmack um.
+**Endkarte (`outro`):** bleibt wie in V3 („… Hinter dieser Tür fängt der Rest an.") —
+der Knopf „Ins Café" ist die Tür.
 
-**Erklärungsblock — Entwurf zum Gegenlesen** (Stimme: die Wirtin, warm, kurz):
+**Erklärungsblock — Entwurf zum Gegenlesen** (Stimme: die Wirtin, warm, kurz; 18
+Wörter der V3-Folge, Panel-Verweise nach Drehbuch V2):
 
-| Item | Gebrauch (Entwurf) | „Man kann auch sagen …" |
+| Item | Gebrauch (Entwurf) | „Man kann auch sagen …" (höchstens zwei) |
 |---|---|---|
-| すみません | „Entschuldigung" — aber genauso: „Hallo, darf ich mal?" Sie benutzt es, um jemanden anzusprechen, nicht nur, um sich zu entschuldigen. | ごめんなさい (persönlicher: „tut mir leid"), すみませんでした (für etwas, das schon passiert ist) |
-| あめ | Regen. Das erste Wort, das sie selbst gelesen hat. | — (Randbemerkung: mit anderer Betonung heißt あめ „Bonbon" — man hört den Unterschied) |
-| かさ | Schirm. In P15 ist er nur ein Ding in der Hand, in P21 wird er zum Wort. | — (später als Kanji 傘) |
-| これ | „das hier" — das Ding bei mir. | それ („das da", bei dir), あれ („das dort", weit weg) |
-| こわれた | „kaputt" — genauer: „ist kaputtgegangen". Die Form sagt: es ist schon passiert. | こわれています (ist kaputt, als Zustand, höflich) |
-| はい | „ja". Und beim Überreichen: „hier, bitte" (P21: はい、どうぞ). | ええ (weicher), うん (locker, unter Freunden) |
-| どうぞ | „bitte, hier" — wenn man etwas gibt oder anbietet. Nicht das „bitte" einer Bitte. | — (das Gegenstück ist ありがとう) |
+| えき | „Bahnhof". Auf dem Schild steht es als Kanji 駅, gesprochen えき — Miras erstes Schild. | — |
+| さむい | „kalt" — fürs Wetter und fürs Frösteln, nicht für kaltes Wasser. | つめたい („kalt" zum Anfassen: Wasser, Hände), さむいですね („kalt, nicht wahr?" — der Smalltalk-Satz) |
+| あめ | „Regen". Das Wort vom Zettel, das erste, das Mira selbst gelesen hat. Vorsicht: mit anderer Betonung heißt あめ auch „Bonbon" — man hört den Unterschied. | — |
+| すみません | „Entschuldigung" — aber genauso „Hallo, darf ich mal?". Mira benutzt es, um jemanden anzusprechen, nicht nur zum Entschuldigen. | ごめんなさい (persönlicher: „tut mir leid"), すみませんでした (für etwas, das schon passiert ist) |
+| ここ | „hier" — der Ort bei mir. | そこ („da", bei dir), あそこ („dort", weit weg von uns beiden) |
+| みせ | „Laden, Geschäft" — jeder Laden in der Shotengai ist ein みせ. | おみせ (höflicher, mit お davor) |
+| ひとり | „allein" oder „eine Person". Mira ist ひとり in dieser Stadt. | ひとりで („allein" als Art und Weise: allein reisen, allein essen) |
+| かさ | „Schirm". Erst ein Ding in Miras Hand, dann ein Wort. Als Kanji: 傘. | あまがさ („Regenschirm", wörtlich あめ + かさ) |
+| これ | „das hier" — das Ding bei mir, in meiner Hand. | それ („das da", bei dir), あれ („das dort", weit weg) |
+| こわれた | „kaputt" — genauer: „ist kaputtgegangen". Die Form sagt: Es ist schon passiert. | こわれている („ist kaputt", als Zustand), こわれました (dasselbe, höflicher) |
+| だめ | „geht nicht / kaputt / nein" — das Alltagswort, wenn etwas nicht geht. | だめです (höflicher), むり („unmöglich", noch deutlicher) |
+| いくら | „wie viel (kostet das)?" — die Frage im Laden. | いくらですか (höflich, der ganze Satz) |
+| いいえ | „nein" — höflich, im Gespräch mit Fremden. | いや (locker), ううん (unter Freunden, oft nur ein Laut) |
+| ほんとう | „wirklich?" — als Frage, wenn man etwas kaum glauben kann. | ほんとうに („wirklich" als Verstärkung: wirklich kalt), ほんと (kurz, gesprochen) |
+| だいじょうぶ | „alles gut / in Ordnung" — als Frage und als Antwort. | だいじょうぶです (höflicher), へいき („macht nichts", lockerer) |
+| はい | „ja". Und beim Überreichen: „hier, bitte" (はい、どうぞ). | ええ (weicher), うん (locker, unter Freunden) |
+| どうぞ | „bitte, hier" — wenn man etwas gibt oder anbietet. Nicht das „bitte" einer Bitte. Das Gegenstück ist ありがとう. | — |
 | ありがとう | „danke". | ありがとうございます (höflicher, zu Fremden und Älteren), どうも (kurz, beiläufig) |
 
-**Zeichen** あ め か: Strichfolge (あ gebündelt; め muss gebündelt werden, sonst
-stehend), „kommt vor in" ergibt sich (あめ, かさ). Merkbilder optional.
+**Zeichen** あ め か 駅 傘 (Schritt 3 in §11): Strichfolge (あ gebündelt; め muss
+gebündelt werden, sonst stehend; 駅/傘 aus KanjiVG), „kommt vor in" ergibt sich
+(あめ, かさ, えき→駅, かさ→傘). Merkbilder optional.
 
 **Grammatik (Vorschlag, Ulis Entscheidung):** Folge 01 hat wenig Satzbau. Ein Punkt
 bietet sich an: **〜た — „es ist schon passiert"** an こわれた (Muster: Verb-Stamm + た;
@@ -371,7 +399,7 @@ Pool") umfasst dann beide Quellen.
 
 ## 8. Bewusst NICHT
 
-- **Kein Café-Erzählbogen.** P25 gehört zur Folge. Die Wirtin bekommt keine
+- **Kein Café-Erzählbogen.** Ein etwaiges P11 gehört zur Folge. Die Wirtin bekommt keine
   Geschichte, keine Freundschaft, keine Entwicklung (Brief §6).
 - **Keine neuen Items im Café.** Varianten werden nicht abgefragt, nie eingeführt.
 - **Keine Erklärungen im Story-Modus.** Der Reader bleibt bei Audio + Kana (INV-2).
@@ -386,7 +414,7 @@ Pool") umfasst dann beide Quellen.
 
 | Risiko | Umgang |
 |---|---|
-| Nachbesprechung wird lang (Folge 01: 8 + 3 + 0–1 Karten, dann ebenso viele Turns) | Akt 1 ist reines „Weiter"; Abbruch jederzeit, Fortsetzung beim nächsten Besuch (§3.6). Ab Folge 02 Budget-Disziplin wie bisher (≈ 8 Wörter). |
+| Nachbesprechung wird lang (Folge 01 V3: 18 Wörter, später + 5 Zeichen + 0–1 Grammatik, dann ebenso viele Turns) | Akt 1 ist reines „Weiter"; Abbruch jederzeit, Fortsetzung beim nächsten Besuch (§3.6). Die Folgen-Budgets bestimmt das Drehbuch (Serien-Curriculum), nicht das Café. |
 | Erklärungen widersprechen später der systematischen Grammatik-Reihe | Beide lesen dieselben `GrammarPoints`-Felder (§5.5); die Folge liefert nur das Beispiel, nicht eine zweite Erklärung. |
 | Varianten wachsen still zu einem Schatten-Wortschatz | Höchstens zwei pro Wort; Validator §5.6; struktureller Test §10. |
 | め ohne Strichfolge wirkt wie ein Fehler | Stehendes Zeichen plus Nachfahren ist erlaubt; め-SVG bündeln bleibt Folge-Ticket. |
@@ -408,7 +436,8 @@ Strukturell (im Stil von `cafe_inv9_test.dart`, jeder Verstoß ein Testfehler):
 - Endkarte „Später" → Lesen-Tab, Folge gilt als gelesen; erneutes Öffnen startet bei
   der Titelkarte (PR #45 §2.7).
 - Validator: die vier Regeln aus §5.6, je ein Negativfall.
-- Übergabe führt Zeichen und Grammatik ein (Sprosse 0), idempotent bei Wiederholung.
+- Übergabe führt Zeichen und Grammatik ein (Sprosse 0), idempotent bei Wiederholung
+  (Schritte 3/4 in §11).
 
 **Abnahme:** Ulis Gerätetest auf dem S23, wie bei PR #45 sein ausdrücklicher Wunsch.
 Messlatte: Er liest Folge 01 zu Ende, geht ohne Rückfrage ins Café, versteht bei jeder
@@ -417,18 +446,22 @@ Abfrage.
 
 ## 11. Grobe Reihenfolge (für den Implementierungsplan, nicht Teil dieses Designs)
 
-1. **Übergang + Wörter:** Übergabe führt Zeichen mit ein; Endkarte mit „Ins Café";
-   Route-Parameter; `CafeDebriefScreen` mit Akt 1 (Erklärungskarte = `EncounterView`
+1. **Übergang + Wörter:** Endkarte mit „Ins Café"/„Später"; `CafeRoute` mit
+   `debriefEpisodeId`; `CafeDebriefScreen` mit Akt 1 (Erklärungskarte = `EncounterView`
    + Café-Zusatz aus abgeleiteten Daten) und Akt 2 (bestehende Turns); offene
    Nachbesprechung in der Belegung; Prefs. Folge 01 ist damit nachbesprechbar, auch
    ohne Erklärungsblock.
-2. **Erklärungsblock:** `Episode.debrief` (Gebrauch, Varianten, Merkbilder), Validator,
-   „Erklär's mir nochmal", Folge-01-Texte aus §6.
-3. **Zeichen im Café:** Turn-Inhalt polymorph, Nachzeichnen als Wirtin-Turn.
+2. **Erklärungsblock:** `Episode.debrief` (Gebrauch, Varianten), Validator,
+   „Erklär's mir nochmal", Sprosse-0-Karte im normalen Turn, Folge-01-Texte aus §6.
+   — **Schritte 1 + 2 = ein Plan:** `docs/superpowers/plans/2026-09-17-cafe-nachbesprechung-woerter.md`.
+3. **Zeichen im Café:** Übergabe führt `budget.glyphs` als `character`-Items ein (erst
+   hier — sonst säße die Wirtin mit Zeichen da, die sie noch nicht abfragen kann),
+   Zeichen-Karten in Akt 1 (Strichfolge, Nachfahren, „kommt vor in", Merkbild),
+   Turn-Inhalt polymorph, Nachzeichnen als Wirtin-Turn.
 4. **Grammatik:** Schema aus Reicher-Lern-Loop §F (falls nicht schon da),
    `GrammarRef` im Budget, `StoryToken.grammarId`, `GrammarCard` in Akt 1,
    Erkennen-Turn in Akt 2, optionaler Folge-01-Punkt.
-5. **P25** rendern und einhängen (Asset-Tausch, Ulis Content-Anteil).
+5. **P11** rendern und einhängen (optional, Asset-Tausch, Ulis Content-Anteil).
 
 Jeder Schritt ist einzeln shipbar und lässt die App lauffähig. Voraussetzung für 1 ist
 die Endkarte aus PR #45 (Stapel: #44 → #45 → diese Umsetzung).
