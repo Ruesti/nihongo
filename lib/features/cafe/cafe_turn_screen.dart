@@ -77,6 +77,11 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   /// und kein doppeltes Queue-Update auslösen.
   bool _advancing = false;
 
+  /// Re-Entrancy-Guard für „Erklär's mir nochmal": der Knopf bleibt während
+  /// des Ladens aktiv, ein zweiter, schneller Tapp dürfte sonst eine zweite
+  /// Karte über die erste legen.
+  bool _explaining = false;
+
   @override
   void initState() {
     super.initState();
@@ -167,26 +172,32 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   /// als Hinweis (→ hinted → hard, Brief §4.4), nicht als Fehler, nicht
   /// folgenlos. Ohne Karte (Lexem fehlt) passiert nichts.
   Future<void> _explainAgain() async {
-    final item = _queue[_index];
-    final card = await loadDebriefCard(widget.db, item,
-        episode: episodeIntroducing(widget.episodes, item.refId));
-    if (card == null || !mounted) return;
-    setState(() {
-      _hintUsed = true;
-      _revealed = true;
-    });
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) => SizedBox(
-        key: const ValueKey('cafe-turn-explain-sheet'),
-        height: MediaQuery.of(sheetContext).size.height * 0.85,
-        child: DebriefCardView(
-          content: card,
-          onDone: () => Navigator.of(sheetContext).pop(),
+    if (_explaining) return;
+    _explaining = true;
+    try {
+      final item = _queue[_index];
+      final card = await loadDebriefCard(widget.db, item,
+          episode: episodeIntroducing(widget.episodes, item.refId));
+      if (card == null || !mounted) return;
+      setState(() {
+        _hintUsed = true;
+        _revealed = true;
+      });
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (sheetContext) => SizedBox(
+          key: const ValueKey('cafe-turn-explain-sheet'),
+          height: MediaQuery.of(sheetContext).size.height * 0.85,
+          child: DebriefCardView(
+            content: card,
+            onDone: () => Navigator.of(sheetContext).pop(),
+          ),
         ),
-      ),
-    );
+      );
+    } finally {
+      _explaining = false;
+    }
   }
 
   // Only called for typed turns (recognition grades via the gewusst/nicht

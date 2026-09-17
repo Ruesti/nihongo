@@ -120,6 +120,20 @@ void main() {
     expect((await db.select(db.reviewLog).get()).single.result, 'hard');
   });
 
+  testWidgets('Doppeltipp auf „Erklär\'s mir nochmal" öffnet nur eine Karte '
+      '(Re-Entrancy-Guard)', (tester) async {
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame', rung: 3);
+    await tester.pumpWidget(
+        _wrap(CafeTurnScreen(db: db, guest: CafeGuest.schulkind)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('cafe-turn-explain')));
+    await tester.tap(find.byKey(const ValueKey('cafe-turn-explain')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('cafe-turn-explain-sheet')), findsOneWidget);
+  });
+
   testWidgets('mit Folgen-Kontext zeigt die Karte Gebrauch und Stelle in der '
       'Folge', (tester) async {
     await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame', rung: 3);
