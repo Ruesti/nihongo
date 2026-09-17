@@ -8,21 +8,32 @@ import '../story/episode_registry.dart';
 import '../story/story_progress_store.dart';
 import 'cafe_screen.dart';
 
-/// Was das Café über Folgen wissen muss: der Fortschritts-Store und die erste
-/// Folge mit offener Nachbesprechung (Spec Café-Nachbesprechung §3.6), sonst
-/// null. autoDispose: bei jedem Betreten frisch — nach einer erledigten
-/// Nachbesprechung ist die Einladung beim nächsten Besuch weg.
+/// Was das Café über Folgen wissen muss: der Fortschritts-Store und *alle*
+/// Folgen mit offener Nachbesprechung, in Registry-Reihenfolge (Spec
+/// Café-Nachbesprechung §3.6). autoDispose: bei jedem Betreten frisch — nach
+/// einer erledigten Nachbesprechung ist die Einladung beim nächsten Besuch
+/// weg.
 final cafeDebriefProvider = FutureProvider.autoDispose<
-    ({StoryProgressStore store, Episode? pending})>((ref) async {
+    ({StoryProgressStore store, List<Episode> pending})>((ref) async {
   final episodes = ref.watch(storyEpisodesProvider);
   final store = StoryProgressStore(await SharedPreferences.getInstance());
+  final pending = <Episode>[];
   for (final episode in episodes) {
-    if (await store.isDebriefPending(episode.id)) {
-      return (store: store, pending: episode);
-    }
+    if (await store.isDebriefPending(episode.id)) pending.add(episode);
   }
-  return (store: store, pending: null);
+  return (store: store, pending: pending);
 });
+
+/// Welche offene Nachbesprechung das Café zeigt: die angefragte, wenn sie
+/// offen ist (Weg „Ins Café" von der Endkarte — sonst landete man in der
+/// Nachbesprechung einer ganz anderen Folge), sonst die erste offene, sonst
+/// keine.
+Episode? chooseDebriefEpisode(List<Episode> pending, String? requestedId) {
+  for (final episode in pending) {
+    if (episode.id == requestedId) return episode;
+  }
+  return pending.isEmpty ? null : pending.first;
+}
 
 /// Routes the café into the app in place of the bare SRS review feed
 /// (brief §4 — the café replaces the review screen entirely). Pulls the
@@ -50,16 +61,19 @@ class CafeRoute extends ConsumerWidget {
       // ohne Einladung.
       error: (_, _) => CafeScreen(
           db: db, bridge: bridge, languageId: 'lang_ja', episodes: episodes),
-      data: (d) => CafeScreen(
-        db: db,
-        bridge: bridge,
-        languageId: 'lang_ja',
-        episodes: episodes,
-        debriefEpisode: d.pending,
-        progressStore: d.store,
-        openDebriefOnEntry:
-            debriefEpisodeId != null && d.pending?.id == debriefEpisodeId,
-      ),
+      data: (d) {
+        final chosen = chooseDebriefEpisode(d.pending, debriefEpisodeId);
+        return CafeScreen(
+          db: db,
+          bridge: bridge,
+          languageId: 'lang_ja',
+          episodes: episodes,
+          debriefEpisode: chosen,
+          progressStore: d.store,
+          openDebriefOnEntry:
+              debriefEpisodeId != null && chosen?.id == debriefEpisodeId,
+        );
+      },
     );
   }
 }
