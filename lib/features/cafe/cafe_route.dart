@@ -58,9 +58,12 @@ class CafeRoute extends ConsumerWidget {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       // Ohne Prefs (sollte nie passieren) bleibt das Café das Café — nur
-      // ohne Einladung.
-      error: (_, _) => CafeScreen(
-          db: db, bridge: bridge, languageId: 'lang_ja', episodes: episodes),
+      // ohne Einladung. Stumm bleibt der Fehler trotzdem nicht.
+      error: (e, _) {
+        debugPrint('cafe: Nachbesprechungs-Stand nicht lesbar: $e');
+        return CafeScreen(
+            db: db, bridge: bridge, languageId: 'lang_ja', episodes: episodes);
+      },
       data: (d) {
         final chosen = chooseDebriefEpisode(d.pending, debriefEpisodeId);
         return CafeScreen(

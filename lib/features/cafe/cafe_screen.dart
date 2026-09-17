@@ -18,6 +18,17 @@ import 'cafe_turn_screen.dart';
 /// guest's turn ([CafeTurnScreen], P8); returning refreshes occupancy so a
 /// finished batch of reviews is reflected without violating "fixed per
 /// session" (still only once per guest visit, not on every rebuild).
+///
+/// Nachbesprechung (Spec Café-Nachbesprechung §3.6): Sind [debriefEpisode]
+/// und [progressStore] gesetzt und ist die Nachbesprechung dieser Folge noch
+/// offen, ist die Wirtin unabhängig von der Fälligkeit anwesend und ihr Tisch
+/// trägt die Einladung ([wirtinDebriefInvite], Key `cafe-debrief-invite`) —
+/// ein Satz, kein Zähler (INV-10). Ein Tipp darauf öffnet den
+/// [CafeDebriefScreen]; mit [openDebriefOnEntry] geht er beim Betreten von
+/// selbst auf (Weg „Ins Café" von der Endkarte, §3.2), aber nur einmal pro
+/// Besuch. „Offen oder nicht" wird bei jedem `_load()` neu gelesen — also
+/// auch nach der Rückkehr aus der Nachbesprechung, sodass die Einladung dann
+/// von selbst verschwindet.
 class CafeScreen extends StatefulWidget {
   final LearningDb db;
   final String languageId;
