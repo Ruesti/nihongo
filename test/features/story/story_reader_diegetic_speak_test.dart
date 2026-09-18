@@ -104,6 +104,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
     await tester.pumpAndSettle();
 
