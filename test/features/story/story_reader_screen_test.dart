@@ -1013,6 +1013,8 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsOneWidget);
 
     // Skippable, no gate: dismissing keeps reading available.
@@ -1084,6 +1086,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
     await tester.pumpAndSettle();
@@ -1121,6 +1125,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('story-reaction-caption')), findsNothing);
 
@@ -1162,6 +1168,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-skip')));
@@ -1258,6 +1266,8 @@ void main() {
     expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-trace-sheet')), findsOneWidget);
 
@@ -1392,6 +1402,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
     await tester.pumpAndSettle();
 
     await tester.drag(
@@ -1586,7 +1598,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
-    expect(find.text('Mira braucht Hilfe.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
+    // Der Prompt steht als Hinweis auf dem Panel UND im Blatt — geprueft wird das Blatt.
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('diegetic-speak-sheet')),
+            matching: find.text('Mira braucht Hilfe.')),
+        findsOneWidget);
     expect(find.text('すみません'), findsWidgets); // das Ziel, nicht der Bubble-Text
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
     await tester.pump(kDiegeticSuccessAutoClose);
@@ -1623,7 +1642,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
-    expect(find.text('Rette das Zeichen: め.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('diegetic-trace-sheet')),
+            matching: find.text('Rette das Zeichen: め.')),
+        findsOneWidget);
     await tester.drag(find.byKey(const ValueKey('diegetic-trace-canvas')),
         const Offset(30, 30));
     await tester.tap(find.byKey(const ValueKey('diegetic-trace-done')));

@@ -100,6 +100,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
     await tester.drag(
         find.byKey(const ValueKey('diegetic-trace-canvas')), const Offset(60, 40));
     await tester.pump();

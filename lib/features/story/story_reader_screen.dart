@@ -13,7 +13,10 @@ import 'trace_evaluator.dart';
 /// for the earlier comic-page model (`comic_pack.dart`). Real per-panel
 /// dimensions don't exist yet; every panel currently renders the shared
 /// placeholder image.
-const double _panelAspectRatio = 0.7;
+// Die Folge-01-Panels sind 1080×738 (Querformat). Mit dem Bild-Seitenverhältnis
+// füllt das Panel die volle Breite und wird nicht beschnitten (bei 0.7 gingen
+// die seitlichen Blasen verloren). Gedrehtes Handy: Panel füllt den Schirm.
+const double _panelAspectRatio = 1080 / 738;
 
 /// Axis-aligned bounding box of a bubble's `hitArea` polygon, in the same
 /// normalized 0..1 panel space — the tap target is the box, not the exact
@@ -134,8 +137,6 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     });
     if (resumeMidway) {
       _maybeShowDictionary(clamped);
-      _maybeShowSpeak(clamped);
-      _maybeShowTrace(clamped);
       _maybeFireCompletion(clamped);
     }
   }
@@ -143,8 +144,6 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
   void _beginReading() {
     setState(() => _phase = _ReaderPhase.reading);
     _maybeShowDictionary(_position ?? 0);
-    _maybeShowSpeak(_position ?? 0);
-    _maybeShowTrace(_position ?? 0);
     _maybeFireCompletion(_position ?? 0);
   }
 
@@ -168,8 +167,6 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     setState(() => _position = position);
     widget.progressStore.savePosition(widget.episode.id, position);
     _maybeShowDictionary(position);
-    _maybeShowSpeak(position);
-    _maybeShowTrace(position);
     _maybeFireCompletion(position);
   }
 
@@ -199,6 +196,22 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     );
   }
 
+  /// Die diegetische Interaktion des Panels, solange sie noch aussteht (nicht
+  /// reagiert) und ihr Bewerter verdrahtet ist. Sie wird als Hinweis-Kasten auf
+  /// dem Bild gezeigt; erst ein Tap darauf öffnet das Sprech-/Nachzeichen-Blatt.
+  StoryInteraction? _pendingDiegeticOf(StoryPanel panel, int position) {
+    if (_reactedPositions.contains(position)) return null;
+    final it = _diegeticInteractionOf(panel);
+    if (it == null) return null;
+    if (it.type == InteractionType.speak && widget.speakEvaluator == null) {
+      return null;
+    }
+    if (it.type == InteractionType.trace && widget.traceEvaluator == null) {
+      return null;
+    }
+    return it;
+  }
+
   StoryInteraction? _diegeticInteractionOf(StoryPanel panel) {
     for (final it in panel.interactions) {
       if (it.diegetic &&
@@ -221,7 +234,8 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     return (reacted && reaction != null) ? reaction : panel.asset;
   }
 
-  void _maybeShowSpeak(int position) {
+  /// Öffnet das Sprech-Blatt — nur auf Tap auf den Hinweis-Kasten, nie automatisch.
+  void _openSpeak(int position) {
     final evaluator = widget.speakEvaluator;
     if (evaluator == null) return;
     final panel = _panels[position];
@@ -244,9 +258,8 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final itemIds = interaction.targetItemIds ?? derivedItemIds;
     final taskText = interaction.promptText;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      showModalBottomSheet<void>(
+    if (!mounted) return;
+    showModalBottomSheet<void>(
         context: context,
         builder: (sheetContext) => DiegeticSpeakSheet(
           targetText: targetText,
@@ -260,10 +273,10 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
-    });
   }
 
-  void _maybeShowTrace(int position) {
+  /// Öffnet das Nachzeichen-Blatt — nur auf Tap auf den Hinweis-Kasten, nie automatisch.
+  void _openTrace(int position) {
     final evaluator = widget.traceEvaluator;
     if (evaluator == null) return;
     final panel = _panels[position];
@@ -292,9 +305,8 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         derivedTokens.map((t) => t.itemId!).toList();
     final taskText = interaction.promptText;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      showModalBottomSheet<void>(
+    if (!mounted) return;
+    showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         builder: (sheetContext) => DiegeticTraceSheet(
@@ -308,7 +320,6 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           onSkip: () => Navigator.of(sheetContext).pop(),
         ),
       );
-    });
   }
 
   void _maybeFireCompletion(int position) {
@@ -451,6 +462,53 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                                     style: const TextStyle(
                                         fontStyle: FontStyle.italic)),
                             ],
+                          ),
+                        ),
+                      ),
+                    if (_pendingDiegeticOf(panel, position) != null)
+                      Positioned(
+                        bottom: 8, left: 8, right: 8,
+                        child: GestureDetector(
+                          key: const ValueKey('story-diegetic-prompt'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            final it = _pendingDiegeticOf(panel, position)!;
+                            if (it.type == InteractionType.trace) {
+                              _openTrace(position);
+                            } else {
+                              _openSpeak(position);
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xF2FFF8E7),
+                              border:
+                                  Border.all(color: const Color(0xFF444444)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _pendingDiegeticOf(panel, position)!.type ==
+                                          InteractionType.trace
+                                      ? Icons.edit
+                                      : Icons.mic,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _pendingDiegeticOf(panel, position)!
+                                            .promptText ??
+                                        'Tippen, um mitzumachen',
+                                    style: const TextStyle(
+                                        fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                                const Icon(Icons.touch_app, size: 18),
+                              ],
+                            ),
                           ),
                         ),
                       ),
