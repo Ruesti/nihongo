@@ -11,7 +11,14 @@ import 'package:nihongo_app/features/story/plan/pool_report.dart';
 import 'package:nihongo_app/features/story/plan/vocab_pool_ja.dart';
 
 void main() {
-  stdout.write(renderTerminalReport(vocabPoolJa));
+  if (!Directory('docs/story').existsSync()) {
+    stderr.writeln('docs/story nicht gefunden — bitte aus dem Repo-Wurzelverzeichnis starten.');
+    exitCode = 2;
+    return;
+  }
+
+  stdout.write(renderTerminalReport(vocabPoolJa,
+      expectedTotal: vocabPoolTarget, maxBank: vocabPoolBankMax));
 
   final core = vocabPoolJa.where((e) => e.status != PoolStatus.bank);
   File('docs/story/WORTVORRAT_800.md').writeAsStringSync(renderFullMarkdown(vocabPoolJa));

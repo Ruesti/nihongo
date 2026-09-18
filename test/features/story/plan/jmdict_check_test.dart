@@ -21,6 +21,11 @@ const _xml = '''
 <k_ele><keb>速い</keb></k_ele>
 <r_ele><reb>はやい</reb></r_ele>
 </entry>
+<entry>
+<ent_seq>4</ent_seq>
+<k_ele><keb>勉強</keb></k_ele>
+<r_ele><reb>べんきょう</reb></r_ele>
+</entry>
 </JMdict>
 ''';
 
@@ -47,5 +52,16 @@ void main() {
     ];
     final missing = unmatchedInJmdict(pool, forms).map((e) => e.id).toList();
     expect(missing, ['lex_ja_kasa', 'lex_ja_yukkuri']);
+  });
+
+  test('unmatchedInJmdict matches する-Verben over their stem noun', () async {
+    final forms = await loadJmdictForms(Stream.fromIterable(_xml.split('\n')));
+    final pool = [
+      _e('lex_ja_benkyou_suru', 'べんきょうする', '勉強する'),
+      _e('lex_ja_x_suru', 'えっくすする', 'Ｘする'),
+    ];
+    final missing = unmatchedInJmdict(pool, forms).map((e) => e.id).toList();
+    expect(missing, isNot(contains('lex_ja_benkyou_suru')));
+    expect(missing, contains('lex_ja_x_suru'));
   });
 }

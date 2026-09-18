@@ -44,9 +44,10 @@ void main() {
   });
 
   test('terminal report names the totals', () {
-    final text = renderTerminalReport(_fixture);
+    final text = renderTerminalReport(_fixture, expectedTotal: 4, maxBank: 1);
     expect(text, contains('Kern: 4'));
     expect(text, contains('Bank: 1'));
     expect(text, contains('Folge 01: 1'));
+    expect(text, contains('Regeln: keine Probleme'));
   });
 }

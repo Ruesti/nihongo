@@ -127,11 +127,12 @@ String renderSampleMarkdown(List<PoolEntry> sample) {
 }
 
 /// Terminal-Bericht: Zahlen, Probleme, Verteilung, Kanji-Vorschau.
-String renderTerminalReport(List<PoolEntry> all) {
+String renderTerminalReport(List<PoolEntry> all,
+    {int expectedTotal = 800, int maxBank = 40}) {
   final core = all.where((e) => e.status != PoolStatus.bank).toList();
   final bank = all.length - core.length;
   final folge01 = core.where((e) => e.plannedEpisode == 1).length;
-  final problems = checkPool(all, expectedTotal: 800, maxBank: 40);
+  final problems = checkPool(all, expectedTotal: expectedTotal, maxBank: maxBank);
   final b = StringBuffer()
     ..writeln('Wortvorrat — Kern: ${core.length}  Bank: $bank  Folge 01: $folge01')
     ..writeln(problems.isEmpty ? 'Regeln: keine Probleme' : 'Regeln: ${problems.length} Probleme')

@@ -16,6 +16,6 @@ const Map<String, String> legacyExclusions = {
   // Feld (z. B. reading „しよん"), der Vorrat führt pro Zahl nur die im
   // Alltag gebräuchliche Lesung als eigenen Eintrag.
   'shi': 'andere Lesung von lex_ja_yon im Vorrat',
-  'nana': 'andere Lesung von lex_ja_nana im Vorrat',
+  'nana': 'alte Zeile führt なな/しち in einem Feld; der Vorrat führt なな (lex_ja_nana)',
   'ku': 'andere Lesung von lex_ja_kyuu im Vorrat',
 };

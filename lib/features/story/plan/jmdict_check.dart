@@ -43,13 +43,20 @@ Future<JmdictForms> loadJmdictForms(Stream<String> lines) async {
 }
 
 /// Einträge, deren Schreibung+Lesung (oder Lesung allein bei Kana-Wörtern)
-/// JMdict nicht kennt. Reihenfolge wie im Vorrat.
+/// JMdict nicht kennt. する-Verben gelten auch als gefunden, wenn der Stamm
+/// ohne する als Paar in JMdict steht (JMdict führt meist nur das Nomen).
+/// Reihenfolge wie im Vorrat.
 List<PoolEntry> unmatchedInJmdict(Iterable<PoolEntry> pool, JmdictForms forms) {
-  return [
-    for (final e in pool)
-      if (e.written.isEmpty
-          ? !forms.readings.contains(e.kana)
-          : !forms.pairs.contains('${e.written}|${e.kana}'))
-        e,
-  ];
+  bool isKnown(PoolEntry e) {
+    if (e.written.isEmpty) return forms.readings.contains(e.kana);
+    if (forms.pairs.contains('${e.written}|${e.kana}')) return true;
+    if (e.written.endsWith('する') && e.kana.endsWith('する')) {
+      final writtenStem = e.written.substring(0, e.written.length - 'する'.length);
+      final kanaStem = e.kana.substring(0, e.kana.length - 'する'.length);
+      if (forms.pairs.contains('$writtenStem|$kanaStem')) return true;
+    }
+    return false;
+  }
+
+  return [for (final e in pool) if (!isKnown(e)) e];
 }
