@@ -31,5 +31,14 @@ void main() {
     expect(kana, isNot(contains('ありがとうございます')));
     expect(kana, isNot(contains('ほんとうに')));
     expect(kana, isNot(contains('おはようございます')));
+    expect(kana, isNot(contains('わかりました')));
+    expect(kana, isNot(contains('がんばって')));
+    // すみません ist eine feste Ausdrucksform (Folge-01-Wort, "Entschuldigung"),
+    // keine frei konjugierte höfliche Verbform wie わかりました; bleibt hier
+    // bewusst ausgenommen.
+    final politeForms = kana.where((k) =>
+        (k.endsWith('ました') || k.endsWith('ません')) && k != 'すみません');
+    expect(politeForms, isEmpty,
+        reason: 'höfliche Verbformen sind keine Items');
   });
 }

@@ -65,7 +65,7 @@ const List<PoolEntry> vocabPoolJaMenschen = [
   PoolEntry(id: 'lex_ja_yubi', kana: 'ゆび', written: '指', meaningDe: 'Finger', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
   PoolEntry(id: 'lex_ja_kami_hair', kana: 'かみ', written: '髪', meaningDe: 'Haar', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
   PoolEntry(id: 'lex_ja_onaka', kana: 'おなか', written: 'お腹', meaningDe: 'Bauch', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
-  PoolEntry(id: 'lex_ja_se', kana: 'せ', written: '背', meaningDe: 'Rücken, Körpergröße', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
+  PoolEntry(id: 'lex_ja_se', kana: 'せ', written: '背', meaningDe: 'Körpergröße, Rücken', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
   PoolEntry(id: 'lex_ja_koe', kana: 'こえ', written: '声', meaningDe: 'Stimme', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
   PoolEntry(id: 'lex_ja_chikara', kana: 'ちから', written: '力', meaningDe: 'Kraft', pos: PartOfSpeech.nomen, domain: VocabDomain.koerper),
   PoolEntry(id: 'lex_ja_genki', kana: 'げんき', written: '元気', meaningDe: 'munter, gesund', pos: PartOfSpeech.naAdjektiv, domain: VocabDomain.gefuehl),

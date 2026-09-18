@@ -11,37 +11,37 @@
 | [ ] | Zeit | なつ | 夏 | Sommer | nomen |
 | [ ] | Zeit | きょねん | 去年 | letztes Jahr | nomen |
 | [ ] | Café und Essen | ぎゅうにゅう | 牛乳 | Milch | nomen |
-| [ ] | Café und Essen | うどん |  | Udon-Nudeln | nomen |
-| [ ] | Café und Essen | きっさてん | 喫茶店 | Café | nomen |
-| [ ] | Café und Essen | カップ |  | Tasse | nomen |
+| [ ] | Café und Essen | ラーメン |  | Ramen | nomen |
+| [ ] | Café und Essen | テーブル |  | Tisch | nomen |
+| [ ] | Café und Essen | メニュー |  | Speisekarte | nomen |
 | [ ] | Café und Essen | ばんごはん | 晩ご飯 | Abendessen | nomen |
-| [ ] | Café und Essen | みかん |  | Mandarine | nomen |
-| [ ] | Einkaufen | ほんや | 本屋 | Buchladen | nomen |
-| [ ] | Menschen | ドイツじん | ドイツ人 | Deutscher | nomen |
-| [ ] | Menschen | かれ | 彼 | er | pronomen |
-| [ ] | Familie | おねえさん | お姉さん | ältere Schwester | nomen |
-| [ ] | Orte | みぎ | 右 | rechts | nomen |
-| [ ] | Orte | まち | 町 | Stadt, Viertel | nomen |
-| [ ] | Orte | なか | 中 | innen, Mitte | nomen |
-| [ ] | Orte | おてら | お寺 | Tempel | nomen |
-| [ ] | Haus | うち |  | Zuhause | nomen |
-| [ ] | Verkehr | りょこう | 旅行 | Reise | nomen |
-| [ ] | Verkehr | バス |  | Bus | nomen |
-| [ ] | Verben | てつだう | 手伝う | helfen | verb |
-| [ ] | Verben | あびる | 浴びる | duschen | verb |
-| [ ] | Adjektive | つめたい | 冷たい | kalt (Sache) | iAdjektiv |
-| [ ] | Adjektive | くろい | 黒い | schwarz | iAdjektiv |
-| [ ] | Adjektive | たかい | 高い | hoch, teuer | iAdjektiv |
-| [ ] | Adjektive | いそがしい | 忙しい | beschäftigt | iAdjektiv |
-| [ ] | Adjektive | おもい | 重い | schwer (Gewicht) | iAdjektiv |
-| [ ] | Adverbien | ずっと |  | die ganze Zeit | adverb |
-| [ ] | Adverbien | すぐ |  | sofort | adverb |
-| [ ] | Adverbien | とても |  | sehr | adverb |
+| [ ] | Café und Essen | くだもの | 果物 | Obst | nomen |
+| [ ] | Einkaufen | スーパー |  | Supermarkt | nomen |
+| [ ] | Menschen | がいこくじん | 外国人 | Ausländer | nomen |
+| [ ] | Menschen | わたし | 私 | ich | pronomen |
+| [ ] | Familie | はは | 母 | meine Mutter | nomen |
+| [ ] | Orte | ひがし | 東 | Osten | nomen |
+| [ ] | Orte | うえ | 上 | oben | nomen |
+| [ ] | Orte | にほん | 日本 | Japan | nomen |
+| [ ] | Orte | ホテル |  | Hotel | nomen |
+| [ ] | Verkehr | きっぷ | 切符 | Fahrkarte | nomen |
+| [ ] | Verkehr | でんしゃ | 電車 | Zug | nomen |
+| [ ] | Verben | みつける | 見つける | finden | verb |
+| [ ] | Verben | さんぽする | 散歩する | spazieren gehen | verb |
+| [ ] | Adjektive | よわい | 弱い | schwach | iAdjektiv |
+| [ ] | Adjektive | まるい | 丸い | rund | iAdjektiv |
+| [ ] | Adjektive | いい |  | gut | iAdjektiv |
+| [ ] | Adjektive | やさしい | 易しい | einfach | iAdjektiv |
+| [ ] | Adjektive | ひろい | 広い | weit, geräumig | iAdjektiv |
+| [ ] | Adverbien | たいてい |  | meistens | adverb |
+| [ ] | Adverbien | もう |  | schon | adverb |
+| [ ] | Fragewörter und Pronomen | あそこ |  | dort drüben | pronomen |
 | [ ] | Fragewörter und Pronomen | なんようび | 何曜日 | welcher Wochentag | pronomen |
-| [ ] | Ausdrücke | いただきます |  | guten Appetit | ausdruck |
-| [ ] | Ausdrücke | おはよう |  | guten Morgen | ausdruck |
-| [ ] | Ausdrücke | そうですね |  | ja, stimmt | ausdruck |
-| [ ] | Ausdrücke | またね |  | bis dann | ausdruck |
+| [ ] | Ausdrücke | おねがいします | お願いします | bitte (ich bitte darum) | ausdruck |
+| [ ] | Ausdrücke | ほんとう | 本当 | wirklich | ausdruck |
+| [ ] | Ausdrücke | そう |  | so, genau | ausdruck |
+| [ ] | Ausdrücke | さようなら |  | auf Wiedersehen | ausdruck |
+| [ ] | Ausdrücke | だめ |  | geht nicht | naAdjektiv |
 | [ ] | Werkstatt | いた | 板 | Brett | nomen |
 | [ ] | Werkstatt | テープ |  | Klebeband | nomen |
 | [ ] | Werkstatt | きかい | 機械 | Maschine | nomen |

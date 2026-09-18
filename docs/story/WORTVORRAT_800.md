@@ -117,7 +117,7 @@
 | やすみ | 休み | Ruhetag, frei | nomen |  |
 | きせつ | 季節 | Jahreszeit | nomen | Bank |
 
-## Café und Essen (63)
+## Café und Essen (66)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -135,6 +135,8 @@
 | あさごはん | 朝ご飯 | Frühstück | nomen |  |
 | ひるごはん | 昼ご飯 | Mittagessen | nomen |  |
 | ばんごはん | 晩ご飯 | Abendessen | nomen |  |
+| たべもの | 食べ物 | Essen, Lebensmittel | nomen |  |
+| のみもの | 飲み物 | Getränk | nomen |  |
 | たまご | 卵 | Ei | nomen |  |
 | さかな | 魚 | Fisch | nomen |  |
 | にく | 肉 | Fleisch | nomen |  |
@@ -176,13 +178,14 @@
 | あじ | 味 | Geschmack | nomen |  |
 | こおり | 氷 | Eis (gefroren) | nomen |  |
 | たばこ |  | Zigarette | nomen |  |
+| ちゅうもん | 注文 | Bestellung | nomen |  |
 | たまねぎ | 玉ねぎ | Zwiebel | nomen | Bank |
 | じゃがいも |  | Kartoffel | nomen | Bank |
 | にんじん |  | Karotte | nomen | Bank |
 | いちご |  | Erdbeere | nomen | Bank |
 | ぶどう |  | Traube | nomen | Bank |
 | もも | 桃 | Pfirsich | nomen | Bank |
-| おちゃわん | お茶碗 | Reisschale | nomen | Bank |
+| ちゃわん | 茶碗 | Reisschale | nomen | Bank |
 | はいざら | 灰皿 | Aschenbecher | nomen | Bank |
 
 ## Einkaufen (21)
@@ -211,7 +214,7 @@
 | カード |  | Karte | nomen |  |
 | レシート |  | Kassenbon | nomen |  |
 
-## Kleidung (20)
+## Kleidung (19)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -225,10 +228,9 @@
 | くつした | 靴下 | Socken | nomen |  |
 | ぼうし | 帽子 | Hut, Mütze | nomen |  |
 | かばん |  | Tasche | nomen |  |
-| ポケット |  | Hosentasche | nomen |  |
+| ポケット |  | Tasche (an Kleidung) | nomen |  |
 | ハンカチ |  | Taschentuch | nomen |  |
 | めがね | 眼鏡 | Brille | nomen |  |
-| とけい | 時計 | Uhr | nomen |  |
 | かさ | 傘 | Schirm | nomen | Folge 01 |
 | ネクタイ |  | Krawatte | nomen | Bank |
 | ワイシャツ |  | Anzughemd | nomen | Bank |
@@ -236,7 +238,7 @@
 | ゆかた | 浴衣 | Sommerkimono | nomen | Bank |
 | きもの | 着物 | Kimono | nomen | Bank |
 
-## Menschen (26)
+## Menschen (27)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -266,6 +268,7 @@
 | がいこくじん | 外国人 | Ausländer | nomen |  |
 | にほんじん | 日本人 | Japaner | nomen |  |
 | ドイツじん | ドイツ人 | Deutscher | nomen |  |
+| わたしたち | 私たち | wir | pronomen |  |
 
 ## Familie (21)
 
@@ -310,7 +313,7 @@
 | ゆび | 指 | Finger | nomen |  |
 | かみ | 髪 | Haar | nomen |  |
 | おなか | お腹 | Bauch | nomen |  |
-| せ | 背 | Rücken, Körpergröße | nomen |  |
+| せ | 背 | Körpergröße, Rücken | nomen |  |
 | こえ | 声 | Stimme | nomen |  |
 | ちから | 力 | Kraft | nomen |  |
 | つめ | 爪 | Fingernagel | nomen | Bank |
@@ -331,13 +334,10 @@
 | しんぱい | 心配 | Sorge | nomen |  |
 | なみだ | 涙 | Träne | nomen |  |
 
-## Orte (49)
+## Orte (46)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
-| ここ |  | hier | pronomen | Folge 01 |
-| そこ |  | dort | pronomen |  |
-| あそこ |  | dort drüben | pronomen |  |
 | みぎ | 右 | rechts | nomen |  |
 | ひだり | 左 | links | nomen |  |
 | まえ | 前 | vorne, vorher | nomen |  |
@@ -438,8 +438,8 @@
 | かぜ | 風 | Wind | nomen |  |
 | くも | 雲 | Wolke | nomen |  |
 | そら | 空 | Himmel | nomen |  |
-| はれ | 晴れ | Sonnenschein | nomen |  |
-| くもり | 曇り | bewölkt | nomen |  |
+| はれ | 晴れ | heiteres Wetter | nomen |  |
+| くもり | 曇り | bedecktes Wetter | nomen |  |
 | たいふう | 台風 | Taifun | nomen |  |
 | さむい | 寒い | kalt (Wetter) | iAdjektiv | Folge 01 |
 | あつい | 暑い | heiß (Wetter) | iAdjektiv |  |
@@ -633,7 +633,7 @@
 | あまい | 甘い | süß | iAdjektiv |  |
 | からい | 辛い | scharf | iAdjektiv |  |
 | いたい | 痛い | schmerzhaft | iAdjektiv |  |
-| たのしい | 楽しい | vergnüglich | iAdjektiv |  |
+| たのしい | 楽しい | schön, macht Spaß | iAdjektiv |  |
 | うれしい | 嬉しい | froh | iAdjektiv |  |
 | かなしい | 悲しい | traurig | iAdjektiv |  |
 | さびしい | 寂しい | einsam | iAdjektiv |  |
@@ -703,10 +703,10 @@
 | ぜんぶ | 全部 | alles | adverb |  |
 | まっすぐ |  | geradeaus | adverb |  |
 | たいてい |  | meistens | adverb |  |
-| いちばん | 一番 | am meisten | adverb |  |
+| いちばん | 一番 | am meisten, Nummer eins | adverb |  |
 | ずっと |  | die ganze Zeit | adverb |  |
 
-## Fragewörter und Pronomen (25)
+## Fragewörter und Pronomen (28)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -716,6 +716,9 @@
 | なんようび | 何曜日 | welcher Wochentag | pronomen |  |
 | なんがつ | 何月 | welcher Monat | pronomen |  |
 | なんにち | 何日 | welcher Tag | pronomen |  |
+| ここ |  | hier | pronomen | Folge 01 |
+| そこ |  | dort | pronomen |  |
+| あそこ |  | dort drüben | pronomen |  |
 | どこ |  | wo | pronomen |  |
 | なに | 何 | was | pronomen |  |
 | だれ | 誰 | wer | pronomen |  |
@@ -726,7 +729,7 @@
 | どんな |  | was für ein | pronomen |  |
 | どの |  | welcher | pronomen |  |
 | どれ |  | welches | pronomen |  |
-| どちら |  | welche Seite | pronomen |  |
+| どちら |  | welches (von zweien), wohin (höflich) | pronomen |  |
 | いくら |  | wie viel (kostet) | pronomen | Folge 01 |
 | これ |  | das hier | pronomen | Folge 01 |
 | それ |  | das da | pronomen |  |
@@ -736,7 +739,7 @@
 | あの |  | jener | pronomen |  |
 | こんな |  | so ein | pronomen |  |
 
-## Ausdrücke (48)
+## Ausdrücke (46)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -777,10 +780,8 @@
 | いってらっしゃい |  | komm gut zurück | ausdruck |  |
 | おめでとう |  | Glückwunsch | ausdruck |  |
 | きをつけて | 気をつけて | pass auf | ausdruck |  |
-| がんばって |  | streng dich an | ausdruck |  |
 | そう |  | so, genau | ausdruck |  |
 | そうですね |  | ja, stimmt | ausdruck |  |
-| わかりました | 分かりました | verstanden | ausdruck |  |
 | しつれいします | 失礼します | entschuldigen Sie | ausdruck |  |
 | おつかれさま | お疲れさま | danke für die Mühe | ausdruck |  |
 | はじめまして |  | freut mich | ausdruck |  |
@@ -797,7 +798,7 @@
 | いと | 糸 | Faden | nomen |  |
 | はさみ |  | Schere | nomen |  |
 | ボタン |  | Knopf | nomen |  |
-| ほね | 骨 | Strebe, Knochen | nomen |  |
+| ほね | 骨 | Knochen, Strebe (Schirm) | nomen |  |
 | ぬの | 布 | Stoff | nomen |  |
 | テープ |  | Klebeband | nomen |  |
 | ひも |  | Schnur | nomen |  |
@@ -815,7 +816,7 @@
 | くぎ | 釘 | Nagel (Werkstatt) | nomen |  |
 | いた | 板 | Brett | nomen |  |
 
-## Post und Telefon (24)
+## Post und Telefon (15)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -834,17 +835,8 @@
 | ポスト |  | Briefkasten | nomen |  |
 | しんぶん | 新聞 | Zeitung | nomen |  |
 | ざっし | 雑誌 | Zeitschrift | nomen |  |
-| テレビ |  | Fernseher | nomen |  |
-| ラジオ |  | Radio | nomen |  |
-| ニュース |  | Nachrichten | nomen |  |
-| カメラ |  | Kamera | nomen |  |
-| しゃしん | 写真 | Foto | nomen |  |
-| フィルム |  | Film (Kamera) | nomen |  |
-| ビデオ |  | Video | nomen |  |
-| カセット |  | Kassette | nomen |  |
-| レコード |  | Schallplatte | nomen |  |
 
-## Schule (23)
+## Schule (21)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
@@ -862,14 +854,12 @@
 | じしょ | 辞書 | Wörterbuch | nomen |  |
 | こくばん | 黒板 | Tafel | nomen |  |
 | クラス |  | Klasse | nomen |  |
-| れきし | 歴史 | Geschichte (Fach) | nomen |  |
 | れんしゅう | 練習 | Übung | nomen |  |
 | べんきょう | 勉強 | das Lernen | nomen |  |
 | もんだい | 問題 | Problem, Aufgabe | nomen |  |
 | こたえ | 答え | Antwort | nomen |  |
 | しつもん | 質問 | Frage | nomen |  |
 | ページ |  | Seite (Buch) | nomen |  |
-| てん | 点 | Punkt | nomen |  |
 | ボールペン |  | Kugelschreiber | nomen | Bank |
 
 ## Sprache (13)
@@ -890,10 +880,20 @@
 | かいわ | 会話 | Gespräch | nomen |  |
 | ぶん | 文 | Satz | nomen |  |
 
-## Dinge (56)
+## Dinge (66)
 
 | Kana | Schreibung | Bedeutung | Wortart | Stand |
 |---|---|---|---|---|
+| とけい | 時計 | Uhr | nomen |  |
+| テレビ |  | Fernseher | nomen |  |
+| ラジオ |  | Radio | nomen |  |
+| ニュース |  | Nachrichten | nomen |  |
+| カメラ |  | Kamera | nomen |  |
+| しゃしん | 写真 | Foto | nomen |  |
+| フィルム |  | Film (Kamera) | nomen |  |
+| ビデオ |  | Video | nomen |  |
+| カセット |  | Kassette | nomen |  |
+| レコード |  | Schallplatte | nomen |  |
 | えいが | 映画 | Film (Kino) | nomen |  |
 | おんがく | 音楽 | Musik | nomen |  |
 | うた | 歌 | Lied | nomen |  |

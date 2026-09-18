@@ -5,9 +5,9 @@
 import 'pool_entry.dart';
 
 const List<PoolEntry> vocabPoolJaOrteWetter = [
-  PoolEntry(id: 'lex_ja_koko', kana: 'ここ', meaningDe: 'hier', pos: PartOfSpeech.pronomen, domain: VocabDomain.orte, plannedEpisode: 1, status: PoolStatus.ausgeliefert),
-  PoolEntry(id: 'lex_ja_soko', kana: 'そこ', meaningDe: 'dort', pos: PartOfSpeech.pronomen, domain: VocabDomain.orte),
-  PoolEntry(id: 'lex_ja_asoko', kana: 'あそこ', meaningDe: 'dort drüben', pos: PartOfSpeech.pronomen, domain: VocabDomain.orte),
+  PoolEntry(id: 'lex_ja_koko', kana: 'ここ', meaningDe: 'hier', pos: PartOfSpeech.pronomen, domain: VocabDomain.fragen, plannedEpisode: 1, status: PoolStatus.ausgeliefert),
+  PoolEntry(id: 'lex_ja_soko', kana: 'そこ', meaningDe: 'dort', pos: PartOfSpeech.pronomen, domain: VocabDomain.fragen),
+  PoolEntry(id: 'lex_ja_asoko', kana: 'あそこ', meaningDe: 'dort drüben', pos: PartOfSpeech.pronomen, domain: VocabDomain.fragen),
   PoolEntry(id: 'lex_ja_doko', kana: 'どこ', meaningDe: 'wo', pos: PartOfSpeech.pronomen, domain: VocabDomain.fragen),
   PoolEntry(id: 'lex_ja_migi', kana: 'みぎ', written: '右', meaningDe: 'rechts', pos: PartOfSpeech.nomen, domain: VocabDomain.orte),
   PoolEntry(id: 'lex_ja_hidari', kana: 'ひだり', written: '左', meaningDe: 'links', pos: PartOfSpeech.nomen, domain: VocabDomain.orte),
@@ -84,8 +84,8 @@ const List<PoolEntry> vocabPoolJaOrteWetter = [
   PoolEntry(id: 'lex_ja_kaze_wind', kana: 'かぜ', written: '風', meaningDe: 'Wind', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
   PoolEntry(id: 'lex_ja_kumo', kana: 'くも', written: '雲', meaningDe: 'Wolke', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
   PoolEntry(id: 'lex_ja_sora', kana: 'そら', written: '空', meaningDe: 'Himmel', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
-  PoolEntry(id: 'lex_ja_hare', kana: 'はれ', written: '晴れ', meaningDe: 'Sonnenschein', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
-  PoolEntry(id: 'lex_ja_kumori', kana: 'くもり', written: '曇り', meaningDe: 'bewölkt', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
+  PoolEntry(id: 'lex_ja_hare', kana: 'はれ', written: '晴れ', meaningDe: 'heiteres Wetter', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
+  PoolEntry(id: 'lex_ja_kumori', kana: 'くもり', written: '曇り', meaningDe: 'bedecktes Wetter', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
   PoolEntry(id: 'lex_ja_taifuu', kana: 'たいふう', written: '台風', meaningDe: 'Taifun', pos: PartOfSpeech.nomen, domain: VocabDomain.wetter),
   PoolEntry(id: 'lex_ja_samui', kana: 'さむい', written: '寒い', meaningDe: 'kalt (Wetter)', pos: PartOfSpeech.iAdjektiv, domain: VocabDomain.wetter, plannedEpisode: 1, status: PoolStatus.ausgeliefert),
   PoolEntry(id: 'lex_ja_atsui_weather', kana: 'あつい', written: '暑い', meaningDe: 'heiß (Wetter)', pos: PartOfSpeech.iAdjektiv, domain: VocabDomain.wetter),
