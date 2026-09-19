@@ -203,6 +203,7 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
                   sceneAsset(CafeMotif.wirtinTisch, _light),
                   key: const ValueKey('cafe-debrief-band'),
                   fit: BoxFit.cover,
+                  excludeFromSemantics: true,
                   errorBuilder: (_, _, _) =>
                       Container(color: const Color(0xFF2A3035)),
                 ),

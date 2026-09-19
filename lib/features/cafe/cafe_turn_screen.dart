@@ -116,6 +116,8 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
         asset,
         key: const ValueKey('cafe-turn-scene'),
         fit: BoxFit.cover,
+        gaplessPlayback: true,
+        excludeFromSemantics: true,
         errorBuilder: (_, _, _) => Container(color: const Color(0xFF2A3035)),
       ),
     );

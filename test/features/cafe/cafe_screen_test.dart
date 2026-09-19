@@ -17,9 +17,14 @@ void main() {
     await db.close();
   });
 
-  String assetOf(WidgetTester tester, String key) =>
-      (tester.widget<Image>(find.byKey(ValueKey(key))).image as AssetImage)
-          .assetName;
+  // Eine Miniatur trägt seit D1 (Final-Review 19.9.) ein `cacheWidth` und
+  // damit einen ResizeImage-Provider statt eines nackten AssetImage —
+  // durchgreifen auf den zugrundeliegenden Provider.
+  String assetOf(WidgetTester tester, String key) {
+    final p = tester.widget<Image>(find.byKey(ValueKey(key))).image;
+    final a = p is ResizeImage ? p.imageProvider : p;
+    return (a as AssetImage).assetName;
+  }
 
   testWidgets('nothing due → the café is calmly empty, with no count or '
       '"0 due" message', (tester) async {

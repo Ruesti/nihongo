@@ -63,9 +63,6 @@ const Map<CafeMotif, Set<CafeLight>> cafeSceneLibrary = {
 String _path(CafeMotif motif, CafeLight light) =>
     '$cafeSceneDir/${motif.stem}_${light.name}.jpg';
 
-bool hasScene(CafeMotif motif, CafeLight light) =>
-    cafeSceneLibrary[motif]?.contains(light) ?? false;
-
 /// Rückfallkette über einer beliebigen Tabelle (testbar ohne die echte):
 /// gewünscht → Stammplatz des Gastes im Licht → Stammplatz bei Tag → `leer`
 /// bei Tag. Liefert immer einen Pfad; ob die Datei existiert, sichert der

@@ -73,16 +73,25 @@ class _CafeScreenState extends State<CafeScreen> {
   bool _debriefPending = false;
   bool _autoOpened = false;
 
-  late final CafeLight _light = widget.light ?? lightFor(DateTime.now());
+  /// Nicht `late final`: jedes `_load()` (auch nach Rückkehr aus einem Turn
+  /// oder der Nachbesprechung) liest die Uhr neu, sonst bliebe das Licht auf
+  /// dem Stand des ersten Betretens eingefroren (Final-Review 19.9., D2).
+  late CafeLight _light;
 
   /// Szene; fehlendes Asset → neutrale Fläche, nie Crash (CLAUDE.md §6).
-  static Widget _scene(String asset, {required String keyName, double? height}) =>
+  /// [cacheWidth] lässt Miniaturen ihre Zielgröße statt des vollen Bilds
+  /// dekodieren (Final-Review 19.9., D1) — Kopfbild und Leerzustand lassen
+  /// ihn weg (volle Breite).
+  static Widget _scene(String asset,
+          {required String keyName, double? height, int? cacheWidth}) =>
       Image.asset(
         asset,
         key: ValueKey(keyName),
         height: height,
         width: double.infinity,
         fit: BoxFit.cover,
+        cacheWidth: cacheWidth,
+        excludeFromSemantics: true,
         errorBuilder: (_, _, _) => Container(
           height: height ?? 160,
           color: const Color(0xFF2A3035),
@@ -92,6 +101,7 @@ class _CafeScreenState extends State<CafeScreen> {
   @override
   void initState() {
     super.initState();
+    _light = widget.light ?? lightFor(DateTime.now());
     _load();
   }
 
@@ -100,6 +110,7 @@ class _CafeScreenState extends State<CafeScreen> {
     final pending = await _isDebriefPending();
     if (!mounted) return;
     setState(() {
+      _light = widget.light ?? lightFor(DateTime.now());
       _debriefPending = pending;
       _occupancy = CafeOccupancy.fromDueItems(due, pendingDebrief: pending);
     });
@@ -183,7 +194,10 @@ class _CafeScreenState extends State<CafeScreen> {
                             child: _scene(
                                 sceneAsset(stammplatzOf(guest), _light),
                                 keyName: 'cafe-scene-guest-${guest.name}',
-                                height: 64),
+                                height: 64,
+                                cacheWidth:
+                                    (96 * MediaQuery.devicePixelRatioOf(context))
+                                        .round()),
                           ),
                           title: Text(_labels[guest]!),
                           subtitle: guest == CafeGuest.wirtin && _debriefPending
