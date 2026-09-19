@@ -199,7 +199,7 @@ entwirft, Uli liest gegen — wie beim Erklärungsblock der Nachbesprechungs-Spe
 
 (Nachtrag Final-Review 19.9.: Schreib-Zeilen für alle vier, weil in der
 Nachbesprechung jeder Sprecher ein Sprosse-3-Item treffen kann; die Wirtin hat
-außerdem 3 Einstiegszeilen für den Rückblock — 57 neue Zeilen insgesamt.)
+außerdem 3 Einstiegszeilen für den Rückblock — 54 neue Zeilen insgesamt (die 3 Einstiege der Wirtin sind in den 9 Einstiegen enthalten).)
 
 Die 31 vorhandenen Reaktionszeilen und die 6 Vorlagen für Vielredner-Monolog
 (Sprosse 4) und Gleichaltrige-Eröffnung (Sprosse 5) bleiben. **Präzisierung aus dem
