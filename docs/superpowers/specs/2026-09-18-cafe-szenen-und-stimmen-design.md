@@ -1,7 +1,7 @@
 # Design: Café-Szenen und Stimmen — das Café sieht aus wie ein Ort und klingt wie mehrere Menschen
 
 **Datum:** 2026-09-18
-**Status:** Entwurf — wartet auf Ulis Review. Drei Entscheidungen sind offen (§3); die
+**Status:** Von Uli am 19.9. freigegeben („weiter mit den Empfehlungen"): alle drei Annahmen in §3 gelten. Ursprünglich: Entwurf mit drei offenen Entscheidungen (§3); die
 Spec ist mit Claudes Empfehlung als Annahme geschrieben und ändert sich an genau
 diesen drei Stellen, falls Uli anders entscheidet.
 **Anlass:** Ulis Gerätetest der Nachbesprechung (PR #48) auf dem S23, 18.9.: *„Im
