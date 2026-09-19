@@ -149,6 +149,58 @@ void main() {
         scriptFor(CafeGuest.schulkind).entry(1));
   });
 
+  testWidgets('ein übersprungenes Item (fehlende Lexem-Zeile) verschluckt '
+      'den Blockwechsel nicht (Final-Review F4)', (tester) async {
+    // Ghost-Item wie in cafe_debrief_screen_test „ohne Lexem-Zeile wird
+    // übersprungen": ein Karteikasten-Eintrag ohne passende Lexem-Zeile.
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ghost',
+        rung: 1);
+    final ghost = (await db.getLearnItem('lang_ja:lexeme:lex_ja_ghost'))!;
+
+    await db.into(db.concepts).insert(ConceptsCompanion.insert(
+        id: 'concept_4',
+        glossKey: 'gloss_4',
+        partOfSpeech: 'noun',
+        defaultAssetType: const Value('image')));
+    await db.into(db.lexemes).insert(LexemesCompanion.insert(
+        id: 'lex_ja_4',
+        languageId: 'lang_ja',
+        conceptId: 'concept_4',
+        writtenForm: 'そら',
+        reading: 'そら'));
+    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_4',
+        rung: 1);
+    final fifth = (await db.getLearnItem('lang_ja:lexeme:lex_ja_4'))!;
+
+    final queue = [...items.sublist(0, 3), ghost, fifth];
+
+    await tester.pumpWidget(MaterialApp(
+      home: CafeTurnScreen(
+        db: db,
+        guest: CafeGuest.wirtin,
+        initialQueue: queue,
+        speakers: const [
+          CafeGuest.wirtin,
+          CafeGuest.wirtin,
+          CafeGuest.wirtin,
+          CafeGuest.schulkind,
+          CafeGuest.schulkind,
+        ],
+        doneLine: 'Ende.',
+      ),
+    ));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await answerKnown(tester);
+    }
+    // Item 4 (Index 3) fehlt die Lexem-Zeile und wird übersprungen — Item 5
+    // (Index 4, Schulkind) muss trotzdem Übergabe und Einstieg zeigen; der
+    // übersprungene Turn darf den Wechsel nicht verschlucken.
+    expect(find.widgetWithText(AppBar, 'Das Schulkind'), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-turn-handover')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-turn-entry')), findsOneWidget);
+  });
+
   testWidgets('ein Plan falscher Länge wird ignoriert — Wirtin überall',
       (tester) async {
     await tester.pumpWidget(screen(speakers: const [CafeGuest.schulkind]));

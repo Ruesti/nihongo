@@ -83,6 +83,13 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   /// Sprechers), als (Key, Text). Leer, wenn kein Wechsel ansteht.
   List<(String, String)> _blockIntro = const [];
 
+  /// Der zuletzt tatsächlich gerenderte Sprecher (Final-Review 19.9., F4).
+  /// `isSpeakerChange` (cafe_speaker_plan.dart) vergleicht Index-Nachbarn im
+  /// Plan — überspringt `_prepareTurn` ein Item ohne Inhalt, verglich das
+  /// mit dem übersprungenen Turn und verschluckte so den Wechsel. Der
+  /// Vergleich mit dem zuletzt GERENDERTEN Sprecher übersteht das.
+  CafeGuest? _lastRenderedSpeaker;
+
   CafeGuest get _speaker =>
       _index < _speakers.length ? _speakers[_index] : widget.guest;
 
@@ -162,13 +169,16 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
           episode: episodeIntroducing(widget.episodes, item.refId));
       if (!mounted) return;
     }
+    final speaker = _speaker;
     final intro = <(String, String)>[];
-    if (isSpeakerChange(_speakers, _index)) {
-      if (_speakers[_index - 1] == CafeGuest.wirtin) {
+    final speakerChanged =
+        _lastRenderedSpeaker != null && speaker != _lastRenderedSpeaker;
+    if (speakerChanged) {
+      if (_lastRenderedSpeaker == CafeGuest.wirtin) {
         intro.add(('cafe-turn-handover',
             wirtinHandoverLine(widget.lineOffset + _index ~/ cafeBlockSize)));
       }
-      final entry = scriptFor(_speakers[_index]).entry(
+      final entry = scriptFor(speaker).entry(
           widget.lineOffset + speakerBlockOrdinal(_speakers, _index));
       if (entry != null) intro.add(('cafe-turn-entry', entry));
     }
@@ -180,6 +190,7 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
       _revealed = false;
       _followUp = null;
       _input.clear();
+      _lastRenderedSpeaker = speaker;
     });
   }
 
