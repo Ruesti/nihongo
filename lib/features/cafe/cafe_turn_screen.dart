@@ -9,6 +9,7 @@ import 'cafe_debrief_card.dart';
 import 'cafe_guest_script.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
+import 'cafe_speaker_plan.dart';
 import 'cafe_turn.dart';
 
 /// One guest's café turns (brief §4.5). Drives the guest's due SM-2 items:
@@ -37,6 +38,12 @@ class CafeTurnScreen extends StatefulWidget {
   /// Besuch: alle gebündelten). Leer = Karte zeigt, was sie hat (§3.5).
   final List<Episode> episodes;
 
+  /// Sprecher je Turn der Warteschlange (Spec Café-Szenen-und-Stimmen
+  /// §3.1): die Nachbesprechung übergibt `speakerPlan(...)`, der normale
+  /// Besuch nichts. Null oder falsche Länge = überall [guest] wie bisher.
+  /// Die Stimme ändert nie die Übungsform (§6) — die kommt aus der Sprosse.
+  final List<CafeGuest>? speakers;
+
   const CafeTurnScreen({
     super.key,
     required this.db,
@@ -46,6 +53,7 @@ class CafeTurnScreen extends StatefulWidget {
     this.initialQueue,
     this.doneLine,
     this.episodes = const [],
+    this.speakers,
   });
 
   @override
@@ -55,11 +63,23 @@ class CafeTurnScreen extends StatefulWidget {
 class _CafeTurnScreenState extends State<CafeTurnScreen> {
   late final LadderReview _ladder =
       LadderReview(widget.db, bridge: widget.bridge);
-  late final CafeGuestScript _script = scriptFor(widget.guest);
 
   List<LearnItem> _queue = [];
   int _index = 0;
   bool _loading = true;
+
+  /// Ein Sprecher je Turn — aus [CafeTurnScreen.speakers] oder überall der
+  /// Gast. Wird in [_load] gesetzt, sobald die Warteschlange steht.
+  List<CafeGuest> _speakers = const [];
+
+  /// Zeilen beim Blockwechsel (Übergabe der Wirtin, Einstieg des neuen
+  /// Sprechers), als (Key, Text). Leer, wenn kein Wechsel ansteht.
+  List<(String, String)> _blockIntro = const [];
+
+  CafeGuest get _speaker =>
+      _index < _speakers.length ? _speakers[_index] : widget.guest;
+
+  CafeGuestScript get _script => scriptFor(_speaker);
 
   CafeTurnContent? _content;
   final _input = TextEditingController();
@@ -99,6 +119,10 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
     if (!mounted) return;
     setState(() {
       _queue = List.of(queue);
+      final plan = widget.speakers;
+      _speakers = plan != null && plan.length == queue.length
+          ? List.of(plan)
+          : List.filled(queue.length, widget.guest);
       _loading = false;
     });
     await _prepareTurn();
@@ -131,9 +155,20 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
           episode: episodeIntroducing(widget.episodes, item.refId));
       if (!mounted) return;
     }
+    final intro = <(String, String)>[];
+    if (isSpeakerChange(_speakers, _index)) {
+      if (_speakers[_index - 1] == CafeGuest.wirtin) {
+        intro.add(('cafe-turn-handover',
+            wirtinHandoverLine(_index ~/ cafeBlockSize)));
+      }
+      final entry = scriptFor(_speakers[_index])
+          .entry(speakerBlockOrdinal(_speakers, _index));
+      if (entry != null) intro.add(('cafe-turn-entry', entry));
+    }
     setState(() {
       _content = content;
       _encounterCard = encounterCard;
+      _blockIntro = intro;
       _hintUsed = false;
       _revealed = false;
       _followUp = null;
@@ -223,11 +258,11 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
 
   Future<void> _gradeFree() async {
     if (_content == null) return;
-    // Bewusst kein [CafeOutcome.hinted], auch wenn ein Hinweis lief: das
-    // Skript der Gleichaltrigen (cafe_guest_script.dart) trägt nur
-    // freeProduced-Zeilen, und beide Ausgänge terminieren ohnehin als `hard`
-    // (Brief §4.4). Sollte sich die Benotung je unterscheiden, gehört diese
-    // Stelle noch einmal angesehen.
+    // Freie Produktion (Sprosse 5) wird gehalten, nicht benotet: bewusst
+    // kein [CafeOutcome.hinted], auch wenn ein Hinweis lief — beide Ausgänge
+    // terminieren ohnehin als `hard` (Brief §4.4). Die Gleichaltrige hat
+    // seit der Stimmen-Spec auch correct/wrong/hinted-Zeilen, aber die
+    // gelten für Erkennen/Lesen in der Nachbesprechung, nicht hier.
     await _submitOutcome(CafeOutcome.freeProduced);
   }
 
@@ -240,7 +275,9 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: const ValueKey('cafe-turn-screen'),
-      appBar: AppBar(title: Text(_guestName(widget.guest))),
+      appBar: AppBar(
+        title: Text(_guestName(_content == null ? widget.guest : _speaker)),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _content == null
@@ -300,11 +337,28 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
         gleichaltrigeOpener(content.writtenForm, _index),
       _ => content.promptText,
     };
+    // Die Stimm-Zeile steht ÜBER dem Wort und setzt nichts ein (Spec §4);
+    // Monolog und Eröffnung tragen ihre Stimme schon im Kopftext.
+    final voiceLine = isMonologue ? null : _script.voiceLine(content.kind, _index);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          for (final (key, line) in _blockIntro)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(line,
+                  key: ValueKey(key),
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
+            ),
+          if (voiceLine != null) ...[
+            Text(voiceLine,
+                key: const ValueKey('cafe-turn-voice'),
+                style:
+                    const TextStyle(fontStyle: FontStyle.italic, fontSize: 16)),
+            const SizedBox(height: 8),
+          ],
           Text(headerText,
               key: ValueKey(
                   isMonologue ? 'cafe-turn-monologue' : 'cafe-turn-prompt'),
