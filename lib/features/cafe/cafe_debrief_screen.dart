@@ -146,7 +146,11 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
         bridge: widget.bridge,
         initialQueue: refreshed,
         speakers: speakerPlan(refreshed.length, sessionOffset: sessionOffset),
-        doneLine: wirtinDebriefClosing(sessionOffset),
+        lineOffset: sessionOffset,
+        // Eigener Divisor statt desselben Offsets wie die Sprecherfolge:
+        // sonst korrelierte die Schlusszeile immer mit derselben Stimmen-
+        // Reihenfolge (Final-Review 19.9., F2).
+        doneLine: wirtinDebriefClosing(sessionOffset ~/ 3),
         episodes: [widget.episode],
       ),
     ));

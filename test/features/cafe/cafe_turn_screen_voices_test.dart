@@ -38,12 +38,13 @@ void main() {
   });
   tearDown(() async => db.close());
 
-  Widget screen({List<CafeGuest>? speakers}) => MaterialApp(
+  Widget screen({List<CafeGuest>? speakers, int lineOffset = 0}) => MaterialApp(
         home: CafeTurnScreen(
           db: db,
           guest: CafeGuest.wirtin,
           initialQueue: items,
           speakers: speakers,
+          lineOffset: lineOffset,
           doneLine: 'Ende.',
         ),
       );
@@ -122,6 +123,30 @@ void main() {
     expect(find.byKey(const ValueKey('cafe-turn-done-line')), findsOneWidget);
     expect(find.widgetWithText(AppBar, 'Die Wirtin'), findsOneWidget);
     expect(await db.select(db.reviewLog).get(), hasLength(4));
+  });
+
+  testWidgets('lineOffset rotiert Übergabe, Einstieg und Stimm-Zeile '
+      '(Final-Review F2); 0 verhält sich wie bisher', (tester) async {
+    await tester.pumpWidget(screen(
+        speakers: const [
+          CafeGuest.wirtin,
+          CafeGuest.wirtin,
+          CafeGuest.wirtin,
+          CafeGuest.schulkind,
+        ],
+        lineOffset: 1));
+    await tester.pumpAndSettle();
+
+    expect(textOf(tester, 'cafe-turn-voice'),
+        scriptFor(CafeGuest.wirtin).voiceLine(CafeExerciseKind.recognition, 1));
+
+    for (var i = 0; i < 3; i++) {
+      await answerKnown(tester);
+    }
+
+    expect(textOf(tester, 'cafe-turn-handover'), wirtinHandoverLine(2));
+    expect(textOf(tester, 'cafe-turn-entry'),
+        scriptFor(CafeGuest.schulkind).entry(1));
   });
 
   testWidgets('ein Plan falscher Länge wird ignoriert — Wirtin überall',

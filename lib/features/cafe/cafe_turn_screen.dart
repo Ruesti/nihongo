@@ -44,6 +44,12 @@ class CafeTurnScreen extends StatefulWidget {
   /// Die Stimme ändert nie die Übungsform (§6) — die kommt aus der Sprosse.
   final List<CafeGuest>? speakers;
 
+  /// Sitzungs-Offset, rotiert Übergabe, Einstieg und Stimm-Zeilen; die
+  /// Nachbesprechung gibt den Minuten-Offset (Spec Café-Szenen-und-Stimmen
+  /// §3.1, Final-Review 19.9. — sonst trifft die Übergabe/der Einstieg
+  /// immer denselben Block und dieselbe Stimm-Zeile über alle Sitzungen).
+  final int lineOffset;
+
   const CafeTurnScreen({
     super.key,
     required this.db,
@@ -54,6 +60,7 @@ class CafeTurnScreen extends StatefulWidget {
     this.doneLine,
     this.episodes = const [],
     this.speakers,
+    this.lineOffset = 0,
   });
 
   @override
@@ -159,10 +166,10 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
     if (isSpeakerChange(_speakers, _index)) {
       if (_speakers[_index - 1] == CafeGuest.wirtin) {
         intro.add(('cafe-turn-handover',
-            wirtinHandoverLine(_index ~/ cafeBlockSize)));
+            wirtinHandoverLine(widget.lineOffset + _index ~/ cafeBlockSize)));
       }
-      final entry = scriptFor(_speakers[_index])
-          .entry(speakerBlockOrdinal(_speakers, _index));
+      final entry = scriptFor(_speakers[_index]).entry(
+          widget.lineOffset + speakerBlockOrdinal(_speakers, _index));
       if (entry != null) intro.add(('cafe-turn-entry', entry));
     }
     setState(() {
@@ -339,7 +346,9 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
     };
     // Die Stimm-Zeile steht ÜBER dem Wort und setzt nichts ein (Spec §4);
     // Monolog und Eröffnung tragen ihre Stimme schon im Kopftext.
-    final voiceLine = isMonologue ? null : _script.voiceLine(content.kind, _index);
+    final voiceLine = isMonologue
+        ? null
+        : _script.voiceLine(content.kind, widget.lineOffset + _index);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
