@@ -21,4 +21,13 @@ void main() {
     expect(b, contains('あめ'));
     expect(a, isNot(b));
   });
+
+  test('die Wirtin gibt mit drei verschiedenen Zeilen ab, rotierend', () {
+    final lines = {for (var i = 0; i < 3; i++) wirtinHandoverLine(i)};
+    expect(lines.length, 3);
+    expect(wirtinHandoverLine(3), wirtinHandoverLine(0));
+    for (final line in lines) {
+      expect(line.trim(), isNotEmpty);
+    }
+  });
 }
