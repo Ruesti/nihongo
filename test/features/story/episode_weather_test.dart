@@ -9,7 +9,7 @@ Map<String, dynamic> _minimal({String? weather}) => {
       'title': 'T',
       'locale': 'ja',
       'era': 'e',
-      if (weather != null) 'weather': weather,
+      'weather': ?weather,
       'budget': {'items': [], 'glyphs': []},
       'pages': [],
     };
