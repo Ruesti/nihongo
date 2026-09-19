@@ -23,8 +23,12 @@ class CafeGuestScript {
   const CafeGuestScript(this.lines,
       {this.voice = const {}, this.entries = const []});
 
+  /// Total für jedes [CafeOutcome]: seit Sprecher und Sprosse entkoppelt
+  /// sind, kann ein Sprosse-5-Item (`freeProduced`) bei einem Sprecher ohne
+  /// diesen Bucket landen (Final-Review 19.9., F1) — dann weicht die
+  /// Reaktion auf `correct` aus, notfalls auf irgendeinen vorhandenen Bucket.
   String followUp(CafeOutcome outcome, int turnIndex) {
-    final options = lines[outcome]!;
+    final options = lines[outcome] ?? lines[CafeOutcome.correct] ?? lines.values.first;
     return options[turnIndex % options.length];
   }
 

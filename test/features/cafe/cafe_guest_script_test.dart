@@ -19,6 +19,18 @@ void main() {
     }
   });
 
+  test('followUp ist total: jeder Gast liefert für JEDES CafeOutcome eine '
+      'nicht-leere Zeile, auch für Ergebnisse, auf die er laut Steckbrief '
+      'gar nicht reagiert (Final-Review F1)', () {
+    for (final guest in CafeGuest.values) {
+      final script = scriptFor(guest);
+      for (final outcome in CafeOutcome.values) {
+        final line = script.followUp(outcome, 0);
+        expect(line, isNotEmpty, reason: '$guest/$outcome liefert leer');
+      }
+    }
+  });
+
   test('the Gleichaltrige reacts to free production; the Vielredner to '
       'correct/wrong/hinted', () {
     expect(scriptFor(CafeGuest.gleichaltrige).lines.keys,
