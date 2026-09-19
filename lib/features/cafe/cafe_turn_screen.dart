@@ -360,57 +360,62 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
     final voiceLine = isMonologue
         ? null
         : _script.voiceLine(content.kind, widget.lineOffset + _index);
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final (key, line) in _blockIntro)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(line,
-                  key: ValueKey(key),
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
-            ),
-          if (voiceLine != null) ...[
-            Text(voiceLine,
-                key: const ValueKey('cafe-turn-voice'),
-                style:
-                    const TextStyle(fontStyle: FontStyle.italic, fontSize: 16)),
-            const SizedBox(height: 8),
-          ],
-          Text(headerText,
-              key: ValueKey(
-                  isMonologue ? 'cafe-turn-monologue' : 'cafe-turn-prompt'),
-              style: TextStyle(fontSize: isMonologue ? 18 : 28)),
-          const SizedBox(height: 16),
-          // Freie Produktion (Sprosse 5) hat keine erwartete Antwort — dort
-          // stünde sonst nach einem Hinweis ein nacktes „→ ".
-          if (_revealed && content.expectedAnswer.isNotEmpty)
-            Text('→ ${content.expectedAnswer}',
-                style: const TextStyle(fontStyle: FontStyle.italic)),
-          const SizedBox(height: 16),
-          if (followUp == null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: const ValueKey('cafe-turn-explain'),
-                onPressed: _explainAgain,
-                child: const Text("Erklär's mir nochmal"),
+    // Übergabe + Einstieg + Stimm-Zeile + Tastatur können den Körper länger
+    // machen als der Schirm (Final-Review 19.9., F5) — scrollen statt
+    // überlaufen.
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final (key, line) in _blockIntro)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(line,
+                    key: ValueKey(key),
+                    style: const TextStyle(fontStyle: FontStyle.italic)),
               ),
-            ),
-          if (followUp == null)
-            ..._buildAnswerControls(content)
-          else ...[
-            Text(followUp, key: const ValueKey('cafe-turn-followup')),
-            const SizedBox(height: 12),
-            TextButton(
-              key: const ValueKey('cafe-turn-next'),
-              onPressed: _next,
-              child: const Text('weiter'),
-            ),
+            if (voiceLine != null) ...[
+              Text(voiceLine,
+                  key: const ValueKey('cafe-turn-voice'),
+                  style: const TextStyle(
+                      fontStyle: FontStyle.italic, fontSize: 16)),
+              const SizedBox(height: 8),
+            ],
+            Text(headerText,
+                key: ValueKey(
+                    isMonologue ? 'cafe-turn-monologue' : 'cafe-turn-prompt'),
+                style: TextStyle(fontSize: isMonologue ? 18 : 28)),
+            const SizedBox(height: 16),
+            // Freie Produktion (Sprosse 5) hat keine erwartete Antwort — dort
+            // stünde sonst nach einem Hinweis ein nacktes „→ ".
+            if (_revealed && content.expectedAnswer.isNotEmpty)
+              Text('→ ${content.expectedAnswer}',
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
+            const SizedBox(height: 16),
+            if (followUp == null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const ValueKey('cafe-turn-explain'),
+                  onPressed: _explainAgain,
+                  child: const Text("Erklär's mir nochmal"),
+                ),
+              ),
+            if (followUp == null)
+              ..._buildAnswerControls(content)
+            else ...[
+              Text(followUp, key: const ValueKey('cafe-turn-followup')),
+              const SizedBox(height: 12),
+              TextButton(
+                key: const ValueKey('cafe-turn-next'),
+                onPressed: _next,
+                child: const Text('weiter'),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -201,6 +201,47 @@ void main() {
     expect(find.byKey(const ValueKey('cafe-turn-entry')), findsOneWidget);
   });
 
+  testWidgets('Turn-Körper mit Übergabe, Einstieg und aufgedeckter Antwort '
+      'passt auf einen kleinen Schirm — Scroll statt Overflow (Final-Review '
+      'F5)', (tester) async {
+    await tester.pumpWidget(screen(speakers: const [
+      CafeGuest.wirtin,
+      CafeGuest.wirtin,
+      CafeGuest.wirtin,
+      CafeGuest.schulkind,
+    ]));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await answerKnown(tester);
+    }
+    // Jetzt zeigt der Schirm den ersten Schulkind-Turn (Übergabe + Einstieg
+    // + eigene Stimme) auf der großzügigen Test-Fläche — erst jetzt auf
+    // Telefongröße schrumpfen, damit die unauffälligen Turns davor nicht
+    // mit hineinspielen.
+    tester.view.physicalSize = const Size(400, 300);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('cafe-turn-handover')), findsOneWidget);
+    // Der Körper ist jetzt tatsächlich länger als der Schirm — sonst prüft
+    // der Test darunter gar nichts (kein Absturz durch bloßes Fehlen).
+    final scroll = tester.state<ScrollableState>(find.byType(Scrollable));
+    expect(scroll.position.maxScrollExtent, greaterThan(0));
+
+    // Aufgedeckte Antwort macht den Körper noch etwas länger.
+    await tester.ensureVisible(find.byKey(const ValueKey('cafe-turn-reveal')));
+    await tester.tap(find.byKey(const ValueKey('cafe-turn-reveal')));
+    await tester.pumpAndSettle();
+
+    // Der Knopf ist erreichbar (scrollen statt Overflow) und tippbar.
+    await tester.ensureVisible(find.byKey(const ValueKey('cafe-turn-known')));
+    await tester.tap(find.byKey(const ValueKey('cafe-turn-known')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-turn-followup')), findsOneWidget);
+  });
+
   testWidgets('ein Plan falscher Länge wird ignoriert — Wirtin überall',
       (tester) async {
     await tester.pumpWidget(screen(speakers: const [CafeGuest.schulkind]));
