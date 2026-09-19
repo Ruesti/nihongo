@@ -7,6 +7,7 @@ import '../story/story_progress_store.dart';
 import 'cafe_debrief_screen.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
+import 'cafe_scenes.dart';
 import 'cafe_turn_screen.dart';
 
 /// The café — the repetition mode that replaces the bare SRS feed (brief §4).
@@ -47,6 +48,10 @@ class CafeScreen extends StatefulWidget {
   /// „Ins Café" von der Endkarte, §3.2). Danach: der normale Café-Raum.
   final bool openDebriefOnEntry;
 
+  /// Licht der Szenen; null = aus der Uhr (Spec Café-Szenen-und-Stimmen
+  /// §5.3). Der normale Besuch kennt keinen Regen.
+  final CafeLight? light;
+
   const CafeScreen({
     super.key,
     required this.db,
@@ -56,6 +61,7 @@ class CafeScreen extends StatefulWidget {
     this.debriefEpisode,
     this.progressStore,
     this.openDebriefOnEntry = false,
+    this.light,
   });
 
   @override
@@ -66,6 +72,22 @@ class _CafeScreenState extends State<CafeScreen> {
   CafeOccupancy? _occupancy;
   bool _debriefPending = false;
   bool _autoOpened = false;
+
+  late final CafeLight _light = widget.light ?? lightFor(DateTime.now());
+
+  /// Szene; fehlendes Asset → neutrale Fläche, nie Crash (CLAUDE.md §6).
+  static Widget _scene(String asset, {required String keyName, double? height}) =>
+      Image.asset(
+        asset,
+        key: ValueKey(keyName),
+        height: height,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(
+          height: height ?? 160,
+          color: const Color(0xFF2A3035),
+        ),
+      );
 
   @override
   void initState() {
@@ -132,23 +154,37 @@ class _CafeScreenState extends State<CafeScreen> {
       body: occupancy == null
           ? const Center(child: CircularProgressIndicator())
           : occupancy.isEmpty
-              ? const Center(
-                  key: ValueKey('cafe-empty'),
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text(
-                      'Die Wirtin wischt den Tresen und nickt dir zu.',
-                      textAlign: TextAlign.center,
+              ? ListView(
+                  key: const ValueKey('cafe-empty'),
+                  children: [
+                    _scene(sceneAsset(CafeMotif.wirtinTresen, _light),
+                        keyName: 'cafe-scene-empty', height: 200),
+                    const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text(
+                        'Die Wirtin wischt den Tresen und nickt dir zu.',
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
+                  ],
                 )
               : ListView(
                   key: const ValueKey('cafe-guest-list'),
                   children: [
+                    _scene(sceneAsset(CafeMotif.leer, _light),
+                        keyName: 'cafe-scene-room', height: 200),
                     for (final guest in CafeGuest.values)
                       if (occupancy.present.contains(guest))
                         ListTile(
                           key: ValueKey(_keys[guest]!),
+                          leading: SizedBox(
+                            width: 96,
+                            height: 64,
+                            child: _scene(
+                                sceneAsset(stammplatzOf(guest), _light),
+                                keyName: 'cafe-scene-guest-${guest.name}',
+                                height: 64),
+                          ),
                           title: Text(_labels[guest]!),
                           subtitle: guest == CafeGuest.wirtin && _debriefPending
                               ? const Text(wirtinDebriefInvite,
