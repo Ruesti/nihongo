@@ -198,10 +198,15 @@ entwirft, Uli liest gegen — wie beim Erklärungsblock der Nachbesprechungs-Spe
 | **neu insgesamt** | | **45** |
 
 Die 31 vorhandenen Reaktionszeilen und die 6 Vorlagen für Vielredner-Monolog
-(Sprosse 4) und Gleichaltrige-Eröffnung (Sprosse 5) bleiben. Die Vorlagen setzen das
-Wort in Kana ein und nennen **nie** die Bedeutung (wie heute: Bedeutung erscheint nur
-als Antwort oder Hinweis). Das gilt für alle vier Stimmen — auch der Vielredner
-schwadroniert *um* das Wort herum, nicht *über* seine Bedeutung.
+(Sprosse 4) und Gleichaltrige-Eröffnung (Sprosse 5) bleiben. **Präzisierung aus dem
+Umsetzungsplan (19.9.):** Die neuen Frage-Vorlagen für Erkennen, Lesen und Schreiben
+setzen das Wort **nicht** in den Satz ein, sondern stehen als Stimm-Zeile *über* dem
+groß gezeigten Wort (bzw. der Bedeutung beim Schreiben) — so bleibt das Wort lesbar
+groß, und die Zeile kann strukturell nie die Antwort verraten. Die Beispiele in der
+Tabelle oben sind entsprechend als „Zeile über dem Wort" zu lesen (*„… und da fällt
+mir ein — das da. Was war das noch?"*). Der Vielredner-Monolog und die
+Gleichaltrige-Eröffnung (Sprosse 4/5) setzen das Wort weiterhin ein, wie heute. Keine
+Vorlage nennt je die Bedeutung eines Erkennen- oder Lese-Turns.
 
 **Rotation:** wie heute nach Turn-Index (deterministisch, testbar), nicht zufällig.
 Abnahme-Kriterium aus dem Brief: zehn Turns hintereinander ohne wörtliche Wiederholung
