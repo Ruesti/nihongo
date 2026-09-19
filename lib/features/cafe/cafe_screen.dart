@@ -203,6 +203,7 @@ class _CafeScreenState extends State<CafeScreen> {
                                 languageId: widget.languageId,
                                 bridge: widget.bridge,
                                 episodes: widget.episodes,
+                                light: _light,
                               ),
                             ));
                             // On return, the due state may have changed —

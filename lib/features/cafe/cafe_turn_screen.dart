@@ -9,6 +9,7 @@ import 'cafe_debrief_card.dart';
 import 'cafe_guest_script.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
+import 'cafe_scenes.dart';
 import 'cafe_speaker_plan.dart';
 import 'cafe_turn.dart';
 
@@ -50,6 +51,10 @@ class CafeTurnScreen extends StatefulWidget {
   /// immer denselben Block und dieselbe Stimm-Zeile über alle Sitzungen).
   final int lineOffset;
 
+  /// Licht der Szene; null = aus der Uhr. Die Nachbesprechung reicht das
+  /// Licht mit Regen der Folge durch (Spec Café-Szenen-und-Stimmen §5.3).
+  final CafeLight? light;
+
   const CafeTurnScreen({
     super.key,
     required this.db,
@@ -61,6 +66,7 @@ class CafeTurnScreen extends StatefulWidget {
     this.episodes = const [],
     this.speakers,
     this.lineOffset = 0,
+    this.light,
   });
 
   @override
@@ -94,6 +100,26 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
       _index < _speakers.length ? _speakers[_index] : widget.guest;
 
   CafeGuestScript get _script => scriptFor(_speaker);
+
+  late final CafeLight _light = widget.light ?? lightFor(DateTime.now());
+
+  /// Szene des Sprechers, ein Bild pro Block (Spec §3.3); bei offener
+  /// Tastatur nur ein Band, damit Wort und Eingabe Platz behalten (§8).
+  Widget _sceneHeader(BuildContext context) {
+    final asset =
+        turnScene(_speaker, _light, speakerBlockOrdinal(_speakers, _index));
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    return SizedBox(
+      height: keyboardOpen ? 72 : 200,
+      width: double.infinity,
+      child: Image.asset(
+        asset,
+        key: const ValueKey('cafe-turn-scene'),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(color: const Color(0xFF2A3035)),
+      ),
+    );
+  }
 
   CafeTurnContent? _content;
   final _input = TextEditingController();
@@ -362,60 +388,68 @@ class _CafeTurnScreenState extends State<CafeTurnScreen> {
         : _script.voiceLine(content.kind, widget.lineOffset + _index);
     // Übergabe + Einstieg + Stimm-Zeile + Tastatur können den Körper länger
     // machen als der Schirm (Final-Review 19.9., F5) — scrollen statt
-    // überlaufen.
+    // überlaufen. Die Szene ist das erste Kind, randlos vor dem Padding
+    // (Task 5 der Bilder-Spec).
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final (key, line) in _blockIntro)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(line,
-                    key: ValueKey(key),
-                    style: const TextStyle(fontStyle: FontStyle.italic)),
-              ),
-            if (voiceLine != null) ...[
-              Text(voiceLine,
-                  key: const ValueKey('cafe-turn-voice'),
-                  style: const TextStyle(
-                      fontStyle: FontStyle.italic, fontSize: 16)),
-              const SizedBox(height: 8),
-            ],
-            Text(headerText,
-                key: ValueKey(
-                    isMonologue ? 'cafe-turn-monologue' : 'cafe-turn-prompt'),
-                style: TextStyle(fontSize: isMonologue ? 18 : 28)),
-            const SizedBox(height: 16),
-            // Freie Produktion (Sprosse 5) hat keine erwartete Antwort — dort
-            // stünde sonst nach einem Hinweis ein nacktes „→ ".
-            if (_revealed && content.expectedAnswer.isNotEmpty)
-              Text('→ ${content.expectedAnswer}',
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
-            const SizedBox(height: 16),
-            if (followUp == null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  key: const ValueKey('cafe-turn-explain'),
-                  onPressed: _explainAgain,
-                  child: const Text("Erklär's mir nochmal"),
-                ),
-              ),
-            if (followUp == null)
-              ..._buildAnswerControls(content)
-            else ...[
-              Text(followUp, key: const ValueKey('cafe-turn-followup')),
-              const SizedBox(height: 12),
-              TextButton(
-                key: const ValueKey('cafe-turn-next'),
-                onPressed: _next,
-                child: const Text('weiter'),
-              ),
-            ],
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sceneHeader(context),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final (key, line) in _blockIntro)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(line,
+                        key: ValueKey(key),
+                        style: const TextStyle(fontStyle: FontStyle.italic)),
+                  ),
+                if (voiceLine != null) ...[
+                  Text(voiceLine,
+                      key: const ValueKey('cafe-turn-voice'),
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic, fontSize: 16)),
+                  const SizedBox(height: 8),
+                ],
+                Text(headerText,
+                    key: ValueKey(isMonologue
+                        ? 'cafe-turn-monologue'
+                        : 'cafe-turn-prompt'),
+                    style: TextStyle(fontSize: isMonologue ? 18 : 28)),
+                const SizedBox(height: 16),
+                // Freie Produktion (Sprosse 5) hat keine erwartete Antwort —
+                // dort stünde sonst nach einem Hinweis ein nacktes „→ ".
+                if (_revealed && content.expectedAnswer.isNotEmpty)
+                  Text('→ ${content.expectedAnswer}',
+                      style: const TextStyle(fontStyle: FontStyle.italic)),
+                const SizedBox(height: 16),
+                if (followUp == null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      key: const ValueKey('cafe-turn-explain'),
+                      onPressed: _explainAgain,
+                      child: const Text("Erklär's mir nochmal"),
+                    ),
+                  ),
+                if (followUp == null)
+                  ..._buildAnswerControls(content)
+                else ...[
+                  Text(followUp, key: const ValueKey('cafe-turn-followup')),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    key: const ValueKey('cafe-turn-next'),
+                    onPressed: _next,
+                    child: const Text('weiter'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
