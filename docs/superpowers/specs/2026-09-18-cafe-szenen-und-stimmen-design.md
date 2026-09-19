@@ -192,10 +192,14 @@ entwirft, Uli liest gegen — wie beim Erklärungsblock der Nachbesprechungs-Spe
 |---|---|---|
 | Frage-Vorlagen Erkennen (Sprosse 0–1) | 3 | 12 |
 | Frage-Vorlagen Lesen (Sprosse 2) | 3 | 12 |
-| Frage-Vorlagen Schreiben (Sprosse 3, nur das Schulkind im normalen Besuch — heute steht dort die nackte Bedeutung) | 3 | 3 |
+| Frage-Vorlagen Schreiben (Sprosse 3) | 3 | 12 |
 | Einstiegszeilen beim Blockwechsel | 2 (Wirtin: 3 Übergabe-Zeilen) | 9 |
 | Reaktionen richtig/falsch/Hinweis für die Gleichaltrige | 3 × 3 | 9 |
-| **neu insgesamt** | | **45** |
+| **neu insgesamt** | | **54** |
+
+(Nachtrag Final-Review 19.9.: Schreib-Zeilen für alle vier, weil in der
+Nachbesprechung jeder Sprecher ein Sprosse-3-Item treffen kann; die Wirtin hat
+außerdem 3 Einstiegszeilen für den Rückblock — 57 neue Zeilen insgesamt.)
 
 Die 31 vorhandenen Reaktionszeilen und die 6 Vorlagen für Vielredner-Monolog
 (Sprosse 4) und Gleichaltrige-Eröffnung (Sprosse 5) bleiben. **Präzisierung aus dem
@@ -209,8 +213,9 @@ Gleichaltrige-Eröffnung (Sprosse 4/5) setzen das Wort weiterhin ein, wie heute.
 Vorlage nennt je die Bedeutung eines Erkennen- oder Lese-Turns.
 
 **Rotation:** wie heute nach Turn-Index (deterministisch, testbar), nicht zufällig.
-Abnahme-Kriterium aus dem Brief: zehn Turns hintereinander ohne wörtliche Wiederholung
-— gilt jetzt pro Stimme und Übungsform.
+Abnahme-Kriterium: innerhalb eines Blocks von drei Turns wiederholt sich keine
+Stimm-Zeile; über Sitzungen rotiert der Sitzungs-Offset Übergabe, Einstieg und
+Stimm-Zeilen (Umsetzungsplan, Final-Review 19.9.).
 
 ## 5. Datenmodell & Nahtstellen
 

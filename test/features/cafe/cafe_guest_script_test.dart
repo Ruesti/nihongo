@@ -58,26 +58,21 @@ void main() {
     expect(wirtin, isNot(kind));
   });
 
-  test('jede Stimme hat ≥3 verschiedene Zeilen für Erkennen und Lesen; das '
-      'Schulkind auch für Schreiben', () {
+  test('jede Stimme hat ≥3 verschiedene Zeilen für Erkennen, Lesen und '
+      'Schreiben (Final-Review F3: jeder kann in der Nachbesprechung ein '
+      'Sprosse-3-Item treffen)', () {
     for (final guest in CafeGuest.values) {
       final s = scriptFor(guest);
       for (final kind in [
         CafeExerciseKind.recognition,
         CafeExerciseKind.readingInput,
+        CafeExerciseKind.productionInput,
       ]) {
         final lines = {for (var i = 0; i < 3; i++) s.voiceLine(kind, i)};
         expect(lines, isNot(contains(null)), reason: '$guest/$kind fehlt');
         expect(lines.length, 3, reason: '$guest/$kind hat < 3 Zeilen');
       }
     }
-    final prod = {
-      for (var i = 0; i < 3; i++)
-        scriptFor(CafeGuest.schulkind)
-            .voiceLine(CafeExerciseKind.productionInput, i)
-    };
-    expect(prod, isNot(contains(null)));
-    expect(prod.length, 3);
   });
 
   test('ohne Zeile für eine Übungsform sagt der Gast nichts (null, kein '

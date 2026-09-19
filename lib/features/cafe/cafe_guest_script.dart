@@ -76,6 +76,11 @@ const _wirtin = CafeGuestScript(
       'Lies es mir vor. Langsam ist gut.',
       'Und wie spricht man das aus? Keine Eile.',
     ],
+    CafeExerciseKind.productionInput: [
+      'Wie sagt man das auf Japanisch? Schreib es auf.',
+      'Das Wort dazu — lass dir Zeit beim Schreiben.',
+      'Weißt du noch, wie das heißt? Schreib es hin.',
+    ],
   },
   entries: [
     'So. Jetzt wieder ich.',
@@ -167,6 +172,14 @@ const _vielredner = CafeGuestScript(
       'Das da hat der Alte von nebenan ständig gesagt. '
           'Wie klingt das, wenn man es liest?',
     ],
+    CafeExerciseKind.productionInput: [
+      'Ach, weißt du, das hier hab ich neulich gesucht und nicht gefunden. '
+          'Wie heißt es auf Japanisch?',
+      'Wo wir gerade dabei sind: Wie sagt man das noch mal? '
+          'Schreib es mir auf.',
+      'Ich sag dir, das Wort lag mir auf der Zunge. Wie heißt es? '
+          'Schreib es hin.',
+    ],
   },
   entries: [
     'Ach, wo wir gerade dabei sind — ich hätte da auch was.',
@@ -214,6 +227,11 @@ const _gleichaltrige = CafeGuestScript(
       'Wie sagt man das? Ich hab es neulich falsch gelesen.',
       'Sag mal, wie liest man das eigentlich?',
       'Ich glaub, ich spreche das immer falsch aus. Wie geht es richtig?',
+    ],
+    CafeExerciseKind.productionInput: [
+      'Sag mal, wie heißt das auf Japanisch? Schreib es einfach hin.',
+      'Ich glaub, das weißt du. Wie sagt man das?',
+      'Kennst du das Wort dafür? Schreib es auf.',
     ],
   },
   entries: [
