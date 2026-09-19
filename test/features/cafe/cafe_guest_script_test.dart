@@ -45,4 +45,81 @@ void main() {
     final kind = scriptFor(CafeGuest.schulkind).followUp(CafeOutcome.wrong, 0);
     expect(wirtin, isNot(kind));
   });
+
+  test('jede Stimme hat ≥3 verschiedene Zeilen für Erkennen und Lesen; das '
+      'Schulkind auch für Schreiben', () {
+    for (final guest in CafeGuest.values) {
+      final s = scriptFor(guest);
+      for (final kind in [
+        CafeExerciseKind.recognition,
+        CafeExerciseKind.readingInput,
+      ]) {
+        final lines = {for (var i = 0; i < 3; i++) s.voiceLine(kind, i)};
+        expect(lines, isNot(contains(null)), reason: '$guest/$kind fehlt');
+        expect(lines.length, 3, reason: '$guest/$kind hat < 3 Zeilen');
+      }
+    }
+    final prod = {
+      for (var i = 0; i < 3; i++)
+        scriptFor(CafeGuest.schulkind)
+            .voiceLine(CafeExerciseKind.productionInput, i)
+    };
+    expect(prod, isNot(contains(null)));
+    expect(prod.length, 3);
+  });
+
+  test('ohne Zeile für eine Übungsform sagt der Gast nichts (null, kein '
+      'Absturz); Rotation läuft rund', () {
+    expect(
+        scriptFor(CafeGuest.wirtin)
+            .voiceLine(CafeExerciseKind.freeProduction, 0),
+        isNull);
+    final s = scriptFor(CafeGuest.vielredner);
+    expect(s.voiceLine(CafeExerciseKind.recognition, 3),
+        s.voiceLine(CafeExerciseKind.recognition, 0));
+  });
+
+  test('jeder Gast hat ≥2 verschiedene Einstiegszeilen, rotierend', () {
+    for (final guest in CafeGuest.values) {
+      final s = scriptFor(guest);
+      expect(s.entry(0), isNotNull, reason: '$guest ohne Einstieg');
+      expect(s.entry(0), isNot(s.entry(1)), reason: '$guest: nur 1 Einstieg');
+      expect(s.entry(s.entries.length), s.entry(0));
+    }
+  });
+
+  test('alle vier Gäste reagieren auf richtig, falsch und Hinweis', () {
+    for (final guest in CafeGuest.values) {
+      expect(scriptFor(guest).lines.keys,
+          containsAll([CafeOutcome.correct, CafeOutcome.wrong, CafeOutcome.hinted]),
+          reason: '$guest');
+    }
+  });
+
+  test('Stimm-Zeilen tragen weder Wort noch Bedeutung: keine Kana/Kanji, '
+      'keine Platzhalter (INV-9 strukturell)', () {
+    final japanese = RegExp(r'[぀-ヿ一-鿿]');
+    for (final guest in CafeGuest.values) {
+      final s = scriptFor(guest);
+      for (final kind in [
+        CafeExerciseKind.recognition,
+        CafeExerciseKind.readingInput,
+        CafeExerciseKind.productionInput,
+      ]) {
+        for (var i = 0; i < 3; i++) {
+          final line = s.voiceLine(kind, i);
+          if (line == null) continue;
+          expect(line, isNot(matches(japanese)), reason: '$guest/$kind: $line');
+          expect(line, isNot(contains('{')), reason: '$guest/$kind: $line');
+          expect(line.trim(), isNotEmpty);
+        }
+      }
+    }
+  });
+
+  test('das Schulkind klingt beim Fragen nicht wie die Wirtin', () {
+    final w = scriptFor(CafeGuest.wirtin).voiceLine(CafeExerciseKind.recognition, 0);
+    final k = scriptFor(CafeGuest.schulkind).voiceLine(CafeExerciseKind.recognition, 0);
+    expect(w, isNot(k));
+  });
 }
