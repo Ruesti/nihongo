@@ -9,16 +9,19 @@ import 'cafe_debrief.dart';
 import 'cafe_debrief_card.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
+import 'cafe_speaker_plan.dart';
 import 'cafe_turn_screen.dart';
 
 /// Die Nachbesprechung einer Folge (Spec Café-Nachbesprechung §3.3–§3.6).
 /// Akt 1: die Wirtin erklärt jedes Item der Folge (Erklärungskarte, nur
 /// „Verstanden"; ein Sprosse-0-Item wird dabei begegnet → Sprosse 1). Akt 2:
 /// dieselben Items als gewohnte Café-Turns ([CafeTurnScreen] mit
-/// vorgegebener Warteschlange). Item-Quelle ist ausschließlich
-/// [debriefItemsFor] (Manifest ∩ Karteikasten, INV-8/INV-11). Der Stand von
-/// Akt 1 wird im [StoryProgressStore] gemerkt — Abbruch setzt beim ersten
-/// offenen Item fort; kein Zähler, kein Häkchen (INV-10).
+/// vorgegebener Warteschlange). Akt 2 spricht mit mehreren Stimmen:
+/// [speakerPlan] verteilt die Turns blockweise auf die vier Gäste, die
+/// Wirtin rahmt (Spec Café-Szenen-und-Stimmen §3.1). Item-Quelle ist
+/// ausschließlich [debriefItemsFor] (Manifest ∩ Karteikasten, INV-8/INV-11).
+/// Der Stand von Akt 1 wird im [StoryProgressStore] gemerkt — Abbruch setzt
+/// beim ersten offenen Item fort; kein Zähler, kein Häkchen (INV-10).
 class CafeDebriefScreen extends StatefulWidget {
   final LearningDb db;
   final Episode episode;
@@ -131,6 +134,10 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
       if (row != null) refreshed.add(row);
     }
     if (!mounted) return;
+    // Nach Sitzung rotieren, nicht nach Item-Anzahl: an der Anzahl hängend
+    // hörte man bei gleich langen Folgen immer denselben Satz — und immer
+    // dieselbe Stimmen-Reihenfolge (Spec Café-Szenen-und-Stimmen §3.1).
+    final sessionOffset = DateTime.now().millisecondsSinceEpoch ~/ 60000;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
       builder: (_) => CafeTurnScreen(
         db: widget.db,
@@ -138,10 +145,8 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
         languageId: widget.languageId,
         bridge: widget.bridge,
         initialQueue: refreshed,
-        // Nach Sitzung rotieren, nicht nach Item-Anzahl: an der Anzahl
-        // hängend hörte man bei gleich langen Folgen immer denselben Satz.
-        doneLine:
-            wirtinDebriefClosing(DateTime.now().millisecondsSinceEpoch ~/ 60000),
+        speakers: speakerPlan(refreshed.length, sessionOffset: sessionOffset),
+        doneLine: wirtinDebriefClosing(sessionOffset),
         episodes: [widget.episode],
       ),
     ));
