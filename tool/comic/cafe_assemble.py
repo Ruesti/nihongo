@@ -15,8 +15,18 @@ for line in open(picks, encoding="utf-8"):
         continue
     name, src = line.split("=", 1)
     im = Image.open(os.path.expanduser(src)).convert("RGB")
-    if im.size != (1216, 832):
-        im = im.resize((1216, 832), Image.LANCZOS)
+    tw, th = 1216, 832
+    print(name, im.size)
+    if im.size != (tw, th):
+        w, h = im.size
+        if abs(w / h - tw / th) > 0.001:
+            if w / h > tw / th:
+                nw = int(round(h * tw / th))
+                im = im.crop(((w - nw) // 2, 0, (w + nw) // 2, h))
+            else:
+                nh = int(round(w * th / tw))
+                im = im.crop((0, (h - nh) // 2, w, (h + nh) // 2))
+        im = im.resize((tw, th), Image.LANCZOS)
     dest = os.path.join(out_dir, name + ".jpg")
     im.save(dest, "JPEG", quality=88, optimize=True)
     n += 1

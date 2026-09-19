@@ -57,7 +57,8 @@ KEEP = " Keep the same room, same furniture, same people, same poses, same faces
 RELIGHT = {
     "regen": "重新照明, relight this scene as a grey rainy day: dim overcast daylight through the "
              "windows, rain streaks and drops on the window glass, slightly cooler and darker, "
-             "the pendant bulbs glowing warm." + KEEP,
+             "the pendant bulbs glowing warm. Rain only outside the windows, no rain inside "
+             "the room." + KEEP,
     "abend": "重新照明, relight this scene at evening golden hour: low warm amber sunlight through "
              "the windows, long soft shadows, the pendant bulbs on." + KEEP,
     "nacht": "重新照明, relight this scene at night: dark blue outside the windows, the room lit only "
@@ -80,7 +81,11 @@ MOMENTS = ["wirtin_tee", "schulkind_hausaufgaben", "schulkind_kakao", "vielredne
 
 
 def lights_for(motif):
-    return ["regen", "abend", "nacht"] if motif in FULL else ["abend"]
+    if motif in FULL:
+        return ["regen", "abend", "nacht"]
+    if motif in MOMENTS:
+        return ["abend"]
+    raise KeyError(motif)
 
 
 def negative_for(motif):

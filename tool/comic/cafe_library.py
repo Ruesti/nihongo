@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import sys
 import comfy_client as cc
-from cafe_motifs import (EXISTING_TAG, LORA_STRENGTH, PHOTO, RELIGHT, T2I_LIGHT,
+from cafe_motifs import (EXISTING_TAG, FULL, LORA_STRENGTH, PHOTO, RELIGHT, T2I_LIGHT,
                          TAG_MOTIFS, lights_for, negative_for)
 
 ROOT = os.path.expanduser("~/comfy_cafe_lib")
@@ -39,43 +39,62 @@ def render_tag():
 
 
 def render_relight(picks_path):
+    picks_path = os.path.expanduser(picks_path)
     out = os.path.join(ROOT, "light")
-    items = []
+    # Ein Bogen pro Motiv-Gruppe, darin eine Zeile je Motiv, erste Kachel die
+    # Tag-Quelle — Dict je Motiv sammelt die Kacheln in Render-Reihenfolge,
+    # Reihenfolge der Motive wie in der Picks-Datei (Final-Review 19.9., P4).
+    full_rows = {}
+    moments_rows = {}
     for line in open(picks_path, encoding="utf-8"):
         line = line.strip()
         if not line or line.startswith("#"):
             continue
         motif, src = line.split("=", 1)
+        src = os.path.expanduser(src)
         input_name = "cafe_%s_tag%s" % (motif, os.path.splitext(src)[1])
-        shutil.copy(os.path.expanduser(src), os.path.join(cc.COMFY_INPUT, input_name))
+        shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
+        rows = full_rows if motif in FULL else moments_rows
+        tiles = rows.setdefault(motif, ["%s_tag=%s" % (motif, src)])
         for light in lights_for(motif):
             for seed in (11, 22):
                 prefix = "%s_%s_s%d" % (motif, light, seed)
                 try:
                     got = cc.run(cc.relight_graph(input_name, RELIGHT[light], seed, prefix),
                                  prefix, out, "cafelib")
-                    items += ["%s=%s" % (prefix, p) for p in got]
+                    tiles += ["%s=%s" % (prefix, p) for p in got]
                     print("OK", prefix, flush=True)
                 except Exception as e:  # noqa: BLE001
                     print("ERR", prefix, repr(e), flush=True)
-    sheet(out, "light_sheet.png", items, cols=4)
+    sheet(out, "light_sheet_full.png",
+          [t for tiles in full_rows.values() for t in tiles], cols=7)
+    sheet(out, "light_sheet_moments.png",
+          [t for tiles in moments_rows.values() for t in tiles], cols=3)
 
 
 def render_t2i_lights():
     out = os.path.join(ROOT, "light")
-    items = []
+    # Wie render_relight: eine Zeile je Motiv, aber ohne Tag-Quell-Kachel
+    # (hier gibt es keine — Weg T rendert direkt aus dem Text-Prompt).
+    full_rows = {}
+    moments_rows = {}
     for motif, core in {**EXISTING_TAG, **TAG_MOTIFS}.items():
+        rows = full_rows if motif in FULL else moments_rows
+        tiles = rows.setdefault(motif, [])
         for light in lights_for(motif):
             for seed in (901, 902):
                 prefix = "%s_%s_s%d" % (motif, light, seed)
                 try:
                     got = cc.run(cc.t2i_graph(core + T2I_LIGHT[light] + PHOTO, negative_for(motif),
                                               seed, prefix, LORA_STRENGTH), prefix, out, "cafelib")
-                    items += ["%s=%s" % (prefix, p) for p in got]
+                    tiles += ["%s=%s" % (prefix, p) for p in got]
                     print("OK", prefix, flush=True)
                 except Exception as e:  # noqa: BLE001
                     print("ERR", prefix, repr(e), flush=True)
-    sheet(out, "light_sheet.png", items, cols=4)
+    sheet(out, "light_sheet_full.png",
+          [t for tiles in full_rows.values() for t in tiles], cols=6)
+    sheet(out, "light_sheet_moments.png",
+          [t for tiles in moments_rows.values() for t in tiles], cols=2)
 
 
 if __name__ == "__main__":
