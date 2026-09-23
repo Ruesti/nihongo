@@ -74,6 +74,10 @@ class StoryPolygon {
       ]);
 }
 
+/// Anzeigeformat eines Panels — quer (16:9) oder hoch (9:16). Der Reader
+/// wählt es nach Handy-Lage (Spec Manga-Vollbild §7.1).
+enum PanelFormat { landscape, portrait }
+
 class StoryToken {
   final String surface;
   final String? reading;
@@ -102,7 +106,12 @@ class StoryBubble {
   final String speakerId;
   final String text;
   final String? audioRef;
+
+  /// Tippfläche im Querbild (normiert 0..1).
   final StoryPolygon hitArea;
+
+  /// Tippfläche im Hochbild (Spec Manga-Vollbild §5.1). Null = [hitArea] gilt.
+  final StoryPolygon? hitAreaPortrait;
   final List<StoryToken> tokens;
 
   const StoryBubble({
@@ -110,14 +119,21 @@ class StoryBubble {
     required this.text,
     this.audioRef,
     required this.hitArea,
+    this.hitAreaPortrait,
     required this.tokens,
   });
+
+  StoryPolygon hitAreaFor(PanelFormat format) =>
+      format == PanelFormat.portrait ? (hitAreaPortrait ?? hitArea) : hitArea;
 
   factory StoryBubble.fromJson(Map<String, dynamic> j) => StoryBubble(
         speakerId: j['speakerId'] as String,
         text: j['text'] as String,
         audioRef: j['audioRef'] as String?,
         hitArea: StoryPolygon.fromJson(j['hitArea'] as List?),
+        hitAreaPortrait: j['hitAreaPortrait'] == null
+            ? null
+            : StoryPolygon.fromJson(j['hitAreaPortrait'] as List?),
         tokens: [
           for (final t in (j['tokens'] as List? ?? const []))
             StoryToken.fromJson(t as Map<String, dynamic>),
@@ -148,6 +164,9 @@ class StoryInteraction {
   /// Panel-Variante, die nach Erfolg dieser Interaktion einblendet (§2.4).
   final String? reactionAsset;
 
+  /// Reaktions-Variante im Hochformat (Spec Manga-Vollbild §5.1).
+  final String? reactionAssetPortrait;
+
   /// Deutsche Erzählzeile zur Reaktion.
   final String? reactionCaption;
 
@@ -169,17 +188,24 @@ class StoryInteraction {
     required this.diegetic,
     this.optional = true,
     this.reactionAsset,
+    this.reactionAssetPortrait,
     this.reactionCaption,
     this.promptText,
     this.target,
     this.targetItemIds,
   });
 
+  String? reactionAssetFor(PanelFormat format) =>
+      format == PanelFormat.portrait
+          ? (reactionAssetPortrait ?? reactionAsset)
+          : reactionAsset;
+
   factory StoryInteraction.fromJson(Map<String, dynamic> j) => StoryInteraction(
         type: InteractionType.values.byName(j['type'] as String),
         diegetic: j['diegetic'] as bool? ?? false,
         optional: j['optional'] as bool? ?? true,
         reactionAsset: j['reactionAsset'] as String?,
+        reactionAssetPortrait: j['reactionAssetPortrait'] as String?,
         reactionCaption: j['reactionCaption'] as String?,
         promptText: j['promptText'] as String?,
         target: j['target'] as String?,
@@ -190,6 +216,9 @@ class StoryInteraction {
 class StoryPanel {
   final int index;
   final String asset;
+
+  /// Hochbild (9:16). Null = [asset] wird auch hochkant gezeigt.
+  final String? assetPortrait;
   final List<StoryBubble> bubbles;
   final List<StoryThought> thoughts;
   final List<StoryInteraction> interactions;
@@ -204,6 +233,7 @@ class StoryPanel {
   const StoryPanel({
     required this.index,
     required this.asset,
+    this.assetPortrait,
     required this.bubbles,
     required this.thoughts,
     required this.interactions,
@@ -211,9 +241,13 @@ class StoryPanel {
     this.notes = '',
   });
 
+  String assetFor(PanelFormat format) =>
+      format == PanelFormat.portrait ? (assetPortrait ?? asset) : asset;
+
   factory StoryPanel.fromJson(Map<String, dynamic> j) => StoryPanel(
         index: j['index'] as int,
         asset: j['asset'] as String,
+        assetPortrait: j['assetPortrait'] as String?,
         bubbles: [
           for (final b in (j['bubbles'] as List? ?? const []))
             StoryBubble.fromJson(b as Map<String, dynamic>),
@@ -308,6 +342,14 @@ class Episode {
   /// Bedeutung und die Stelle in der Folge.
   final Map<String, DebriefNote> debrief;
 
+  /// Titelbild der Titelkarte, quer / hoch (Spec Manga-Vollbild §7.3). Ohne
+  /// [cover] zeigt die Titelkarte nur Text.
+  final String? cover;
+  final String? coverPortrait;
+
+  /// Japanische Schreibung des Titels, nur Anzeige neben dem deutschen Titel.
+  final String? titleJa;
+
   const Episode({
     required this.id,
     required this.seasonId,
@@ -320,7 +362,13 @@ class Episode {
     this.intro,
     this.outro,
     this.debrief = const {},
+    this.cover,
+    this.coverPortrait,
+    this.titleJa,
   });
+
+  String? coverFor(PanelFormat format) =>
+      format == PanelFormat.portrait ? (coverPortrait ?? cover) : cover;
 
   factory Episode.fromJson(Map<String, dynamic> j) => Episode(
         id: j['id'] as String,
@@ -341,6 +389,9 @@ class Episode {
             e.key as String:
                 DebriefNote.fromJson(e.value as Map<String, dynamic>),
         },
+        cover: j['cover'] as String?,
+        coverPortrait: j['coverPortrait'] as String?,
+        titleJa: j['titleJa'] as String?,
       );
 
   /// All panels across all pages, in reading order.

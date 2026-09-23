@@ -5,18 +5,11 @@ import 'dictionary_sheet.dart';
 import 'diegetic_speak_sheet.dart';
 import 'diegetic_trace_sheet.dart';
 import 'episode.dart';
+import 'panel_geometry.dart';
+import 'reader_system_ui.dart';
 import 'speak_evaluator.dart';
 import 'story_progress_store.dart';
 import 'trace_evaluator.dart';
-
-/// Default panel aspect ratio (width / height) — matches the default used
-/// for the earlier comic-page model (`comic_pack.dart`). Real per-panel
-/// dimensions don't exist yet; every panel currently renders the shared
-/// placeholder image.
-// Die Folge-01-Panels sind 1080×738 (Querformat). Mit dem Bild-Seitenverhältnis
-// füllt das Panel die volle Breite und wird nicht beschnitten (bei 0.7 gingen
-// die seitlichen Blasen verloren). Gedrehtes Handy: Panel füllt den Schirm.
-const double _panelAspectRatio = 1080 / 738;
 
 /// Axis-aligned bounding box of a bubble's `hitArea` polygon, in the same
 /// normalized 0..1 panel space — the tap target is the box, not the exact
@@ -81,6 +74,10 @@ class StoryReaderScreen extends StatefulWidget {
   /// als gelesen (INV-1).
   final Future<void> Function()? onEnterCafe;
 
+  /// Vollbild beim Lesen (Spec Manga-Vollbild §7.1). Tests injizieren eine
+  /// aufzeichnende Attrappe; die App nimmt den `SystemChrome`-Default.
+  final ReaderSystemUi systemUi;
+
   const StoryReaderScreen({
     super.key,
     required this.episode,
@@ -94,6 +91,7 @@ class StoryReaderScreen extends StatefulWidget {
     this.traceEvaluator,
     this.onDiegeticTraceSuccess,
     this.onEnterCafe,
+    this.systemUi = const SystemChromeReaderUi(),
   });
 
   @override
@@ -124,6 +122,14 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     _restorePosition();
   }
 
+  @override
+  void dispose() {
+    // Zurück-Geste, Café-Wechsel, App-Navigation: Leisten immer wieder her.
+    // Doppelt aufgerufen (Endkarte + dispose) ist unschädlich.
+    widget.systemUi.exitImmersive();
+    super.dispose();
+  }
+
   Future<void> _restorePosition() async {
     final done = await widget.progressStore.isCompleted(widget.episode.id);
     final saved =
@@ -136,12 +142,14 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
       _phase = resumeMidway ? _ReaderPhase.reading : _ReaderPhase.title;
     });
     if (resumeMidway) {
+      widget.systemUi.enterImmersive();
       _maybeShowDictionary(clamped);
       _maybeFireCompletion(clamped);
     }
   }
 
   void _beginReading() {
+    widget.systemUi.enterImmersive();
     setState(() => _phase = _ReaderPhase.reading);
     _maybeShowDictionary(_position ?? 0);
     _maybeFireCompletion(_position ?? 0);
@@ -151,6 +159,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final current = _position;
     if (current == null) return;
     if (current >= _panels.length - 1) {
+      widget.systemUi.exitImmersive();
       setState(() => _phase = _ReaderPhase.end);
       return;
     }
@@ -228,10 +237,26 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     setState(() => _reactedPositions.add(position));
   }
 
-  String _effectiveAssetFor(StoryPanel panel) {
+  String _effectiveAssetFor(StoryPanel panel, PanelFormat format) {
     final reacted = _reactedPositions.contains(_position);
-    final reaction = _diegeticInteractionOf(panel)?.reactionAsset;
-    return (reacted && reaction != null) ? reaction : panel.asset;
+    final reaction = _diegeticInteractionOf(panel)?.reactionAssetFor(format);
+    return (reacted && reaction != null) ? reaction : panel.assetFor(format);
+  }
+
+  /// Format, in dem das von [_effectiveAssetFor] tatsächlich gezeigte Bild
+  /// geschnitten ist. Weicht von [format] ab, wenn das angeforderte Hochbild
+  /// fehlt — Panel oder Reaktion —: dann liefert `assetFor`/`reactionAssetFor`
+  /// das Querbild als Rückfall, und Cover-Rechteck wie Tippflächen müssen
+  /// dessen Seitenverhältnis folgen statt des Hochformats (Spec §5.1/§7.4).
+  PanelFormat _shownFormatFor(StoryPanel panel, PanelFormat format) {
+    if (format != PanelFormat.portrait) return format;
+    final reacted = _reactedPositions.contains(_position);
+    final interaction = _diegeticInteractionOf(panel);
+    final reacting = reacted && interaction?.reactionAssetFor(format) != null;
+    final hasPortraitVariant = reacting
+        ? interaction!.reactionAssetPortrait != null
+        : panel.assetPortrait != null;
+    return hasPortraitVariant ? PanelFormat.portrait : PanelFormat.landscape;
   }
 
   /// Öffnet das Sprech-Blatt — nur auf Tap auf den Hinweis-Kasten, nie automatisch.
@@ -341,31 +366,92 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     }
 
     if (_phase == _ReaderPhase.title) {
+      final episode = widget.episode;
+      final textTheme = Theme.of(context).textTheme;
+      final hasCover = episode.cover != null;
+      final onCover = hasCover ? Colors.white : null;
+
+      final texts = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment:
+            hasCover ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          Text('Folge ${episode.orderIndex}',
+              style: textTheme.labelLarge?.copyWith(color: onCover)),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              if (episode.titleJa != null) ...[
+                Text(episode.titleJa!,
+                    key: const ValueKey('story-title-ja'),
+                    style: textTheme.displaySmall?.copyWith(color: onCover)),
+                const SizedBox(width: 12),
+              ],
+              Text(episode.title,
+                  style: textTheme.headlineMedium?.copyWith(color: onCover)),
+            ],
+          ),
+          if (episode.intro != null) ...[
+            const SizedBox(height: 16),
+            Text(episode.intro!,
+                textAlign: hasCover ? TextAlign.start : TextAlign.center,
+                style: TextStyle(color: onCover)),
+          ],
+          const SizedBox(height: 32),
+          Text('Tippe, um zu beginnen',
+              style: textTheme.bodySmall?.copyWith(color: onCover)),
+        ],
+      );
+
       return Scaffold(
+        backgroundColor: hasCover ? Colors.black : null,
         body: GestureDetector(
           key: const ValueKey('story-title-card'),
           behavior: HitTestBehavior.opaque,
           onTap: _beginReading,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(widget.episode.title,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                      textAlign: TextAlign.center),
-                  if (widget.episode.intro != null) ...[
-                    const SizedBox(height: 16),
-                    Text(widget.episode.intro!, textAlign: TextAlign.center),
-                  ],
-                  const SizedBox(height: 32),
-                  Text('Tippe, um zu beginnen',
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-          ),
+          child: hasCover
+              ? LayoutBuilder(builder: (context, constraints) {
+                  final format = formatForSize(
+                      Size(constraints.maxWidth, constraints.maxHeight));
+                  return Stack(fit: StackFit.expand, children: [
+                    Image.asset(
+                      episode.coverFor(format)!,
+                      key: const ValueKey('story-title-cover'),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: const Color(0xFF1B2220)),
+                    ),
+                    // Dunkler Verlauf unten, damit der Text auf jedem Motiv
+                    // lesbar bleibt (Spec §7.3).
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.center,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0x00000000), Color(0xD9000000)],
+                        ),
+                      ),
+                    ),
+                    SafeArea(
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: texts,
+                        ),
+                      ),
+                    ),
+                  ]);
+                })
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: texts,
+                  ),
+                ),
         ),
       );
     }
@@ -411,69 +497,154 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     }
 
     final panel = _panels[position];
+    final pending = _pendingDiegeticOf(panel, position);
+    final reactionCaption = _reactedPositions.contains(_position)
+        ? _diegeticInteractionOf(panel)?.reactionCaption
+        : null;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.episode.title),
-        leading: IconButton(
-          key: const ValueKey('story-reader-back'),
-          icon: const Icon(Icons.arrow_back),
-          onPressed: position > 0 ? _goBack : null,
-        ),
-      ),
+      backgroundColor: Colors.black,
       body: GestureDetector(
         key: const ValueKey('story-reader-panel'),
         behavior: HitTestBehavior.opaque,
         onTap: _advance,
-        child: SingleChildScrollView(
-          child: Column(
+        child: LayoutBuilder(builder: (context, constraints) {
+          final screen = Size(constraints.maxWidth, constraints.maxHeight);
+          final format = formatForSize(screen);
+          final shown = _shownFormatFor(panel, format);
+          final imageRect = coverRect(screen, aspectOf(shown));
+          final asset = _effectiveAssetFor(panel, format);
+          final footerBubbles = [
+            for (final b in panel.bubbles)
+              if (b.hitAreaFor(shown).points.isEmpty) b,
+          ];
+          return Stack(
+            clipBehavior: Clip.hardEdge,
+            fit: StackFit.expand,
             children: [
-              AspectRatio(
-                aspectRatio: _panelAspectRatio,
-                child: LayoutBuilder(builder: (context, constraints) {
-                  final w = constraints.maxWidth;
-                  final h = constraints.maxHeight;
-                  return Stack(fit: StackFit.expand, children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 400),
-                      child: Image.asset(
-                        _effectiveAssetFor(panel),
-                        key: ValueKey(_effectiveAssetFor(panel)),
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            Container(color: const Color(0xFFEDEDED)),
-                      ),
+              // Bild im Cover-Rechteck: eine Achse füllt den Schirm, die
+              // andere steht symmetrisch über (Spec §3.1/§7.1).
+              Positioned.fromRect(
+                rect: imageRect,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  // KeyedSubtree mit dem Asset als Key: AnimatedSwitcher
+                  // erkennt einen Wechsel nur an einem neuen Key — die
+                  // konstante ValueKey('story-panel-image') am Image selbst
+                  // (für Tests) hätte den Übergang sonst unterdrückt.
+                  child: KeyedSubtree(
+                    key: ValueKey(asset),
+                    child: Image.asset(
+                      asset,
+                      key: const ValueKey('story-panel-image'),
+                      // AnimatedSwitcher layoutet intern mit einem losen
+                      // Stack (StackFit.loose) — ohne explizite Größe würde
+                      // sich das Bild an seiner natürlichen Größe statt am
+                      // Cover-Rechteck ausrichten, BoxFit.fill liefe leer.
+                      width: imageRect.width,
+                      height: imageRect.height,
+                      fit: BoxFit.fill,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: const Color(0xFF2A2A2A)),
                     ),
-                    if (panel.thoughts.isNotEmpty)
-                      Positioned(
-                        top: 8, left: 8, right: 8,
-                        child: Container(
-                          key: const ValueKey('story-thought-box'),
+                  ),
+                ),
+              ),
+              // Tippflächen der gelettertern Blasen, relativ zum Bildrechteck.
+              for (var i = 0; i < panel.bubbles.length; i++)
+                if (panel.bubbles[i].hitAreaFor(shown).points.isNotEmpty)
+                  Positioned.fromRect(
+                    rect: mapToScreen(
+                        _bboxOf(panel.bubbles[i].hitAreaFor(shown)),
+                        imageRect),
+                    child: GestureDetector(
+                      key: ValueKey('story-bubble-hit-$i'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        widget.speak(panel.bubbles[i].text);
+                        _openDictionary();
+                      },
+                    ),
+                  ),
+              // Bedienung und Erzählstimme über dem Bild, innerhalb der
+              // Systemränder (Spec §7.2).
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _BackChip(
+                            enabled: position > 0,
+                            onPressed: _goBack,
+                          ),
+                          const SizedBox(width: 8),
+                          if (panel.thoughts.isNotEmpty)
+                            Expanded(
+                              // IgnorePointer: reines Fließtext-Feld ohne
+                              // eigene Interaktion; Flutters RenderParagraph
+                              // beansprucht Taps sonst für sich selbst (auch
+                              // ohne Recognizer) und blockt so darunter
+                              // liegende Tippflächen der Blasen (Bug,
+                              // Folge-01-Panel-1-Fixture: Gedanken-Kasten
+                              // überlappt die Tippfläche des Schild-Texts).
+                              child: IgnorePointer(
+                                child: Container(
+                                  key: const ValueKey('story-thought-box'),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xF2FFF8E7),
+                                    border: Border.all(
+                                        color: const Color(0xFF444444)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      for (final thought in panel.thoughts)
+                                        Text(thought.text,
+                                            style: const TextStyle(
+                                                fontStyle: FontStyle.italic)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const Spacer(),
+                      if (footerBubbles.isNotEmpty)
+                        Container(
+                          key: const ValueKey('story-bubble-footer'),
+                          margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xF2FFF8E7),
+                            color: const Color(0xF2FFFFFF),
                             border: Border.all(color: const Color(0xFF444444)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              for (final thought in panel.thoughts)
-                                Text(thought.text,
-                                    style: const TextStyle(
-                                        fontStyle: FontStyle.italic)),
+                              for (final bubble in footerBubbles)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: _BubbleContent(
+                                      bubble: bubble, speak: widget.speak),
+                                ),
                             ],
                           ),
                         ),
-                      ),
-                    if (_pendingDiegeticOf(panel, position) != null)
-                      Positioned(
-                        bottom: 8, left: 8, right: 8,
-                        child: GestureDetector(
+                      if (pending != null)
+                        GestureDetector(
                           key: const ValueKey('story-diegetic-prompt'),
                           behavior: HitTestBehavior.opaque,
                           onTap: () {
-                            final it = _pendingDiegeticOf(panel, position)!;
-                            if (it.type == InteractionType.trace) {
+                            if (pending.type == InteractionType.trace) {
                               _openTrace(position);
                             } else {
                               _openSpeak(position);
@@ -490,8 +661,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                             child: Row(
                               children: [
                                 Icon(
-                                  _pendingDiegeticOf(panel, position)!.type ==
-                                          InteractionType.trace
+                                  pending.type == InteractionType.trace
                                       ? Icons.edit
                                       : Icons.mic,
                                   size: 20,
@@ -499,8 +669,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    _pendingDiegeticOf(panel, position)!
-                                            .promptText ??
+                                    pending.promptText ??
                                         'Tippen, um mitzumachen',
                                     style: const TextStyle(
                                         fontStyle: FontStyle.italic),
@@ -511,66 +680,67 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                             ),
                           ),
                         ),
-                      ),
-                    if (_reactedPositions.contains(_position) &&
-                        _diegeticInteractionOf(panel)?.reactionCaption != null)
-                      Positioned(
-                        bottom: 8, left: 8, right: 8,
-                        child: Container(
-                          key: const ValueKey('story-reaction-caption'),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xF2FFF8E7),
-                            border: Border.all(color: const Color(0xFF444444)),
-                          ),
-                          child: Text(
-                            _diegeticInteractionOf(panel)!.reactionCaption!,
-                            style: const TextStyle(
-                                fontStyle: FontStyle.italic),
-                          ),
-                        ),
-                      ),
-                    for (var i = 0; i < panel.bubbles.length; i++)
-                      if (panel.bubbles[i].hitArea.points.isNotEmpty)
-                        Positioned(
-                          left: _bboxOf(panel.bubbles[i].hitArea).left * w,
-                          top: _bboxOf(panel.bubbles[i].hitArea).top * h,
-                          width: _bboxOf(panel.bubbles[i].hitArea).width * w,
-                          height: _bboxOf(panel.bubbles[i].hitArea).height * h,
-                          child: GestureDetector(
-                            key: ValueKey('story-bubble-hit-$i'),
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              widget.speak(panel.bubbles[i].text);
-                              _openDictionary();
-                            },
+                      if (reactionCaption != null)
+                        // IgnorePointer: reine Erzählzeile ohne eigene
+                        // Interaktion, siehe Gedanken-Kasten oben.
+                        IgnorePointer(
+                          child: Container(
+                            key: const ValueKey('story-reaction-caption'),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xF2FFF8E7),
+                              border:
+                                  Border.all(color: const Color(0xFF444444)),
+                            ),
+                            child: Text(
+                              reactionCaption,
+                              style:
+                                  const TextStyle(fontStyle: FontStyle.italic),
+                            ),
                           ),
                         ),
-                  ]);
-                }),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final bubble in panel.bubbles)
-                      if (bubble.hitArea.points.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: _BubbleContent(
-                            bubble: bubble,
-                            speak: widget.speak,
-                          ),
-                        ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        }),
       ),
+    );
+  }
+}
+
+/// Zurück als kleiner halbtransparenter Chip oben links (die AppBar entfällt
+/// im Vollbild, Spec §7.2). Behält den Key `story-reader-back`, damit der
+/// Sperrzustand auf Panel 1 weiter testbar ist.
+class _BackChip extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback onPressed;
+  const _BackChip({required this.enabled, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final chip = DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Color(0x99000000),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        key: const ValueKey('story-reader-back'),
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: enabled ? onPressed : null,
+      ),
+    );
+    if (enabled) return chip;
+    // Panel 1: gesperrt (onPressed null) — ein deaktivierter IconButton
+    // registriert aber gar keinen Recognizer, der Tap fiele sonst durch zum
+    // GestureDetector des Panels und würde weiterblättern. Hier schlucken.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {},
+      child: chip,
     );
   }
 }
