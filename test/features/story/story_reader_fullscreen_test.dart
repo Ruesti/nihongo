@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nihongo_app/features/story/diegetic_speak_sheet.dart'
+    show kDiegeticSuccessAutoClose;
 import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/reader_system_ui.dart';
+import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:nihongo_app/features/story/story_reader_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+class _FakeSpeakEvaluator implements SpeakEvaluator {
+  final double score;
+  _FakeSpeakEvaluator(this.score);
+  @override
+  Future<double> evaluate(String target) async => score;
+}
 
 class RecordingSystemUi implements ReaderSystemUi {
   final List<String> calls = [];
@@ -98,7 +108,9 @@ Episode twoFormatEpisode({String? cover, String? coverPortrait, String? titleJa}
     });
 
 Future<void> pumpReader(WidgetTester tester, Episode episode,
-    {required StoryProgressStore store, RecordingSystemUi? ui}) async {
+    {required StoryProgressStore store,
+    RecordingSystemUi? ui,
+    SpeakEvaluator? speakEvaluator}) async {
   await tester.pumpWidget(MaterialApp(
     home: StoryReaderScreen(
       episode: episode,
@@ -107,6 +119,7 @@ Future<void> pumpReader(WidgetTester tester, Episode episode,
       dictionaryEntries: const [],
       knownIds: const {},
       systemUi: ui ?? RecordingSystemUi(),
+      speakEvaluator: speakEvaluator,
     ),
   ));
   await tester.pump();
@@ -198,8 +211,9 @@ void main() {
     });
 
     testWidgets(
-        'Panel ohne Hochbild, hochkant: Tippfläche landet im Querbild-Rechteck, '
-        'nicht im Hochformat-Rechteck', (tester) async {
+        'Panel ohne Hochbild, hochkant: Tippfläche landet im eingepassten '
+        '(Letterbox) Querbild-Rechteck, nicht im Hochformat-Rechteck und '
+        'nicht beschnitten', (tester) async {
       setScreen(tester, const Size(540, 1170));
       await startReading(tester);
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
@@ -207,17 +221,17 @@ void main() {
       expect(shownAsset(tester), 'assets/story/p02.jpg');
 
       // Das Panel hat kein assetPortrait → das gezeigte Bild ist das
-      // Querbild, also muss auch das Cover-Rechteck (und damit die
-      // Tippfläche) dem Querformat folgen, nicht dem angeforderten Hochformat
-      // (Spec §5.1/§7.4).
-      final imageH = 1170.0;
-      final imageW = imageH * (1920 / 1072);
-      final imageLeft = (540 - imageW) / 2;
+      // Querbild, im angefragten Hochformat aber per Ruling eingepasst
+      // (Letterbox), nicht beschnitten: das Cover-Rechteck würde verzerren/
+      // croppen, das Contain-Rechteck bleibt unverzerrt (Spec §7.1/§7.4).
+      final imageW = 540.0;
+      final imageH = imageW / (1920 / 1072);
+      final imageTop = (1170 - imageH) / 2;
       final hit = tester.getRect(find.byKey(const ValueKey('story-bubble-hit-0')));
-      expect(hit.left, closeTo(imageLeft + 0.40 * imageW, 0.5));
-      expect(hit.top, closeTo(0.40 * imageH, 0.5));
-      expect(hit.width, closeTo(0.20 * imageW, 0.5));
-      expect(hit.height, closeTo(0.10 * imageH, 0.5));
+      expect(hit.left, closeTo(0.40 * imageW, 0.5)); // ≈ 216
+      expect(hit.top, closeTo(imageTop + 0.40 * imageH, 0.5)); // ≈ 554.8
+      expect(hit.width, closeTo(0.20 * imageW, 0.5)); // 108
+      expect(hit.height, closeTo(0.10 * imageH, 0.5)); // ≈ 30.2
     });
 
     testWidgets('das Bild füllt den Schirm (Cover-Rechteck), nicht nur die Breite',
@@ -353,6 +367,125 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('story-title-card')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('story-panel-image')), findsOneWidget);
+    });
+  });
+
+  group('Titelkarte: langer Titel bricht um statt zu überlaufen (Spec §7.3)',
+      () {
+    Episode longTitleEpisode({String? cover}) => Episode.fromJson({
+          'id': 'ep_longtitle',
+          'seasonId': 'season_test',
+          'orderIndex': 1,
+          'title': 'X' * 60,
+          'locale': 'ja',
+          'era': '1996',
+          'cover': ?cover,
+          'budget': {'items': [], 'glyphs': []},
+          'pages': [
+            {
+              'index': 0,
+              'panels': [
+                {
+                  'index': 0,
+                  'asset': 'assets/story/p01.jpg',
+                  'bubbles': [],
+                  'thoughts': [],
+                  'interactions': [],
+                },
+              ],
+            },
+          ],
+        });
+
+    testWidgets('ohne Titelbild: 60-Zeichen-Titel wirft keinen Overflow',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await pumpReader(tester, longTitleEpisode(), store: await freshStore());
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('mit Titelbild: 60-Zeichen-Titel wirft keinen Overflow',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await pumpReader(
+          tester, longTitleEpisode(cover: 'assets/story/titel.jpg'),
+          store: await freshStore());
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group(
+      'Reaktion nur mit querer Variante, angefragt hochkant '
+      '(Ruling Befund 1+4)', () {
+    Episode reactionLandscapeOnlyEpisode() => Episode.fromJson({
+          'id': 'ep_reaction_letterbox',
+          'seasonId': 'season_test',
+          'orderIndex': 1,
+          'title': 'Reaktion',
+          'locale': 'ja',
+          'era': '1996',
+          'budget': {'items': [], 'glyphs': []},
+          'pages': [
+            {
+              'index': 0,
+              'panels': [
+                {
+                  'index': 0,
+                  'asset': 'assets/story/p01.jpg',
+                  'assetPortrait': 'assets/story/p01_hoch.jpg',
+                  'bubbles': [],
+                  'thoughts': [],
+                  'interactions': [
+                    {
+                      'type': 'speak',
+                      'diegetic': true,
+                      // Absichtlich nur die Quer-Variante: prüft, dass die
+                      // Reaktion hochkant eingepasst (Letterbox) statt
+                      // beschnitten erscheint (Spec §7.1/§7.4).
+                      'reactionAsset': 'assets/story/p01_reaction.jpg',
+                      'target': 'テスト',
+                      'targetItemIds': <dynamic>[],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+
+    testWidgets(
+        'nach erfolgreichem Sprechen: hochkant zeigt die quere '
+        'Reaktionsvariante eingepasst (Letterbox), nicht beschnitten',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await pumpReader(tester, reactionLandscapeOnlyEpisode(),
+          store: await freshStore(), speakEvaluator: _FakeSpeakEvaluator(1.0));
+      await tester.tap(find.byKey(const ValueKey('story-title-card')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
+      await tester.pumpAndSettle();
+      // Sheet schließt sich 900ms nach Erfolg selbst — den Timer explizit
+      // verstreichen lassen (wie im bestehenden Erfolgs-Test-Muster).
+      await tester.pump(kDiegeticSuccessAutoClose);
+      await tester.pumpAndSettle();
+
+      final img = tester
+          .widget<Image>(find.byKey(const ValueKey('story-panel-image')));
+      expect((img.image as AssetImage).assetName,
+          'assets/story/p01_reaction.jpg');
+
+      final imageW = 540.0;
+      final imageH = imageW / (1920 / 1072);
+      final imageTop = (1170 - imageH) / 2;
+      final rect =
+          tester.getRect(find.byKey(const ValueKey('story-panel-image')));
+      expect(rect.width, closeTo(imageW, 0.5));
+      expect(rect.height, closeTo(imageH, 0.5)); // ≈ 301,5
+      expect(rect.left, closeTo(0, 0.5));
+      expect(rect.top, closeTo(imageTop, 0.5)); // ≈ 434,2
     });
   });
 }

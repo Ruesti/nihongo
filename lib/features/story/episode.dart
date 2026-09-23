@@ -367,8 +367,9 @@ class Episode {
     this.titleJa,
   });
 
-  String? coverFor(PanelFormat format) =>
-      format == PanelFormat.portrait ? (coverPortrait ?? cover) : cover;
+  String? coverFor(PanelFormat format) => format == PanelFormat.portrait
+      ? (coverPortrait ?? cover)
+      : (cover ?? coverPortrait);
 
   factory Episode.fromJson(Map<String, dynamic> j) => Episode(
         id: j['id'] as String,

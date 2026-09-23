@@ -189,12 +189,15 @@ NICHT eingebrannt.
 - Beide Handy-Lagen sind erlaubt (keine Sperre). `OrientationBuilder`
   wählt `asset` (quer) oder `assetPortrait` (hoch).
 - Das Bild füllt den ganzen Schirm mit `BoxFit.cover`, Beschnitt
-  gleichmäßig an beiden Rändern.
+  gleichmäßig an beiden Rändern. Ausnahme: Fehlt das Bild des angefragten
+  Formats, wird das andere eingepasst (Letterbox) statt beschnitten —
+  Übergangszustand ohne Verzerrung/Beschnitt (Ruling Befund 1).
 - **Tippflächen unter Beschnitt:** Der Reader rechnet das angezeigte
   Bildrechteck aus (Skalierung = max(SchirmB/BildB, SchirmH/BildH), Versatz
   zentriert) und legt die Tippflächen relativ zu diesem Rechteck. Die
   Bild-Seitenverhältnisse sind je Format bekannte Konstanten (1920/1072,
-  1080/1936); kein Bild muss dafür dekodiert werden.
+  1080/1936); kein Bild muss dafür dekodiert werden. Tippflächen folgen
+  dem eingepassten Rechteck, wenn das andere Format gezeigt wird.
 - Das bisherige `AspectRatio(_panelAspectRatio)` + `SingleChildScrollView`
   entfällt in der Lesephase.
 
@@ -218,7 +221,9 @@ NICHT eingebrannt.
 
 ### 7.4 Tests (Widget- und Unit-Tests)
 - Bildwahl: quer → `asset`, hoch → `assetPortrait`, hoch ohne
-  `assetPortrait` → `asset`.
+  `assetPortrait` → `asset`; fehlt das Bild des angefragten Formats, wird
+  das andere eingepasst (Letterbox) statt beschnitten — Tippflächen
+  folgen dem eingepassten Rechteck.
 - Tippflächen-Abbildung: ein Rechteck 0..1 landet unter Beschnitt an der
   errechneten Stelle (zwei Schirmgrößen, beide Lagen); Tap darauf löst
   Vorlesen + Wörterbuch aus wie bisher.

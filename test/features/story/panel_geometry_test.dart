@@ -42,6 +42,26 @@ void main() {
     expect(r.left, lessThan(0));
   });
 
+  test(
+      'containRect: Hochschirm mit Querbild wird eingepasst (Letterbox), '
+      'Balken oben/unten', () {
+    final r = containRect(const Size(1080, 2340), kLandscapeAspect);
+    expect(r.width, closeTo(1080, 1e-6));
+    expect(r.height, closeTo(1080 / kLandscapeAspect, 1e-6)); // ≈ 603
+    expect(r.left, closeTo(0, 1e-9));
+    expect(r.top, closeTo(868.5, 0.5));
+  });
+
+  test(
+      'containRect: Querschirm mit Hochbild wird eingepasst (Letterbox), '
+      'Balken links/rechts', () {
+    final r = containRect(const Size(2340, 1080), kPortraitAspect);
+    expect(r.height, closeTo(1080, 1e-6));
+    expect(r.width, closeTo(1080 * kPortraitAspect, 1e-6)); // ≈ 602,5
+    expect(r.top, closeTo(0, 1e-9));
+    expect(r.left, closeTo(868.7, 0.5));
+  });
+
   test('normiertes Rechteck wird relativ zum Bildrechteck abgebildet', () {
     final image = Rect.fromLTWH(-100, 0, 1300, 2340);
     final hit = mapToScreen(const Rect.fromLTWH(0.1, 0.5, 0.4, 0.1), image);

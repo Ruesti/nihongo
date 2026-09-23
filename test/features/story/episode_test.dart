@@ -290,5 +290,33 @@ void main() {
       });
       expect(ep.coverFor(PanelFormat.portrait), 'assets/story/folge01/titel.jpg');
     });
+
+    test('Titelbild nur hoch: quer fällt auf hoch zurück', () {
+      final ep = episodeWith(panelJson(), top: {
+        'coverPortrait': 'assets/story/folge01/titel_hoch.jpg',
+      });
+      expect(ep.coverFor(PanelFormat.landscape),
+          'assets/story/folge01/titel_hoch.jpg');
+      expect(ep.coverFor(PanelFormat.portrait),
+          'assets/story/folge01/titel_hoch.jpg');
+    });
+
+    test(
+        'reactionAssetFor faellt bei fehlendem Hochbild aufs Querbild '
+        'zurueck; ohne beide null', () {
+      final withLandscapeOnly = StoryInteraction.fromJson({
+        'type': 'speak',
+        'diegetic': true,
+        'reactionAsset': 'assets/story/folge01/p05_reaction.jpg',
+      });
+      expect(withLandscapeOnly.reactionAssetFor(PanelFormat.portrait),
+          'assets/story/folge01/p05_reaction.jpg');
+      expect(withLandscapeOnly.reactionAssetFor(PanelFormat.landscape),
+          'assets/story/folge01/p05_reaction.jpg');
+
+      final withNeither = StoryInteraction.fromJson({'type': 'speak'});
+      expect(withNeither.reactionAssetFor(PanelFormat.portrait), isNull);
+      expect(withNeither.reactionAssetFor(PanelFormat.landscape), isNull);
+    });
   });
 }

@@ -24,7 +24,7 @@
 ## Review Focus
 
 1. **Handy wird mitten in der Folge gedreht:** Position und Reaktionszustand bleiben, nur das Bild und die Tippflächen wechseln. Test in Task 4 (Drehen nach Vorwärtsblättern zeigt weiterhin Panel 2).
-2. **Hochbild fehlt bei einem Panel (Übergangszeit, alte Daten):** Hochkant zeigt das Querbild bildschirmfüllend beschnitten, keine graue Fläche, kein Absturz. Test in Task 4.
+2. **Hochbild fehlt bei einem Panel (Übergangszeit, alte Daten):** Hochkant zeigt das Querbild eingepasst (Letterbox), nicht beschnitten — keine graue Fläche, kein Absturz. Test in Task 4.
 3. **Tippfläche liegt teilweise im beschnittenen Rand:** Der sichtbare Teil ist tippbar, der unsichtbare Teil fängt keine Taps außerhalb des Bildes ab (Stack clippt). Test in Task 4 (Rechteck-Abbildung mit negativem Versatz).
 4. **Reader wird per Zurück-Geste verlassen, ohne die Endkarte zu erreichen:** Systemleisten kommen zurück. Test in Task 3 (`exitImmersive` beim Dispose).
 5. **Titelbild-Datei fehlt oder ist kaputt:** Titelkarte bleibt lesbar (dunkle Fläche statt Bild), Tipp startet die Folge. Test in Task 5 (`errorBuilder`).

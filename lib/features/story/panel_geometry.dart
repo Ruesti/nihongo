@@ -32,6 +32,25 @@ Rect coverRect(Size screen, double aspect) {
   return Rect.fromLTWH((screen.width - w) / 2, (screen.height - h) / 2, w, h);
 }
 
+/// Rechteck, das ein Bild mit Seitenverhältnis [aspect] (Breite/Höhe) unter
+/// Letterbox (unbeschnitten, unverzerrt) in [screen] einpasst: eine Achse
+/// füllt den Schirm genau, die andere lässt symmetrisch Rand frei (statt
+/// Beschnitt wie bei [coverRect]). Genutzt, wenn das angeforderte Format
+/// fehlt und stattdessen das andere Bild gezeigt wird — Übergangszustand
+/// ohne Verzerrung/Beschnitt (Spec §7.1/§7.4).
+Rect containRect(Size screen, double aspect) {
+  final widthIfHeightFills = screen.height * aspect;
+  final double w, h;
+  if (widthIfHeightFills <= screen.width) {
+    h = screen.height;
+    w = widthIfHeightFills;
+  } else {
+    w = screen.width;
+    h = screen.width / aspect;
+  }
+  return Rect.fromLTWH((screen.width - w) / 2, (screen.height - h) / 2, w, h);
+}
+
 /// Bildet ein normiertes Rechteck (0..1 im Bild) in Schirmkoordinaten ab.
 Rect mapToScreen(Rect normalized, Rect imageRect) => Rect.fromLTWH(
       imageRect.left + normalized.left * imageRect.width,

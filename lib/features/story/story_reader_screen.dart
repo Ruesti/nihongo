@@ -368,7 +368,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (_phase == _ReaderPhase.title) {
       final episode = widget.episode;
       final textTheme = Theme.of(context).textTheme;
-      final hasCover = episode.cover != null;
+      final hasCover = episode.cover != null || episode.coverPortrait != null;
       final onCover = hasCover ? Colors.white : null;
 
       final texts = Column(
@@ -390,8 +390,11 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                     style: textTheme.displaySmall?.copyWith(color: onCover)),
                 const SizedBox(width: 12),
               ],
-              Text(episode.title,
-                  style: textTheme.headlineMedium?.copyWith(color: onCover)),
+              Flexible(
+                child: Text(episode.title,
+                    style:
+                        textTheme.headlineMedium?.copyWith(color: onCover)),
+              ),
             ],
           ),
           if (episode.intro != null) ...[
@@ -512,7 +515,14 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           final screen = Size(constraints.maxWidth, constraints.maxHeight);
           final format = formatForSize(screen);
           final shown = _shownFormatFor(panel, format);
-          final imageRect = coverRect(screen, aspectOf(shown));
+          // Zeigt der Rückfall das andere Format als angefragt (das
+          // gewünschte Bild fehlt), wird eingepasst (Letterbox) statt
+          // beschnitten — sonst verzerrt/croppt der Übergangszustand das
+          // Bild sichtbar (Spec §7.1/§7.4). Tippflächen und alles andere
+          // bleiben an imageRect gebunden, also automatisch korrekt.
+          final imageRect = shown == format
+              ? coverRect(screen, aspectOf(shown))
+              : containRect(screen, aspectOf(shown));
           final asset = _effectiveAssetFor(panel, format);
           final footerBubbles = [
             for (final b in panel.bubbles)
@@ -730,6 +740,7 @@ class _BackChip extends StatelessWidget {
       child: IconButton(
         key: const ValueKey('story-reader-back'),
         icon: const Icon(Icons.arrow_back, color: Colors.white),
+        tooltip: 'Zurück',
         onPressed: enabled ? onPressed : null,
       ),
     );
