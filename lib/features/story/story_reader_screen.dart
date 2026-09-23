@@ -5,6 +5,7 @@ import 'dictionary_sheet.dart';
 import 'diegetic_speak_sheet.dart';
 import 'diegetic_trace_sheet.dart';
 import 'episode.dart';
+import 'reader_system_ui.dart';
 import 'speak_evaluator.dart';
 import 'story_progress_store.dart';
 import 'trace_evaluator.dart';
@@ -81,6 +82,10 @@ class StoryReaderScreen extends StatefulWidget {
   /// als gelesen (INV-1).
   final Future<void> Function()? onEnterCafe;
 
+  /// Vollbild beim Lesen (Spec Manga-Vollbild §7.1). Tests injizieren eine
+  /// aufzeichnende Attrappe; die App nimmt den `SystemChrome`-Default.
+  final ReaderSystemUi systemUi;
+
   const StoryReaderScreen({
     super.key,
     required this.episode,
@@ -94,6 +99,7 @@ class StoryReaderScreen extends StatefulWidget {
     this.traceEvaluator,
     this.onDiegeticTraceSuccess,
     this.onEnterCafe,
+    this.systemUi = const SystemChromeReaderUi(),
   });
 
   @override
@@ -124,6 +130,14 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     _restorePosition();
   }
 
+  @override
+  void dispose() {
+    // Zurück-Geste, Café-Wechsel, App-Navigation: Leisten immer wieder her.
+    // Doppelt aufgerufen (Endkarte + dispose) ist unschädlich.
+    widget.systemUi.exitImmersive();
+    super.dispose();
+  }
+
   Future<void> _restorePosition() async {
     final done = await widget.progressStore.isCompleted(widget.episode.id);
     final saved =
@@ -136,12 +150,14 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
       _phase = resumeMidway ? _ReaderPhase.reading : _ReaderPhase.title;
     });
     if (resumeMidway) {
+      widget.systemUi.enterImmersive();
       _maybeShowDictionary(clamped);
       _maybeFireCompletion(clamped);
     }
   }
 
   void _beginReading() {
+    widget.systemUi.enterImmersive();
     setState(() => _phase = _ReaderPhase.reading);
     _maybeShowDictionary(_position ?? 0);
     _maybeFireCompletion(_position ?? 0);
@@ -151,6 +167,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final current = _position;
     if (current == null) return;
     if (current >= _panels.length - 1) {
+      widget.systemUi.exitImmersive();
       setState(() => _phase = _ReaderPhase.end);
       return;
     }
