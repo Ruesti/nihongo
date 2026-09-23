@@ -366,31 +366,92 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     }
 
     if (_phase == _ReaderPhase.title) {
+      final episode = widget.episode;
+      final textTheme = Theme.of(context).textTheme;
+      final hasCover = episode.cover != null;
+      final onCover = hasCover ? Colors.white : null;
+
+      final texts = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment:
+            hasCover ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          Text('Folge ${episode.orderIndex}',
+              style: textTheme.labelLarge?.copyWith(color: onCover)),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              if (episode.titleJa != null) ...[
+                Text(episode.titleJa!,
+                    key: const ValueKey('story-title-ja'),
+                    style: textTheme.displaySmall?.copyWith(color: onCover)),
+                const SizedBox(width: 12),
+              ],
+              Text(episode.title,
+                  style: textTheme.headlineMedium?.copyWith(color: onCover)),
+            ],
+          ),
+          if (episode.intro != null) ...[
+            const SizedBox(height: 16),
+            Text(episode.intro!,
+                textAlign: hasCover ? TextAlign.start : TextAlign.center,
+                style: TextStyle(color: onCover)),
+          ],
+          const SizedBox(height: 32),
+          Text('Tippe, um zu beginnen',
+              style: textTheme.bodySmall?.copyWith(color: onCover)),
+        ],
+      );
+
       return Scaffold(
+        backgroundColor: hasCover ? Colors.black : null,
         body: GestureDetector(
           key: const ValueKey('story-title-card'),
           behavior: HitTestBehavior.opaque,
           onTap: _beginReading,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(widget.episode.title,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                      textAlign: TextAlign.center),
-                  if (widget.episode.intro != null) ...[
-                    const SizedBox(height: 16),
-                    Text(widget.episode.intro!, textAlign: TextAlign.center),
-                  ],
-                  const SizedBox(height: 32),
-                  Text('Tippe, um zu beginnen',
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-          ),
+          child: hasCover
+              ? LayoutBuilder(builder: (context, constraints) {
+                  final format = formatForSize(
+                      Size(constraints.maxWidth, constraints.maxHeight));
+                  return Stack(fit: StackFit.expand, children: [
+                    Image.asset(
+                      episode.coverFor(format)!,
+                      key: const ValueKey('story-title-cover'),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: const Color(0xFF1B2220)),
+                    ),
+                    // Dunkler Verlauf unten, damit der Text auf jedem Motiv
+                    // lesbar bleibt (Spec §7.3).
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.center,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0x00000000), Color(0xD9000000)],
+                        ),
+                      ),
+                    ),
+                    SafeArea(
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: texts,
+                        ),
+                      ),
+                    ),
+                  ]);
+                })
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: texts,
+                  ),
+                ),
         ),
       );
     }

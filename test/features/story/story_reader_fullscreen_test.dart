@@ -297,4 +297,62 @@ void main() {
       expect(find.text('Das ist Mira.'), findsOneWidget);
     });
   });
+
+  group('Titelkarte mit Titelbild (Spec §7.3)', () {
+    testWidgets('mit Titelbild: Bild nach Lage, Folge, Titel, japanischer Titel, Anmoderation',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await pumpReader(
+          tester,
+          twoFormatEpisode(
+              cover: 'assets/story/titel.jpg',
+              coverPortrait: 'assets/story/titel_hoch.jpg',
+              titleJa: '雨'),
+          store: await freshStore());
+      final img = tester.widget<Image>(find.byKey(const ValueKey('story-title-cover')));
+      expect((img.image as AssetImage).assetName, 'assets/story/titel_hoch.jpg');
+      expect(find.text('Folge 1'), findsOneWidget);
+      expect(find.text('Regen'), findsOneWidget);
+      expect(find.byKey(const ValueKey('story-title-ja')), findsOneWidget);
+      expect(find.text('雨'), findsOneWidget);
+      expect(find.text('Tippe, um zu beginnen'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('story-title-card')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('story-panel-image')), findsOneWidget);
+    });
+
+    testWidgets('quer nimmt das Quer-Titelbild', (tester) async {
+      setScreen(tester, const Size(1170, 540));
+      await pumpReader(
+          tester,
+          twoFormatEpisode(
+              cover: 'assets/story/titel.jpg',
+              coverPortrait: 'assets/story/titel_hoch.jpg'),
+          store: await freshStore());
+      final img = tester.widget<Image>(find.byKey(const ValueKey('story-title-cover')));
+      expect((img.image as AssetImage).assetName, 'assets/story/titel.jpg');
+    });
+
+    testWidgets('ohne Titelbild bleibt die Textkarte, ohne titleJa kein japanischer Titel',
+        (tester) async {
+      await pumpReader(tester, twoFormatEpisode(), store: await freshStore());
+      expect(find.byKey(const ValueKey('story-title-cover')), findsNothing);
+      expect(find.byKey(const ValueKey('story-title-ja')), findsNothing);
+      expect(find.text('Regen'), findsOneWidget);
+      expect(find.text('Tippe, um zu beginnen'), findsOneWidget);
+    });
+
+    testWidgets('kaputtes Titelbild: Karte bleibt lesbar und startet die Folge',
+        (tester) async {
+      await pumpReader(tester,
+          twoFormatEpisode(cover: 'assets/story/gibt_es_nicht.jpg'),
+          store: await freshStore());
+      await tester.pumpAndSettle();
+      expect(find.text('Regen'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('story-title-card')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('story-panel-image')), findsOneWidget);
+    });
+  });
 }
