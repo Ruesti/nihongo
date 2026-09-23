@@ -150,4 +150,103 @@ void main() {
       expect(ui.calls, ['enter']);
     });
   });
+
+  group('Lesephase als Vollbild (Spec §7.1/§7.2)', () {
+    Future<void> startReading(WidgetTester tester, {RecordingSystemUi? ui}) async {
+      await pumpReader(tester, twoFormatEpisode(), store: await freshStore(), ui: ui);
+      await tester.tap(find.byKey(const ValueKey('story-title-card')));
+      await tester.pumpAndSettle();
+    }
+
+    String shownAsset(WidgetTester tester) {
+      final img = tester.widget<Image>(find.byKey(const ValueKey('story-panel-image')));
+      return (img.image as AssetImage).assetName;
+    }
+
+    testWidgets('hochkant zeigt das Hochbild, quer das Querbild', (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      expect(shownAsset(tester), 'assets/story/p01_hoch.jpg');
+
+      setScreen(tester, const Size(1170, 540));
+      await tester.pumpAndSettle();
+      expect(shownAsset(tester), 'assets/story/p01.jpg');
+    });
+
+    testWidgets('Panel ohne Hochbild zeigt hochkant das Querbild', (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+      expect(shownAsset(tester), 'assets/story/p02.jpg');
+      expect(find.byKey(const ValueKey('story-bubble-footer')), findsOneWidget);
+      expect(find.text('Zweites Panel'), findsOneWidget);
+    });
+
+    testWidgets('das Bild füllt den Schirm (Cover-Rechteck), nicht nur die Breite',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      final rect = tester.getRect(find.byKey(const ValueKey('story-panel-image')));
+      expect(rect.height, closeTo(1170, 0.5));
+      expect(rect.width, closeTo(1170 * (1080 / 1936), 0.5));
+      expect(rect.left, closeTo((540 - rect.width) / 2, 0.5));
+    });
+
+    testWidgets('Tippfläche liegt relativ zum beschnittenen Bild, hochkant aus hitAreaPortrait',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      final imageW = 1170 * (1080 / 1936);
+      final imageLeft = (540 - imageW) / 2;
+      final hit = tester.getRect(find.byKey(const ValueKey('story-bubble-hit-0')));
+      expect(hit.left, closeTo(imageLeft + 0.10 * imageW, 0.5));
+      expect(hit.top, closeTo(0.10 * 1170, 0.5));
+      expect(hit.width, closeTo(0.40 * imageW, 0.5));
+      expect(hit.height, closeTo(0.20 * 1170, 0.5));
+    });
+
+    testWidgets('quer: Tippfläche aus hitArea, mit negativem Versatz oben', (tester) async {
+      setScreen(tester, const Size(1170, 540));
+      await startReading(tester);
+      final imageH = 1170 / (1920 / 1072);
+      final imageTop = (540 - imageH) / 2; // negativ
+      final hit = tester.getRect(find.byKey(const ValueKey('story-bubble-hit-0')));
+      expect(hit.left, closeTo(0.06 * 1170, 0.5));
+      expect(hit.top, closeTo(imageTop + 0.05 * imageH, 0.5));
+      expect(hit.width, closeTo(0.42 * 1170, 0.5));
+    });
+
+    testWidgets('Tipp auf die Tippfläche öffnet weiterhin das Wörterbuch', (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    });
+
+    testWidgets('Drehen mitten in der Folge behält die Position', (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+      expect(shownAsset(tester), 'assets/story/p02.jpg');
+
+      setScreen(tester, const Size(1170, 540));
+      await tester.pumpAndSettle();
+      expect(shownAsset(tester), 'assets/story/p02.jpg');
+      expect(find.text('Zweites Panel'), findsOneWidget);
+    });
+
+    testWidgets('Gedanken-Kasten und Zurück-Chip liegen im Bild, keine AppBar mehr',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.byKey(const ValueKey('story-thought-box')), findsOneWidget);
+      expect(find.text('Das ist Mira.'), findsOneWidget);
+      final back = tester.widget<IconButton>(find.byKey(const ValueKey('story-reader-back')));
+      expect(back.onPressed, isNull, reason: 'auf Panel 1 gesperrt');
+    });
+  });
 }
