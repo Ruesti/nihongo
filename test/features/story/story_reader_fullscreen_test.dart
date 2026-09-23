@@ -31,9 +31,9 @@ Episode twoFormatEpisode({String? cover, String? coverPortrait, String? titleJa}
       'title': 'Regen',
       'locale': 'ja',
       'era': '1996',
-      if (cover != null) 'cover': cover,
-      if (coverPortrait != null) 'coverPortrait': coverPortrait,
-      if (titleJa != null) 'titleJa': titleJa,
+      'cover': ?cover,
+      'coverPortrait': ?coverPortrait,
+      'titleJa': ?titleJa,
       'budget': {'items': [], 'glyphs': []},
       'pages': [
         {
