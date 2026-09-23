@@ -20,20 +20,21 @@ UMBRELLA_MOTIFS = {"p07", "p08"}  # p06 zeigt den kaputten Schirm, kein Sauber-Z
 
 def load_picks(path):
     picks = {}
-    for line in open(os.path.expanduser(path), encoding="utf-8"):
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "=" not in line:
-            raise ValueError("Zeile ohne '=': %r" % line)
-        key, src = line.split("=", 1)
-        src = os.path.expanduser(src.strip())
-        if not os.path.exists(src):
-            raise FileNotFoundError("FEHLT %s: %s" % (key.strip(), src))
-        m = SEED_RE.search(os.path.basename(src))
-        if not m:
-            raise ValueError("%s: Dateiname ohne _s<seed>_: %s" % (key, src))
-        picks[key.strip()] = (src, int(m.group(1)))
+    with open(os.path.expanduser(path), encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                raise ValueError("Zeile ohne '=': %r" % line)
+            key, src = line.split("=", 1)
+            src = os.path.expanduser(src.strip())
+            if not os.path.exists(src):
+                raise FileNotFoundError("FEHLT %s: %s" % (key.strip(), src))
+            m = SEED_RE.search(os.path.basename(src))
+            if not m:
+                raise ValueError("%s: Dateiname ohne _s<seed>_: %s" % (key.strip(), src))
+            picks[key.strip()] = (src, int(m.group(1)))
     return picks
 
 
@@ -42,21 +43,22 @@ def load_overrides(path):
     path = os.path.expanduser(path)
     if not os.path.exists(path):
         return out
-    for line in open(path, encoding="utf-8"):
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        key, _, rest = line.partition(" ")
-        opts = {}
-        # extra=… darf Leerzeichen enthalten und steht deshalb zuletzt.
-        m = re.search(r"\bextra=(.*)$", rest)
-        if m:
-            opts["extra"] = m.group(1).strip()
-            rest = rest[:m.start()]
-        for tok in rest.split():
-            k, _, v = tok.partition("=")
-            opts[k] = int(v) if k == "seed" else v
-        out[key] = opts
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, _, rest = line.partition(" ")
+            opts = {}
+            # extra=… darf Leerzeichen enthalten und steht deshalb zuletzt.
+            m = re.search(r"\bextra=(.*)$", rest)
+            if m:
+                opts["extra"] = m.group(1).strip()
+                rest = rest[:m.start()]
+            for tok in rest.split():
+                k, _, v = tok.partition("=")
+                opts[k] = int(v) if k == "seed" else v
+            out[key] = opts
     return out
 
 

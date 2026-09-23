@@ -11,11 +11,13 @@ class Picks(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
         self.img = os.path.join(self.dir, "p01_quer_s702_00001_.png")
-        open(self.img, "wb").write(b"x")
+        with open(self.img, "wb") as f:
+            f.write(b"x")
 
     def write(self, text):
         p = os.path.join(self.dir, "picks.txt")
-        open(p, "w", encoding="utf-8").write(text)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(text)
         return p
 
     def test_reads_path_and_seed(self):
@@ -29,13 +31,15 @@ class Picks(unittest.TestCase):
 
     def test_line_without_seed_rejected(self):
         bad = os.path.join(self.dir, "p01_quer_00001_.png")
-        open(bad, "wb").write(b"x")
+        with open(bad, "wb") as f:
+            f.write(b"x")
         with self.assertRaises(ValueError):
             fm.load_picks(self.write("p01_quer=%s\n" % bad))
 
     def test_overrides(self):
         p = os.path.join(self.dir, "ov.txt")
-        open(p, "w", encoding="utf-8").write("p07_quer control=canny seed=702 extra=clean transparent umbrella\n")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write("p07_quer control=canny seed=702 extra=clean transparent umbrella\n")
         ov = fm.load_overrides(p)
         self.assertEqual(ov["p07_quer"]["control"], "canny")
         self.assertEqual(ov["p07_quer"]["seed"], 702)
