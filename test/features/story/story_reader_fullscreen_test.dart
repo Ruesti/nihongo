@@ -73,6 +73,20 @@ Episode twoFormatEpisode({String? cover, String? coverPortrait, String? titleJa}
               'index': 1,
               'asset': 'assets/story/p02.jpg',
               'bubbles': [
+                // Bubble 0: Querbild-Tippfläche, kein hitAreaPortrait — prüft
+                // den Rückfall aufs Querbild-Rechteck, wenn das Panel hochkant
+                // kein Hochbild hat (Spec §5.1/§7.4).
+                {
+                  'speakerId': 'signage',
+                  'text': 'Querschild',
+                  'hitArea': [
+                    {'x': 0.40, 'y': 0.40},
+                    {'x': 0.60, 'y': 0.40},
+                    {'x': 0.60, 'y': 0.50},
+                    {'x': 0.40, 'y': 0.50},
+                  ],
+                  'tokens': [],
+                },
                 {'speakerId': 'narrator', 'text': 'Zweites Panel', 'tokens': []},
               ],
               'thoughts': [],
@@ -183,6 +197,29 @@ void main() {
       expect(find.text('Zweites Panel'), findsOneWidget);
     });
 
+    testWidgets(
+        'Panel ohne Hochbild, hochkant: Tippfläche landet im Querbild-Rechteck, '
+        'nicht im Hochformat-Rechteck', (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+      expect(shownAsset(tester), 'assets/story/p02.jpg');
+
+      // Das Panel hat kein assetPortrait → das gezeigte Bild ist das
+      // Querbild, also muss auch das Cover-Rechteck (und damit die
+      // Tippfläche) dem Querformat folgen, nicht dem angeforderten Hochformat
+      // (Spec §5.1/§7.4).
+      final imageH = 1170.0;
+      final imageW = imageH * (1920 / 1072);
+      final imageLeft = (540 - imageW) / 2;
+      final hit = tester.getRect(find.byKey(const ValueKey('story-bubble-hit-0')));
+      expect(hit.left, closeTo(imageLeft + 0.40 * imageW, 0.5));
+      expect(hit.top, closeTo(0.40 * imageH, 0.5));
+      expect(hit.width, closeTo(0.20 * imageW, 0.5));
+      expect(hit.height, closeTo(0.10 * imageH, 0.5));
+    });
+
     testWidgets('das Bild füllt den Schirm (Cover-Rechteck), nicht nur die Breite',
         (tester) async {
       setScreen(tester, const Size(540, 1170));
@@ -247,6 +284,17 @@ void main() {
       expect(find.text('Das ist Mira.'), findsOneWidget);
       final back = tester.widget<IconButton>(find.byKey(const ValueKey('story-reader-back')));
       expect(back.onPressed, isNull, reason: 'auf Panel 1 gesperrt');
+    });
+
+    testWidgets('Tipp auf den gesperrten Zurück-Chip auf Panel 1 blättert nicht weiter',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-reader-back')));
+      await tester.pumpAndSettle();
+      // Wäre der Tap zum Panel-GestureDetector durchgefallen, stünde jetzt
+      // Panel 2 ("Zweites Panel") statt weiterhin Panel 1.
+      expect(find.text('Das ist Mira.'), findsOneWidget);
     });
   });
 }

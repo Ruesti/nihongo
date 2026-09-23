@@ -243,6 +243,22 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     return (reacted && reaction != null) ? reaction : panel.assetFor(format);
   }
 
+  /// Format, in dem das von [_effectiveAssetFor] tatsächlich gezeigte Bild
+  /// geschnitten ist. Weicht von [format] ab, wenn das angeforderte Hochbild
+  /// fehlt — Panel oder Reaktion —: dann liefert `assetFor`/`reactionAssetFor`
+  /// das Querbild als Rückfall, und Cover-Rechteck wie Tippflächen müssen
+  /// dessen Seitenverhältnis folgen statt des Hochformats (Spec §5.1/§7.4).
+  PanelFormat _shownFormatFor(StoryPanel panel, PanelFormat format) {
+    if (format != PanelFormat.portrait) return format;
+    final reacted = _reactedPositions.contains(_position);
+    final interaction = _diegeticInteractionOf(panel);
+    final reacting = reacted && interaction?.reactionAssetFor(format) != null;
+    final hasPortraitVariant = reacting
+        ? interaction!.reactionAssetPortrait != null
+        : panel.assetPortrait != null;
+    return hasPortraitVariant ? PanelFormat.portrait : PanelFormat.landscape;
+  }
+
   /// Öffnet das Sprech-Blatt — nur auf Tap auf den Hinweis-Kasten, nie automatisch.
   void _openSpeak(int position) {
     final evaluator = widget.speakEvaluator;
@@ -424,10 +440,6 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     final reactionCaption = _reactedPositions.contains(_position)
         ? _diegeticInteractionOf(panel)?.reactionCaption
         : null;
-    final footerBubbles = [
-      for (final b in panel.bubbles)
-        if (b.hitArea.points.isEmpty) b,
-    ];
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -438,8 +450,13 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         child: LayoutBuilder(builder: (context, constraints) {
           final screen = Size(constraints.maxWidth, constraints.maxHeight);
           final format = formatForSize(screen);
-          final imageRect = coverRect(screen, aspectOf(format));
+          final shown = _shownFormatFor(panel, format);
+          final imageRect = coverRect(screen, aspectOf(shown));
           final asset = _effectiveAssetFor(panel, format);
+          final footerBubbles = [
+            for (final b in panel.bubbles)
+              if (b.hitAreaFor(shown).points.isEmpty) b,
+          ];
           return Stack(
             clipBehavior: Clip.hardEdge,
             fit: StackFit.expand,
@@ -450,21 +467,34 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                 rect: imageRect,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 400),
-                  child: Image.asset(
-                    asset,
-                    key: ValueKey('story-panel-image'),
-                    fit: BoxFit.fill,
-                    errorBuilder: (_, _, _) =>
-                        Container(color: const Color(0xFF2A2A2A)),
+                  // KeyedSubtree mit dem Asset als Key: AnimatedSwitcher
+                  // erkennt einen Wechsel nur an einem neuen Key — die
+                  // konstante ValueKey('story-panel-image') am Image selbst
+                  // (für Tests) hätte den Übergang sonst unterdrückt.
+                  child: KeyedSubtree(
+                    key: ValueKey(asset),
+                    child: Image.asset(
+                      asset,
+                      key: const ValueKey('story-panel-image'),
+                      // AnimatedSwitcher layoutet intern mit einem losen
+                      // Stack (StackFit.loose) — ohne explizite Größe würde
+                      // sich das Bild an seiner natürlichen Größe statt am
+                      // Cover-Rechteck ausrichten, BoxFit.fill liefe leer.
+                      width: imageRect.width,
+                      height: imageRect.height,
+                      fit: BoxFit.fill,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: const Color(0xFF2A2A2A)),
+                    ),
                   ),
                 ),
               ),
               // Tippflächen der gelettertern Blasen, relativ zum Bildrechteck.
               for (var i = 0; i < panel.bubbles.length; i++)
-                if (panel.bubbles[i].hitAreaFor(format).points.isNotEmpty)
+                if (panel.bubbles[i].hitAreaFor(shown).points.isNotEmpty)
                   Positioned.fromRect(
                     rect: mapToScreen(
-                        _bboxOf(panel.bubbles[i].hitAreaFor(format)),
+                        _bboxOf(panel.bubbles[i].hitAreaFor(shown)),
                         imageRect),
                     child: GestureDetector(
                       key: ValueKey('story-bubble-hit-$i'),
@@ -590,17 +620,23 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                           ),
                         ),
                       if (reactionCaption != null)
-                        Container(
-                          key: const ValueKey('story-reaction-caption'),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xF2FFF8E7),
-                            border: Border.all(color: const Color(0xFF444444)),
-                          ),
-                          child: Text(
-                            reactionCaption,
-                            style: const TextStyle(fontStyle: FontStyle.italic),
+                        // IgnorePointer: reine Erzählzeile ohne eigene
+                        // Interaktion, siehe Gedanken-Kasten oben.
+                        IgnorePointer(
+                          child: Container(
+                            key: const ValueKey('story-reaction-caption'),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xF2FFF8E7),
+                              border:
+                                  Border.all(color: const Color(0xFF444444)),
+                            ),
+                            child: Text(
+                              reactionCaption,
+                              style:
+                                  const TextStyle(fontStyle: FontStyle.italic),
+                            ),
                           ),
                         ),
                     ],
@@ -625,7 +661,7 @@ class _BackChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    final chip = DecoratedBox(
       decoration: const BoxDecoration(
         color: Color(0x99000000),
         shape: BoxShape.circle,
@@ -635,6 +671,15 @@ class _BackChip extends StatelessWidget {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: enabled ? onPressed : null,
       ),
+    );
+    if (enabled) return chip;
+    // Panel 1: gesperrt (onPressed null) — ein deaktivierter IconButton
+    // registriert aber gar keinen Recognizer, der Tap fiele sonst durch zum
+    // GestureDetector des Panels und würde weiterblättern. Hier schlucken.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {},
+      child: chip,
     );
   }
 }
