@@ -2,6 +2,7 @@
 """Runde 2: Manga-Pass über den gepickten Fotos (Spec §2.2/§2.3/§6). Läuft auf der Box.
   folge01_manga.py tune picks_foto.txt              → Feinschliff: p10_quer + p07_quer × 6 Varianten
   folge01_manga.py full picks_foto.txt [overrides]  → alle Picks, Standard depth 0,7 / denoise 0,7
+  overrides.txt je Zeile: <key> [control=..] [seed=..] [extra=<text>][; neg=<text>]
 Endet mit TUNE_DONE bzw. MANGA_DONE."""
 import os
 import re
@@ -50,14 +51,16 @@ def load_overrides(path):
                 continue
             key, _, rest = line.partition(" ")
             opts = {}
-            # extra=… darf Leerzeichen enthalten und steht deshalb zuletzt.
-            m = re.search(r"\bextra=(.*)$", rest)
-            if m:
-                opts["extra"] = m.group(1).strip()
-                rest = rest[:m.start()]
-            for tok in rest.split():
-                k, _, v = tok.partition("=")
-                opts[k] = int(v) if k == "seed" else v
+            # extra=… und neg=… dürfen Leerzeichen enthalten; stehen beide in einer
+            # Zeile, trennt ';' sie. Jedes Stück behält seinen Freitext bis zum Ende.
+            for piece in rest.split(";"):
+                m = re.search(r"\b(extra|neg)=(.*)$", piece)
+                if m:
+                    opts[m.group(1)] = m.group(2).strip()
+                    piece = piece[:m.start()]
+                for tok in piece.split():
+                    k, _, v = tok.partition("=")
+                    opts[k] = int(v) if k == "seed" else v
             out[key] = opts
     return out
 
@@ -95,11 +98,16 @@ def _remember_title_letter(picks):
             _TITLE_LETTER[key] = m.group(1) if m else "a"
 
 
+def negative_for_opts(opts):
+    neg = opts.get("neg")
+    return NEG_MANGA + (", " + neg if neg else "")
+
+
 def render(key, src, seed, out, opts, tag=None):
     input_name = "f01_%s%s" % (key, os.path.splitext(src)[1])
     shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
     prefix = key if tag is None else "%s_%s" % (key, tag)
-    graph = cc.manga_graph(input_name, prompt_for(key, opts.get("extra", "")), NEG_MANGA,
+    graph = cc.manga_graph(input_name, prompt_for(key, opts.get("extra", "")), negative_for_opts(opts),
                            opts.get("seed", seed), prefix, control=opts.get("control", "depth"),
                            denoise=opts.get("denoise", 0.7), strength=opts.get("strength", 0.7))
     return cc.run(graph, prefix, out, "f01manga")

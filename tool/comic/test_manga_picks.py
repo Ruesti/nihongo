@@ -46,6 +46,28 @@ class Picks(unittest.TestCase):
         self.assertEqual(ov["p07_quer"]["extra"], "clean transparent umbrella")
         self.assertEqual(fm.load_overrides(os.path.join(self.dir, "fehlt.txt")), {})
 
+    def test_overrides_extra_and_neg(self):
+        p = os.path.join(self.dir, "ov.txt")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write("p07_quer control=depth extra=clean umbrella; neg=stains, dirt spots\n")
+        ov = fm.load_overrides(p)
+        self.assertEqual(ov["p07_quer"]["control"], "depth")
+        self.assertEqual(ov["p07_quer"]["extra"], "clean umbrella")
+        self.assertEqual(ov["p07_quer"]["neg"], "stains, dirt spots")
+
+    def test_overrides_neg_only(self):
+        p = os.path.join(self.dir, "ov.txt")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write("p08_hoch neg=rust spots\n")
+        ov = fm.load_overrides(p)
+        self.assertEqual(ov["p08_hoch"]["neg"], "rust spots")
+        self.assertNotIn("extra", ov["p08_hoch"])
+
+    def test_negative_for_opts(self):
+        self.assertEqual(fm.negative_for_opts({}), fm.NEG_MANGA)
+        self.assertEqual(fm.negative_for_opts({"neg": "stains, dirt spots"}),
+                          fm.NEG_MANGA + ", stains, dirt spots")
+
     def test_variants(self):
         names = [v[0] for v in fm.variants()]
         self.assertEqual(names, ["D60", "D70", "D80", "S60", "S85", "C70"])
