@@ -173,10 +173,15 @@ flutter test test/features/story/folge_01_layout_test.dart test/features/story/f
 
 ## Regeln und Fallen
 
-- **Vor jedem Neu-Render die alte Ausgabe löschen.** ComfyUI zählt den Dateizähler hoch
-  (`_00001_` → `_00002_`), die alte Datei bleibt liegen, und die Skripte überspringen einen Key,
-  sobald irgendeine Datei mit seinem Präfix existiert. `comfy_client.run()` setzt das Präfix doppelt
-  in den Dateinamen (`p03_hoch_s704_p03_hoch_s704_00001_.png`) — beim Löschen mit `<prefix>_*` arbeiten.
+- **Vor jedem Neu-Render die alte Ausgabe löschen.** Die Skripte überspringen einen Key, sobald
+  irgendeine Datei mit seinem Präfix in `~/comfy_f01/<pass>/` liegt. `comfy_client.run()` setzt das
+  Präfix doppelt in den Dateinamen (`p03_hoch_s704_p03_hoch_s704_00001_.png`) — beim Löschen mit
+  `<prefix>_*` arbeiten.
+- **Der Dateizähler gehört ComfyUI, nicht uns.** `_00001_` → `_00002_` zählt ComfyUI in seinem
+  eigenen Ausgabeordner hoch; `comfy_client.run()` holt die Datei nur von dort ab. Löschen in
+  `~/comfy_f01/manga/` setzt den Zähler also NICHT zurück: ein Nachzug liefert `_00002_` (p06/p07 hoch
+  28.9., p04 quer 29.9.). Nach jedem Nachzug den neuen Namen in `picks_manga.txt` eintragen, sonst
+  bricht `folge01_finish.py` mit `FEHLT <key>` ab.
 - **Override ≠ Neu-Render.** Nur `force` (oder `force=1`) in der Override-Zeile erzwingt ihn.
 - **nohup per ssh:** immer `setsid nohup … </dev/null &` — ohne `</dev/null` hängt der ssh-Client,
   ohne `setsid` stirbt der Lauf mit der Verbindung.

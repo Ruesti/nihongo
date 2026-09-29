@@ -1,8 +1,10 @@
 # Overrides für den Foto-Pass (folge01_foto.py <keys…> overrides_foto.txt), Folge 01.
 # Grammatik: <motif>_<fmt> [seed=N] [force] [core=<Text>|core=@HOCH_FIX:<name>;] [extra=<Text>;] [neg=<Text>]
 # Ein Key mit seed= rendert NUR diesen Seed. core=@HOCH_FIX:<name> holt den Prompt aus folge01_motifs.HOCH_FIX.
-# Diese vier Zeilen reproduzieren die gepickten Nachrender vom 28./29.9. (Rulings R7/R11):
+# Diese Zeilen reproduzieren die gepickten Nachrender vom 28./29.9. (Rulings R7/R11/R17):
 p03_hoch seed=704 core=@HOCH_FIX:p03
 titel_a_hoch seed=703 core=@HOCH_FIX:titel_a
 p06_hoch seed=705 core=@HOCH_FIX:p06
 p07_hoch seed=707 core=@HOCH_FIX:p07
+# p04 quer (Uli 29.9. „Ja, nachrendern": alte Fassung s701 hatte schwarze Seitenstreifen). Seed 707 gepickt; 705/706 waren ebenso sauber.
+p04_quer seed=707 core=the arched entrance of a covered shopping arcade seen from outside at dusk, rain on the roof, hanging signs, warm light inside, no people, the arcade facade and the neighbouring old shop fronts fill the entire wide frame from the left edge to the right edge, wet street with reflections in the foreground, establishing wide shot; neg=black bars, letterbox, pillarbox, black borders, frame, border, empty black areas, dark void, vignette
