@@ -113,6 +113,13 @@ class StoryRoute extends ConsumerWidget {
               debugPrint('story: SRS-Handoff vor dem Café fehlgeschlagen: $e');
             }
             if (!context.mounted) return;
+            // Bewusst pushReplacement auf DEMSELBEN (Root-)Navigator, auf dem
+            // der Reader liegt — nicht `go('/review')`: die Shell-Route des
+            // Café-Tabs baut `CafeRoute()` OHNE debriefEpisodeId, die
+            // Nachbesprechung ginge also nicht von selbst auf. So ersetzt
+            // das Café den Reader als Vollbild-Fortsetzung der Folge (mit
+            // eigener AppBar samt Zurück-Pfeil); Zurück landet wieder im
+            // Lesen-Tab der Shell.
             Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
               builder: (_) => CafeRoute(debriefEpisodeId: episode.id),
             ));

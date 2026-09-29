@@ -101,6 +101,59 @@ void main() {
     expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
   });
 
+  testWidgets(
+      'Folge-Einstieg aus einer Shell mit NavigationBar + innerem Navigator: '
+      'der Reader liegt über der Shell (Vollbild, keine Leiste), Zurück '
+      'führt in den Lesen-Tab', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final learning = LearningDb.forTesting();
+    addTearDown(() async => learning.close());
+    await seedJaPack(learning);
+
+    // Nachbau der GoRouter-ShellRoute aus app.dart: Scaffold mit
+    // NavigationBar, der Tab-Inhalt in einem EIGENEN (inneren) Navigator.
+    await tester.pumpWidget(ProviderScope(
+      overrides: [learningDbProvider.overrideWithValue(learning)],
+      child: MaterialApp(
+        home: Scaffold(
+          body: Navigator(
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (_) => const ReadingTab(),
+            ),
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: 0,
+            destinations: const [
+              NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+              NavigationDestination(
+                  icon: Icon(Icons.menu_book), label: 'Lesen'),
+            ],
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('story-entry-fab')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-title-card')), findsOneWidget);
+    // Die Shell ist offstage (Root-Route darunter) — nichts von ihr sichtbar.
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    // System-Zurück schließt den Reader, die Shell ist wieder da.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byKey(const ValueKey('story-entry-fab')), findsOneWidget);
+  });
+
   testWidgets('der Folge-Einstieg ist auch im Mining-Happy-Path da',
       (tester) async {
     SharedPreferences.setMockInitialValues({});

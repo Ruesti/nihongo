@@ -506,7 +506,11 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
         : null;
 
     return Scaffold(
+      key: const ValueKey('story-reading-scaffold'),
       backgroundColor: Colors.black,
+      // Vollbild: nichts reserviert Platz für Leisten (Spec §7.1).
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       body: GestureDetector(
         key: const ValueKey('story-reader-panel'),
         behavior: HitTestBehavior.opaque,
@@ -601,25 +605,45 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                               // liegende Tippflächen der Blasen (Bug,
                               // Folge-01-Panel-1-Fixture: Gedanken-Kasten
                               // überlappt die Tippfläche des Schild-Texts).
-                              child: IgnorePointer(
-                                child: Container(
-                                  key: const ValueKey('story-thought-box'),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xF2FFF8E7),
-                                    border: Border.all(
-                                        color: const Color(0xFF444444)),
+                              //
+                              // Querformat: höchstens 58 % der Schirmbreite,
+                              // links neben dem Zurück-Chip — die rechte
+                              // obere Bildecke bleibt für gelettertes Schild/
+                              // Blasen frei (Emulator-Befund; die Nogo-Zonen
+                              // im Layout spiegeln genau diese Breite).
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: shown == PanelFormat.landscape
+                                        ? screen.width * 0.58
+                                        : double.infinity,
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      for (final thought in panel.thoughts)
-                                        Text(thought.text,
-                                            style: const TextStyle(
-                                                fontStyle: FontStyle.italic)),
-                                    ],
+                                  child: IgnorePointer(
+                                    child: Container(
+                                      key: const ValueKey('story-thought-box'),
+                                      // Füllt die verfügbare (ggf. gedeckelte)
+                                      // Breite — hochkant volle Zeile.
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xF2FFF8E7),
+                                        border: Border.all(
+                                            color: const Color(0xFF444444)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          for (final thought in panel.thoughts)
+                                            Text(thought.text,
+                                                style: const TextStyle(
+                                                    fontStyle:
+                                                        FontStyle.italic)),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),

@@ -125,11 +125,22 @@ class _ReadingFabs extends ConsumerWidget {
           heroTag: 'story-entry',
           icon: const Icon(Icons.menu_book),
           label: const Text('Folge 1: Regen'),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const StoryRoute()),
-          ),
+          onPressed: () => openStoryReader(context),
         ),
       ],
     );
   }
 }
+
+/// Öffnet den Folgen-Reader als echte Vollbild-Route (Spec §7.1).
+///
+/// Der Lesen-Tab lebt im inneren Navigator der GoRouter-ShellRoute; ein
+/// Push dorthin ließe die NavigationBar der Shell (und deren Scaffold-
+/// Ränder) sichtbar — Emulator-Befund Runde 2. Deshalb der ROOT-Navigator:
+/// der Reader liegt über der ganzen Shell, der System-Zurück-Weg führt
+/// zurück in den Lesen-Tab.
+Future<void> openStoryReader(BuildContext context) =>
+    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute<void>(
+      fullscreenDialog: true,
+      builder: (_) => const StoryRoute(),
+    ));

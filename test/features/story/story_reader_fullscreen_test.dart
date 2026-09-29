@@ -200,6 +200,31 @@ void main() {
       expect(shownAsset(tester), 'assets/story/p01.jpg');
     });
 
+    testWidgets('Lese-Scaffold reserviert keinen Leisten-Platz', (tester) async {
+      await startReading(tester);
+      final scaffold = tester.widget<Scaffold>(
+          find.byKey(const ValueKey('story-reading-scaffold')));
+      expect(scaffold.extendBody, isTrue);
+      expect(scaffold.extendBodyBehindAppBar, isTrue);
+    });
+
+    testWidgets('Erzählkasten: quer höchstens 58 % breit, hochkant volle Zeile',
+        (tester) async {
+      setScreen(tester, const Size(1170, 540));
+      await startReading(tester);
+      final quer =
+          tester.getRect(find.byKey(const ValueKey('story-thought-box')));
+      expect(quer.width, lessThanOrEqualTo(0.58 * 1170 + 0.5));
+      // links am Zurück-Chip, nicht rechtsbündig
+      expect(quer.left, lessThan(0.2 * 1170));
+
+      setScreen(tester, const Size(540, 1170));
+      await tester.pumpAndSettle();
+      final hoch =
+          tester.getRect(find.byKey(const ValueKey('story-thought-box')));
+      expect(hoch.width, greaterThan(0.8 * 540));
+    });
+
     testWidgets('Panel ohne Hochbild zeigt hochkant das Querbild', (tester) async {
       setScreen(tester, const Size(540, 1170));
       await startReading(tester);
