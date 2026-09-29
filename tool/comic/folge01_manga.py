@@ -2,7 +2,12 @@
 """Runde 2: Manga-Pass über den gepickten Fotos (Spec §2.2/§2.3/§6). Läuft auf der Box.
   folge01_manga.py tune picks_foto.txt              → Feinschliff: p10_quer + p07_quer × 6 Varianten
   folge01_manga.py full picks_foto.txt [overrides]  → alle Picks, Standard depth 0,7 / denoise 0,7
-  overrides.txt je Zeile: <key> [control=..] [seed=..] [extra=<text>][; neg=<text>]
+  overrides.txt je Zeile: <key> [control=..] [seed=..] [denoise=..] [strength=..] [force]
+                          [extra=<text>][; neg=<text>]
+Ein Override ändert nur, WIE ein Key gerendert wird — nicht, OB. `full` überspringt jeden Key,
+für den in manga/ schon eine Ausgabe liegt; neu gerendert wird er nur mit `force` (oder `force=1`)
+in seiner Override-Zeile. Vorher die alte Ausgabe auf der Box löschen, sonst zählt ComfyUI
+_00002_ hoch und zwei Dateien liegen nebeneinander.
 Endet mit TUNE_DONE bzw. MANGA_DONE."""
 import os
 import re
@@ -39,7 +44,28 @@ def load_picks(path):
     return picks
 
 
-def load_overrides(path):
+MANGA_KEYS = frozenset({"control", "seed", "denoise", "strength", "extra", "neg", "force"})
+FREE_TEXT = ("extra", "neg", "core")  # Freitext-Felder: dürfen Leerzeichen und Kommas enthalten
+
+
+def _convert(key, k, v):
+    if k == "seed":
+        return int(v)
+    if k in ("denoise", "strength"):
+        return float(v)
+    if k == "force":
+        if v in ("", "1"):
+            return True
+        if v == "0":
+            return False
+        raise ValueError("%s: force=%r (erlaubt: force, force=1, force=0)" % (key, v))
+    return v
+
+
+def load_overrides(path, allowed=MANGA_KEYS):
+    """Liest eine Override-Datei → {key: {feld: wert}}. Fehlt die Datei, kommt {} zurück.
+    Unbekannte Felder (nicht in `allowed`) → ValueError. seed → int, denoise/strength → float,
+    force (nacktes Wort oder force=1) → True. `allowed` erlaubt Varianten (Foto-Pass: core=)."""
     out = {}
     path = os.path.expanduser(path)
     if not os.path.exists(path):
@@ -51,18 +77,28 @@ def load_overrides(path):
                 continue
             key, _, rest = line.partition(" ")
             opts = {}
-            # extra=… und neg=… dürfen Leerzeichen enthalten; stehen beide in einer
-            # Zeile, trennt ';' sie. Jedes Stück behält seinen Freitext bis zum Ende.
+            # extra=…, neg=… (und core=… im Foto-Pass) dürfen Leerzeichen enthalten; stehen
+            # mehrere in einer Zeile, trennt ';' sie. Jedes Stück behält seinen Freitext bis zum Ende.
             for piece in rest.split(";"):
-                m = re.search(r"\b(extra|neg)=(.*)$", piece)
+                m = re.search(r"\b(%s)=(.*)$" % "|".join(FREE_TEXT), piece)
                 if m:
+                    if m.group(1) not in allowed:
+                        raise ValueError("%s: unbekanntes Feld %r" % (key, m.group(1)))
                     opts[m.group(1)] = m.group(2).strip()
                     piece = piece[:m.start()]
                 for tok in piece.split():
                     k, _, v = tok.partition("=")
-                    opts[k] = int(v) if k == "seed" else v
+                    if k not in allowed:
+                        raise ValueError("%s: unbekanntes Feld %r" % (key, k))
+                    opts[k] = _convert(key, k, v)
             out[key] = opts
     return out
+
+
+def should_skip(key, out_dir, opts):
+    """True, wenn für key schon eine Ausgabe in out_dir liegt und kein force gesetzt ist."""
+    exists = os.path.isdir(out_dir) and any(f.startswith(key + "_") for f in os.listdir(out_dir))
+    return exists and not opts.get("force", False)
 
 
 def variants():
@@ -140,7 +176,7 @@ def full(picks_path, overrides_path=None):
     os.makedirs(out, exist_ok=True)
     items = []
     for key, (src, seed) in picks.items():
-        if any(f.startswith(key + "_") for f in os.listdir(out)) and key not in overrides:
+        if should_skip(key, out, overrides.get(key, {})):
             print("SKIP", key, flush=True)
             continue
         try:

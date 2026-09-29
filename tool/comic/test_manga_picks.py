@@ -63,6 +63,39 @@ class Picks(unittest.TestCase):
         self.assertEqual(ov["p08_hoch"]["neg"], "rust spots")
         self.assertNotIn("extra", ov["p08_hoch"])
 
+    def test_overrides_types_and_force(self):
+        p = os.path.join(self.dir, "ov.txt")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write("p06_hoch force denoise=0.65 strength=0.8 seed=705\np07_hoch force=1\np08_hoch force=0\n")
+        ov = fm.load_overrides(p)
+        self.assertEqual(ov["p06_hoch"], {"force": True, "denoise": 0.65, "strength": 0.8, "seed": 705})
+        self.assertIsInstance(ov["p06_hoch"]["denoise"], float)
+        self.assertIs(ov["p07_hoch"]["force"], True)
+        self.assertIs(ov["p08_hoch"]["force"], False)
+
+    def test_overrides_unknown_key_rejected(self):
+        p = os.path.join(self.dir, "ov.txt")
+        for bad in ("p06_hoch contrl=depth\n", "p06_hoch core=something\n", "p06_hoch force=ja\n"):
+            with open(p, "w", encoding="utf-8") as f:
+                f.write(bad)
+            with self.assertRaises(ValueError, msg=bad):
+                fm.load_overrides(p)
+
+    def test_committed_overrides_parse(self):
+        ov = fm.load_overrides(os.path.join(os.path.dirname(os.path.abspath(__file__)), "overrides_manga.txt"))
+        self.assertEqual(len(ov), 16)
+        self.assertFalse(any(o.get("force") for o in ov.values()))
+
+    def test_override_does_not_imply_rerender(self):
+        out = os.path.join(self.dir, "manga")
+        os.makedirs(out)
+        with open(os.path.join(out, "p06_hoch_p06_hoch_00001_.png"), "wb") as f:
+            f.write(b"x")
+        self.assertTrue(fm.should_skip("p06_hoch", out, {}))
+        self.assertTrue(fm.should_skip("p06_hoch", out, {"extra": "calm"}))  # Override allein: SKIP
+        self.assertFalse(fm.should_skip("p06_hoch", out, {"extra": "calm", "force": True}))
+        self.assertFalse(fm.should_skip("p07_hoch", out, {}))  # noch keine Ausgabe
+
     def test_negative_for_opts(self):
         self.assertEqual(fm.negative_for_opts({}), fm.NEG_MANGA)
         self.assertEqual(fm.negative_for_opts({"neg": "stains, dirt spots"}),

@@ -282,3 +282,15 @@ NICHT eingebrannt.
   erster Render nach Start + 2 Minuten. Runde 1 ≈ 70 Minuten, Runde 2 ≈ 1,5 Stunden (mit Feinschliff).
 - Während langer Läufe Kill-Switch `~/.no-idle-suspend` setzen, danach
   entfernen; Bilder immer erst abholen, dann schlafen lassen.
+- Laufreihenfolge (Befehle in `tool/comic/README.md`):
+  1. Box wecken, Kill-Switch, Skripte nach `~/f01tool`.
+  2. Foto-Runde `folge01_foto.py` → abholen → Bögen, `rows_foto.py`, Vergleichsseite, `check_bars.py`.
+  3. Ulis Picks → `picks_foto.txt`.
+  4. Nachrender über `overrides_foto.txt` (`HOCH_FIX`) + Feinschliff: `run_foto_then_tune.sh <keys>`.
+  5. Ulis Standard-Wahl (Folge 01: D70).
+  6. Vollrender `folge01_manga.py full picks_foto.txt overrides_manga.txt` (Override ≠ Neu-Render,
+     nur mit `force`); Nachzüge mit reduzierter Picks-Datei, alte Ausgaben vorher löschen.
+  7. Ulis Freigabe → `finish_prep.py` → `picks_manga.txt`.
+  8. `run_finish.sh` → `final/*.jpg` nach `build/f01_raw/` → `check_bars.py`.
+  9. `check_layout.py` → `gen_layout_dart.py` (formatiert selbst) → `letter_folge01.py` → `letter_preview.py`.
+  10. App-Verdrahtung und Flutter-Tests.

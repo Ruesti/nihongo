@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Erzeugt lib/features/story/episodes/folge_01_layout.g.dart aus folge01_layout.json (INV-14).
+Formatiert die Ausgabe am Ende selbst mit `dart format` (bricht ab, wenn dart fehlt), damit die
+eingecheckte Datei byteweise dem Generator-Lauf entspricht.
 Aufruf im Repo-Wurzelverzeichnis: python3 tool/comic/gen_layout_dart.py"""
 import json
 import os
+import subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LAYOUT = os.path.join(HERE, "folge01_layout.json")
@@ -16,6 +19,13 @@ def const_name(pid, fmt, i):
 def points(rect):
     x, y, w, h = rect
     return [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
+
+
+def format_dart(path):
+    try:
+        subprocess.run(["dart", "format", path], check=True, stdout=subprocess.DEVNULL)
+    except FileNotFoundError:
+        raise SystemExit("dart nicht gefunden — %s ist UNFORMATIERT geschrieben; dart installieren und neu laufen lassen" % path)
 
 
 def main():
@@ -32,6 +42,7 @@ def main():
                 lines.append("")
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
+    format_dart(OUT)
     print(OUT)
 
 

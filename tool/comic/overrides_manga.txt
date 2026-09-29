@@ -1,5 +1,9 @@
 # Overrides für den Manga-Vollrender (folge01_manga.py full picks_foto.txt overrides_manga.txt).
-# Grammatik: <key> [control=depth|canny] [seed=N] [extra=<Positiv-Zusatz>;] [neg=<Negativ-Zusatz>]
+# Grammatik: <key> [control=depth|canny] [seed=N] [denoise=0.7] [strength=0.7] [force] [extra=<Positiv-Zusatz>;] [neg=<Negativ-Zusatz>]
+# Ein Override ändert nur, WIE ein Key gerendert wird. Liegt in manga/ schon eine Ausgabe, wird er
+# übersprungen. Neu rendern: das Wort `force` in die Zeile setzen (z. B. `p06_hoch force extra=…`)
+# und vorher die alte Ausgabe auf der Box löschen (sonst _00002_ neben _00001_).
+# Nur ein paar Keys nachziehen: lieber eine verkleinerte Picks-Datei übergeben (siehe README.md).
 # Uli 29.9.: „Mira ist mir zu traurig. Sie kann nachdenklich sein" → Mira-Panels: nachdenklich, ruhig, gefasst.
 # Schirm-Panels (p07/p08): das Modell deutet die Reflexe des durchsichtigen Schirms als Schmutz (Feinschliff 28.9.).
 p01_quer extra=her expression calm, thoughtful and composed, quietly curious; neg=sad, crying, tearful, sorrowful, grieving, downcast expression
@@ -18,4 +22,3 @@ p10_quer extra=her expression thoughtful and composed, eyes lowered in reflectio
 p10_hoch extra=her expression thoughtful and composed, eyes lowered in reflection, not sad; neg=sad, crying, tearful, sorrowful, grieving, downcast mouth
 titel_quer extra=her posture calm and thoughtful, watching the train leave with quiet resolve; neg=sad, crying, tearful, sorrowful, grieving
 titel_hoch extra=her posture calm and thoughtful, watching the train leave with quiet resolve; neg=sad, crying, tearful, sorrowful, grieving
-p06_hoch control=depth

@@ -79,6 +79,38 @@ COVERS = {
 }
 
 
+# Nachrender der Foto-Runde 1 im Hochformat (28./29.9., Rulings R7/R11), wortgleich mit den damals
+# gelaufenen Skripten foto_nachrender{,2,3}.py. Positiv = core + Format-Zusatz + extra + PHOTO,
+# Negativ = negative_for(motif) + ", " + neg. format_hint=False: FORMAT_HINT fällt weg (Nachrender 2/3
+# liefen ohne ihn). Genutzt über overrides_foto.txt (core=@HOCH_FIX:<name>).
+_LETTERBOX_NEG = "black bars, letterbox, letterboxing, black borders, frame, border, empty black areas"
+HOCH_FIX = {
+    # Nachrender 1, Seeds 703/704 → gepickt s704 (Mira wirklich von hinten).
+    "p03": {"core": ("view from directly behind " + P + ", her back to the camera, we see only the back of her "
+                     "navy jacket and the back of her black bob haircut, no face visible, she walks away from the "
+                     "viewer down an empty wet residential street at night, old wooden houses, utility poles and "
+                     "wires against a grey sky, small in the wide scene")},
+    # Nachrender 1, Seeds 703/704 → gepickt s703 (Kopf zum abfahrenden Zug gedreht).
+    "titel_a": {"core": ("a small rural train platform at night in the rain, " + P + " seen from behind at a "
+                         "three-quarter angle, standing still with a travel bag, her head turned to watch a local "
+                         "train pulling away, red tail lights, far away the faint lights of a small town, large "
+                         "calm empty sky above, wide establishing shot")},
+    # Nachrender 2, Seeds 705/706 → gepickt s705 (bildfüllend statt Querbild mit schwarzen Balken).
+    # Mit demselben Rezept lief auch p07 hoch (s705/706) — landete im Flur statt an der Ladentür, verworfen.
+    "p06": {"core": PANELS["p06"]["core"], "format_hint": False,
+            "extra": ("vertical portrait composition filling the entire tall frame from top edge to bottom edge, "
+                      "camera close to the figures, ceiling and floor of the room visible"),
+            "neg": _LETTERBOX_NEG},
+    # Nachrender 3, Seeds 707/708 → gepickt s707 (Ladenfront mit Schild).
+    "p07": {"core": ("outside on a wet shopping street at dusk, in the open doorway of a small old shop, " + M +
+                     " stands on the threshold and holds out a repaired open transparent umbrella toward " + P +
+                     " who stands on the street and reaches to take it, two people clearly visible, emotional "
+                     "moment, the tall doorframe and the lit shop interior fill the vertical frame from top to "
+                     "bottom, wet pavement in the foreground, shop sign above the door"),
+            "format_hint": False, "neg": _LETTERBOX_NEG + ", corridor, hallway"},
+}
+
+
 def motifs():
     """Alle 13 Motive → Prompt-Kern (Panels + Titelbilder)."""
     out = {pid: p["core"] for pid, p in PANELS.items()}

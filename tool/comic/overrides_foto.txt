@@ -1,0 +1,8 @@
+# Overrides für den Foto-Pass (folge01_foto.py <keys…> overrides_foto.txt), Folge 01.
+# Grammatik: <motif>_<fmt> [seed=N] [force] [core=<Text>|core=@HOCH_FIX:<name>;] [extra=<Text>;] [neg=<Text>]
+# Ein Key mit seed= rendert NUR diesen Seed. core=@HOCH_FIX:<name> holt den Prompt aus folge01_motifs.HOCH_FIX.
+# Diese vier Zeilen reproduzieren die gepickten Nachrender vom 28./29.9. (Rulings R7/R11):
+p03_hoch seed=704 core=@HOCH_FIX:p03
+titel_a_hoch seed=703 core=@HOCH_FIX:titel_a
+p06_hoch seed=705 core=@HOCH_FIX:p06
+p07_hoch seed=707 core=@HOCH_FIX:p07

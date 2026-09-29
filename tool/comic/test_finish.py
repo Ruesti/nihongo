@@ -23,6 +23,20 @@ class Finish(unittest.TestCase):
             ff.require_complete(picks)
         self.assertIn("p07_hoch", str(cm.exception))
 
+    def test_skip_only_when_target_newer_than_source(self):
+        d = tempfile.mkdtemp()
+        src, dest = os.path.join(d, "p01_quer_00001_.png"), os.path.join(d, "p01_quer.jpg")
+        with open(src, "wb") as f:
+            f.write(b"x")
+        self.assertFalse(ff.up_to_date(dest, src))  # Ziel fehlt
+        with open(dest, "wb") as f:
+            f.write(b"y")
+        os.utime(src, (1000, 1000))
+        os.utime(dest, (2000, 2000))
+        self.assertTrue(ff.up_to_date(dest, src))   # Ziel jünger → SKIP
+        os.utime(src, (3000, 3000))
+        self.assertFalse(ff.up_to_date(dest, src))  # Quelle neu gerendert → neu vergrößern
+
     def test_read_picks_checks_files(self):
         d = tempfile.mkdtemp()
         img = os.path.join(d, "p01_quer_00001_.png")

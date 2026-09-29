@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Runde 2 → Auslieferung: 4x-UltraSharp hoch, auf Zielgröße, JPEG q88 (Spec §4.3). Läuft auf der Box.
-  folge01_finish.py picks_manga.txt → ~/comfy_f01/final/<key>.jpg, endet mit FINISH_DONE"""
+  folge01_finish.py picks_manga.txt → ~/comfy_f01/final/<key>.jpg, endet mit FINISH_DONE
+Übersprungen wird ein Key nur, wenn final/<key>.jpg existiert UND jünger ist als das Manga-Bild aus
+den Picks. Wurde das Manga-Bild neu gerendert (oder zeigt der Pick auf eine neuere Datei), wird
+der Key neu vergrößert."""
 import os
 import shutil
 import sys
@@ -43,6 +46,11 @@ def require_complete(picks):
         raise ValueError("Picks unvollständig, fehlt: %s" % ", ".join(missing))
 
 
+def up_to_date(dest, src):
+    """True, wenn dest existiert und jünger ist als src (dann ist nichts zu tun)."""
+    return os.path.exists(dest) and os.path.getmtime(dest) > os.path.getmtime(src)
+
+
 def main(picks_path):
     picks = read_picks(picks_path)
     require_complete(picks)
@@ -51,7 +59,7 @@ def main(picks_path):
     for key, src in picks.items():
         w, h = target_for(key)
         dest = os.path.join(out, key + ".jpg")
-        if os.path.exists(dest):
+        if up_to_date(dest, src):
             print("SKIP", key, flush=True)
             continue
         input_name = "f01fin_%s%s" % (key, os.path.splitext(src)[1])
