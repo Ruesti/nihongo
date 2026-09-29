@@ -139,11 +139,29 @@ python3 tool/comic/check_layout.py            # muss [] ausgeben
 python3 tool/comic/gen_layout_dart.py         # schreibt + formatiert lib/features/story/episodes/folge_01_layout.g.dart
 python3 tool/comic/letter_folge01.py          # 28 Dateien nach assets/story/folge01/
 python3 tool/comic/letter_preview.py          # Sichtprüfung: build/letter_preview_{quer,hoch}.png
-python3 tool/comic/letter_preview.py faces    # mit Gesichtern (rot) und sicherer Zone (gelb)
+python3 tool/comic/letter_preview.py faces    # mit Gesichtern (rot), Nogo-Zonen (blau), sicherer Zone (gelb)
 ```
 
 `gen_layout_dart.py` ruft am Ende selbst `dart format` auf (ohne `dart` bricht es ab). Die Reihenfolge
 der Blasen in `folge01_layout.json` muss der in `folge_01_regen.dart` entsprechen.
+
+Prüfregeln von `check_layout` (alle Meldungen werden gesammelt, dann bricht das Lettering ab):
+
+- `GESICHT VERDECKT` — Blasen-Ellipse schneidet ein `faces`-Rechteck.
+- `SICHERE ZONE` — Blase außerhalb des Bereichs, den das Cover-Beschneiden am Telefon stehen lässt
+  (quer: y in 0,1–0,9; hoch: x in 0,1–0,9).
+- `ÜBERLAGERUNG` — Blasen-Ellipse schneidet ein `nogo`-Rechteck. `nogo` (optional je Panel/Format,
+  bildnormiert `[x, y, w, h]`) sind die Flächen, die die App über das Bild legt, gemessen am
+  S23-Emulator (1080×2340, Dichte 2,625) im echten Vollbild:
+  - Erzählkasten oben (jedes Panel mit `thoughts`): hoch volle Breite, y 0 bis Kastenunterkante +
+    Rand (0,18 bei 2–3 Zeilen … 0,34 bei p01 mit 10 Zeilen); quer x 0–0,72 (Kasten ist dort auf 58 %
+    der Schirmbreite gedeckelt, plus Kamera-Ausschnitt/Zurück-Chip), y 0 bis 0,26 … 0,42.
+  - Mitmach-/Reaktionszeile unten (Panels mit `interactions`, p02/p05/p08): hoch y ab 0,86, quer y ab
+    0,80, volle Breite.
+  Ändern sich Erzähltexte oder Overlay-Layout in der App, die Zonen neu messen.
+- `KLEINSCHRIFT` — die größte passende Schrift liegt unter der Mindestgröße (quer 34 px auf 1920
+  breit, hoch 30 px auf 1080 breit). Abhilfe: Blase im Layout vergrößern oder für lange Aufzählungen
+  `"lines": 4` setzen — nie die Schrift verkleinern.
 
 ### 10. App-Verdrahtung (Task 6)
 

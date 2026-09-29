@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Kontaktbögen aus den GELETTERTEN Auslieferungsbildern (assets/story/folge01/).
 Schreibt build/letter_preview_quer.png (4 Spalten) und build/letter_preview_hoch.png (5 Spalten).
-Mit Argument 'faces' zusätzlich Gesichter (rot) + sichere Zone (gelb) aus der Layout-Datei ->
+Mit Argument 'faces' zusätzlich Gesichter (rot), Nogo-Zonen der App-Overlays (blau) + sichere Zone (gelb) ->
 build/letter_preview_{quer,hoch}_faces.png. Aufruf im Repo-Wurzelverzeichnis:
   python3 tool/comic/letter_preview.py [faces]"""
 import json
@@ -26,6 +26,8 @@ def tile(pid, fmt):
         d = ImageDraw.Draw(img)
         for x, y, w, h in layout["panels"][pid][fmt]["faces"]:
             d.rectangle((x * W, y * H, (x + w) * W, (y + h) * H), outline=(255, 0, 0), width=5)
+        for x, y, w, h in layout["panels"][pid][fmt].get("nogo", []):
+            d.rectangle((x * W, y * H, (x + w) * W, (y + h) * H), outline=(0, 160, 255), width=5)
         for v in (0.1, 0.9):
             if fmt == "quer":
                 d.line((0, v * H, W, v * H), fill=(255, 220, 0), width=3)

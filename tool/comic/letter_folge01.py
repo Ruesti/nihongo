@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """Lettering fuer Folge 01 aus EINER Layout-Datei (Spec Manga-Vollbild §4.4, INV-14/15).
 Quelle: build/f01_raw/<pid>_<fmt>.jpg (Task 4). Ziel: assets/story/folge01/.
-Idempotent. Erst wird alles geprueft (Gesichter, sichere Zone, jede Quelldatei vorhanden, jedes
-Furigana-Kanji steht in der ersten Zeile seiner umbrochenen Blase), dann alles im Speicher gelettert,
-erst am Ende geschrieben — bei einem Fehler bleibt assets/story/folge01/ unveraendert.
+Idempotent. Erst wird alles geprueft (Gesichter, sichere Zone, Nogo-Zonen der App-Overlays,
+Mindest-Schriftgroesse, jede Quelldatei vorhanden, jedes Furigana-Kanji steht in der ersten Zeile
+seiner umbrochenen Blase), dann alles im Speicher gelettert, erst am Ende geschrieben — bei einem
+Fehler bleibt assets/story/folge01/ unveraendert.
+Nogo-Zonen: je Panel/Format optional "nogo": [[x,y,w,h], ...] (bildnormiert) — Flaechen, die die App
+ueber das Bild legt (Erzaehlkasten oben, Mitmach-/Reaktionszeile unten). Eine Blasen-Ellipse, die
+eine davon schneidet → ÜBERLAGERUNG (gleiche Ellipsen-Rechteck-Mathematik wie bei Gesichtern).
+Mindest-Schrift: faellt fit_font unter MIN_FONT (quer 34 px auf 1920 breit, hoch 30 px auf 1080
+breit) → KLEINSCHRIFT; Abhilfe ist immer eine groessere Blase im Layout, nie kleinere Schrift.
 Die Reihenfolge der Blasen je Panel und Format in folge01_layout.json ist verbindlich und muss der
 Reihenfolge in lib/features/story/episodes/folge_01_regen.dart entsprechen (geprueft von
 test/features/story/folge_01_layout_test.dart).
@@ -43,17 +49,32 @@ def _in_safe_zone(rect, fmt, safe):
     return lo <= x and x + w <= hi  # hoch: links/rechts beschnitten
 
 
+# Aufloesung der Rohbilder je Format (build/f01_raw) — Basis der Mindest-Schriftpruefung.
+FORMAT_SIZE = {"quer": (1920, 1072), "hoch": (1080, 1936)}
+# Kleinste zulaessige Blasenschrift in Bildpixeln (Emulator-Befund: 25 px quer war am Telefon
+# zu klein). quer 34 px ≈ 41 px am 2340 breiten Schirm, hoch 30 px ≈ 36 px am 1305 breiten Cover.
+MIN_FONT = {"quer": 34, "hoch": 30}
+
+
 def check_layout(layout):
     msgs = []
     safe = layout.get("safe", 0.8)
+    draw = ImageDraw.Draw(Image.new("RGB", (8, 8)))
     for pid, formats in layout["panels"].items():
         for fmt, spec in formats.items():
+            W, H = FORMAT_SIZE[fmt]
             for b in spec.get("bubbles", []):
                 for face in spec.get("faces", []):
                     if _overlaps(b["rect"], face):
                         msgs.append("GESICHT VERDECKT %s %s %r rect=%s face=%s" % (pid, fmt, b["text"], b["rect"], face))
+                for zone in spec.get("nogo", []):
+                    if _overlaps(b["rect"], zone):
+                        msgs.append("ÜBERLAGERUNG %s %s %r rect=%s nogo=%s" % (pid, fmt, b["text"], b["rect"], zone))
                 if not _in_safe_zone(b["rect"], fmt, safe):
                     msgs.append("SICHERE ZONE %s %s %r rect=%s" % (pid, fmt, b["text"], b["rect"]))
+                size = bubble_font(draw, b, W, H)[1].size
+                if size < MIN_FONT[fmt]:
+                    msgs.append("KLEINSCHRIFT %s %s %s %dpx" % (pid, fmt, b["text"], size))
     return msgs
 
 
@@ -61,14 +82,16 @@ SENTENCE_END = "。？！"   # bevorzugte Umbruchstellen (Umbruch dahinter)
 COMMA = "、"             # Ausweich, wenn kein Satzende im Text steht
 
 
-def wrap(text):
+def wrap(text, lines=None):
     """Bricht Blasentext in Zeilen: bis 8 Zeichen eine Zeile; mit Leerzeichen 2–3 Zeilen an den
-    Leerzeichen; sonst ein Umbruch hinter dem Satzende (。？！) nahe der Mitte, ersatzweise hinter 、."""
+    Leerzeichen (oder genau `lines` Zeilen, wenn die Blase im Layout "lines" setzt — fuer lange
+    Aufzaehlungen, die sonst nur mit zu kleiner Schrift passen); sonst ein Umbruch hinter dem
+    Satzende (。？！) nahe der Mitte, ersatzweise hinter 、."""
     if len(text) <= 8:
         return text
     if " " in text:
         parts = text.split(" ")
-        n = 3 if len(parts) >= 6 else 2
+        n = lines or (3 if len(parts) >= 6 else 2)
         per = -(-len(parts) // n)
         return "\n".join(" ".join(parts[i:i + per]) for i in range(0, len(parts), per))
     for marks in (SENTENCE_END, COMMA):
@@ -79,9 +102,9 @@ def wrap(text):
     return text
 
 
-def shown_text(text):
+def shown_text(text, lines=None):
     """Blasentext wie gezeichnet: … als ・・・, umbrochen."""
-    return wrap(text.replace("…", "・・・"))
+    return wrap(text.replace("…", "・・・"), lines)
 
 
 def fit_font(draw, text, box_w, box_h, reserve_top=0):
@@ -97,17 +120,23 @@ def fit_font(draw, text, box_w, box_h, reserve_top=0):
     return ImageFont.truetype(FONT, 10)
 
 
+def bubble_font(draw, b, W, H):
+    """(Pixel-Box, Schrift, Furigana-Reserve, gezeigter Text) einer Blase auf einem W×H-Bild."""
+    x, y, w, h = b["rect"]
+    box = (x * W, y * H, (x + w) * W, (y + h) * H)
+    shown = shown_text(b["text"], b.get("lines"))
+    reserve = (box[3] - box[1]) * 0.22 if b.get("furigana") else 0
+    font = fit_font(draw, shown, box[2] - box[0], box[3] - box[1], reserve)
+    return box, font, reserve, shown
+
+
 def letter(img, bubbles):
     draw = ImageDraw.Draw(img)
     W, H = img.size
     for b in bubbles:
-        x, y, w, h = b["rect"]
         furi = b.get("furigana")
-        box = (x * W, y * H, (x + w) * W, (y + h) * H)
+        box, font, reserve, shown = bubble_font(draw, b, W, H)
         draw.ellipse(box, fill="white", outline="black", width=4)
-        shown = shown_text(b["text"])
-        reserve = (box[3] - box[1]) * 0.22 if furi else 0
-        font = fit_font(draw, shown, box[2] - box[0], box[3] - box[1], reserve)
         l, t, r, bb = draw.multiline_textbbox((0, 0), shown, font=font)
         cx = (box[0] + box[2]) / 2 - (r - l) / 2 - l
         cy = (box[1] + box[3]) / 2 - (bb - t) / 2 - t + reserve / 2
@@ -137,10 +166,10 @@ def validate(layout, src=SRC):
             for b in spec.get("bubbles", []):
                 if b.get("furigana"):
                     kanji = b["furigana"][0]
-                    first = shown_text(b["text"]).split("\n")[0]
+                    first = shown_text(b["text"], b.get("lines")).split("\n")[0]
                     if kanji not in first:
                         msgs.append("FURIGANA %s %s: %r nicht in der ersten Zeile von %r"
-                                    % (pid, fmt, kanji, shown_text(b["text"])))
+                                    % (pid, fmt, kanji, shown_text(b["text"], b.get("lines"))))
     for fmt in ("quer", "hoch"):
         if not os.path.exists(src_path(src, "titel", fmt)):
             msgs.append("QUELLE FEHLT %s" % src_path(src, "titel", fmt))

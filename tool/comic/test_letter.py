@@ -30,6 +30,39 @@ class CheckLayout(unittest.TestCase):
         self.assertTrue(any("SICHERE ZONE" in m for m in lf.check_layout(layout([0.02, 0.2, 0.3, 0.1], fmt="hoch"))))
         self.assertEqual(lf.check_layout(layout([0.2, 0.02, 0.3, 0.1], fmt="hoch")), [])
 
+    def test_nogo_overlap(self):
+        lay = layout([0.2, 0.2, 0.3, 0.1])
+        lay["panels"]["p01"]["quer"]["nogo"] = [[0.0, 0.0, 0.72, 0.26]]
+        msgs = lf.check_layout(lay)
+        self.assertEqual(len(msgs), 1)
+        self.assertTrue(msgs[0].startswith("ÜBERLAGERUNG p01 quer"), msgs)
+
+    def test_nogo_clear_and_corner_miss(self):
+        lay = layout([0.2, 0.3, 0.3, 0.1])
+        # Rechteck-Ecke beruehrt nur die Bounding-Box, nicht die Ellipse → kein Treffer
+        lay["panels"]["p01"]["quer"]["nogo"] = [[0.0, 0.0, 0.72, 0.26], [0.0, 0.0, 0.21, 0.305]]
+        self.assertEqual(lf.check_layout(lay), [])
+
+    def test_small_font_aborts(self):
+        lay = layout([0.2, 0.3, 0.06, 0.04])
+        lay["panels"]["p01"]["quer"]["bubbles"][0]["text"] = "いいえ、いいえ。どうぞ、どうぞ。かさ！"
+        msgs = lf.check_layout(lay)
+        self.assertTrue(any(m.startswith("KLEINSCHRIFT p01 quer いいえ、いいえ。どうぞ、どうぞ。かさ！ ")
+                            and m.endswith("px") for m in msgs), msgs)
+
+    def test_small_font_threshold_per_format(self):
+        # dieselbe Blase: quer (1920 breit) zu klein, erst eine groessere Ellipse besteht
+        big = layout([0.2, 0.3, 0.40, 0.16])
+        big["panels"]["p01"]["quer"]["bubbles"][0]["text"] = "いいえ、いいえ。どうぞ、どうぞ。かさ！"
+        self.assertEqual(lf.check_layout(big), [])
+
+    def test_validate_collects_small_font_with_other_problems(self):
+        lay = layout([0.2, 0.05, 0.06, 0.04])
+        lay["panels"]["p01"]["quer"]["bubbles"][0]["text"] = "いいえ、いいえ。どうぞ、どうぞ。かさ！"
+        msgs = lf.validate(lay, tempfile.mkdtemp())
+        kinds = {m.split(" ")[0] for m in msgs}
+        self.assertTrue({"KLEINSCHRIFT", "SICHERE", "QUELLE"} <= kinds, msgs)
+
     def test_output_names(self):
         self.assertEqual(lf.out_name("p01", "quer"), "p01.jpg")
         self.assertEqual(lf.out_name("p01", "hoch"), "p01_hoch.jpg")
@@ -52,6 +85,13 @@ class Wrap(unittest.TestCase):
 
     def test_comma_as_fallback(self):
         self.assertEqual(lf.wrap("あめ、あめ、さむい、さむい"), "あめ、あめ、\nさむい、さむい")
+
+    def test_explicit_line_count(self):
+        murmur = "ありがとう… すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…"
+        self.assertEqual(lf.wrap(murmur).count("\n"), 2)
+        four = lf.shown_text(murmur, 4)
+        self.assertEqual(four.split("\n"), ["ありがとう・・・ すみません・・・", "あめ・・・ かさ・・・",
+                                            "いいえ・・・ だいじょうぶ・・・", "えき・・・ みせ・・・"])
 
     def test_spaces_rule_unchanged(self):
         self.assertEqual(lf.wrap("あめ、あめ… さむい、さむい"), "あめ、あめ…\nさむい、さむい")
