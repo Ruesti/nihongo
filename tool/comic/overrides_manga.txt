@@ -18,3 +18,4 @@ p10_quer extra=her expression thoughtful and composed, eyes lowered in reflectio
 p10_hoch extra=her expression thoughtful and composed, eyes lowered in reflection, not sad; neg=sad, crying, tearful, sorrowful, grieving, downcast mouth
 titel_quer extra=her posture calm and thoughtful, watching the train leave with quiet resolve; neg=sad, crying, tearful, sorrowful, grieving
 titel_hoch extra=her posture calm and thoughtful, watching the train leave with quiet resolve; neg=sad, crying, tearful, sorrowful, grieving
+p06_hoch control=depth
