@@ -56,10 +56,11 @@ class FotoOverrides(unittest.TestCase):
         with self.assertRaises(ValueError):
             ff.prompts("p03", "hoch", {"core": "@HOCH_FIX:p99"})
 
-    def test_committed_file_reproduces_the_four_rerenders(self):
+    def test_committed_file_reproduces_the_five_rerenders(self):
         ov = ff.load_overrides(os.path.join(HERE, "overrides_foto.txt"))
         self.assertEqual({k: v["seed"] for k, v in ov.items()},
-                         {"p03_hoch": 704, "titel_a_hoch": 703, "p06_hoch": 705, "p07_hoch": 707})
+                         {"p03_hoch": 704, "titel_a_hoch": 703, "p06_hoch": 705, "p07_hoch": 707,
+                          "p04_quer": 707})
         # Wortgleich mit foto_nachrender.py (28.9.): core + FORMAT_HINT + PHOTO.
         p03 = ("view from directly behind " + P + ", her back to the camera, we see only the back of her navy "
                "jacket and the back of her black bob haircut, no face visible, she walks away from the viewer "
@@ -87,6 +88,16 @@ class FotoOverrides(unittest.TestCase):
                  "wet pavement in the foreground, shop sign above the door")
         self.assertEqual(ff.prompts("p07", "hoch", ov["p07_hoch"]),
                          (core3 + PHOTO, negative_for("p07") + neg2 + ", corridor, hallway"))
+        # p04 quer (29.9., Uli „Ja, nachrendern": s701 hatte 64 % schwarze Seitenstreifen): freies core
+        # (Fassade füllt den Rahmen von Kante zu Kante) + FORMAT_HINT + PHOTO, Negativ + Anti-Balken-Zusatz.
+        core4 = ("the arched entrance of a covered shopping arcade seen from outside at dusk, rain on the roof, "
+                 "hanging signs, warm light inside, no people, the arcade facade and the neighbouring old shop "
+                 "fronts fill the entire wide frame from the left edge to the right edge, wet street with "
+                 "reflections in the foreground, establishing wide shot")
+        neg4 = (", black bars, letterbox, pillarbox, black borders, frame, border, empty black areas, dark void, "
+                "vignette")
+        self.assertEqual(ff.prompts("p04", "quer", ov["p04_quer"]),
+                         (core4 + FORMAT_HINT["quer"] + PHOTO, negative_for("p04") + neg4))
 
 
 if __name__ == "__main__":
