@@ -43,6 +43,10 @@ for pid in EXPECTED:
 
 assert layout["reactions"] == ["p02", "p05", "p08"], layout["reactions"]
 assert layout["safe"] == 0.8
+MOTIFS = sorted(EXPECTED) + ["titel"]
+assert sorted(layout["kern"]) == sorted(MOTIFS), sorted(layout["kern"])
+for m, (kx0, kx1) in layout["kern"].items():
+    assert 0 <= kx0 < kx1 <= 1, ("kern", m, kx0, kx1)
 assert sorted(layout["panels"]) == sorted(EXPECTED), sorted(layout["panels"])
 for pid, texts in EXPECTED.items():
     for fmt in ("quer", "hoch"):
@@ -59,4 +63,4 @@ for pid, texts in EXPECTED.items():
             assert all("furigana" not in b for b in spec["bubbles"]), (pid, fmt)
         for face in spec["faces"]:
             assert len(face) == 4, (pid, fmt, face)
-print("OK: 10 Panels x 2 Formate, Texte = Git-Quelle, reactions ok")
+print("OK: 10 Panels x 2 Formate, Texte = Git-Quelle, reactions ok, kern 11/11")
