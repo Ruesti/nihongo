@@ -222,7 +222,10 @@ void main() {
       await tester.pumpAndSettle();
       final hoch =
           tester.getRect(find.byKey(const ValueKey('story-thought-box')));
-      expect(hoch.width, greaterThan(0.8 * 540));
+      // Volle Zeile = bis zum rechten Rand (8 px Padding); links davon nur
+      // die zwei Chips (Zurück, Wörterbuch), also deutlich über 70 %.
+      expect(hoch.right, closeTo(540 - 8, 0.5));
+      expect(hoch.width, greaterThan(0.7 * 540));
     });
 
     testWidgets('Panel ohne Hochbild zeigt hochkant das Querbild', (tester) async {
@@ -293,10 +296,29 @@ void main() {
       expect(hit.width, closeTo(0.42 * 1170, 0.5));
     });
 
-    testWidgets('Tipp auf die Tippfläche öffnet weiterhin das Wörterbuch', (tester) async {
+    testWidgets('Tipp auf die Tippfläche liest nur vor, öffnet kein Wörterbuch',
+        (tester) async {
       setScreen(tester, const Size(540, 1170));
       await startReading(tester);
       await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    });
+
+    testWidgets('hochkant: das Buch-Symbol neben Zurück öffnet das Wörterbuch',
+        (tester) async {
+      setScreen(tester, const Size(540, 1170));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    });
+
+    testWidgets('quer: das Buch-Symbol neben Zurück öffnet das Wörterbuch',
+        (tester) async {
+      setScreen(tester, const Size(1170, 540));
+      await startReading(tester);
+      await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
     });

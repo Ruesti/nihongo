@@ -16,6 +16,16 @@ const _entries = [
   DictionaryEntry(id: 'lex_b', headword: 'かさ', meaning: 'Schirm'),
 ];
 
+/// Die Reihenliste trägt seit 1.10. Kana-Untertitel; „Weitere" als letzte
+/// Kachel liegt damit unter der 600-px-Standardfläche. Hohe Fläche statt
+/// Scrollen (ensureVisible bringt die Kachel sonst nur halb ins Bild).
+void _tallSurface(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1400);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
 void main() {
   test('every Folge 01 dictionary entry is reachable via some gojūon group',
       () {
@@ -135,6 +145,7 @@ void main() {
   testWidgets(
       'an entry whose headword matches no gojūon row appears under "Weitere" instead of disappearing',
       (tester) async {
+    _tallSurface(tester);
     const entries = [
       DictionaryEntry(id: 'lex_katakana', headword: 'コーヒー', meaning: 'Kaffee'),
     ];
@@ -169,6 +180,7 @@ void main() {
 
   testWidgets('an entry with an empty headword does not crash and lands in "Weitere"',
       (tester) async {
+    _tallSurface(tester);
     const entries = [
       DictionaryEntry(id: 'lex_empty', headword: '', meaning: 'malformed'),
     ];
@@ -219,5 +231,48 @@ void main() {
 
     expect(find.text('どうぞ'), findsOneWidget);
     expect(find.text('bitte / hier'), findsOneWidget);
+  });
+
+  testWidgets(
+      'the group list opens with a header naming the book and how to browse '
+      '(1.10.: without it the row index looked like random characters)',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DictionarySheet(entries: _entries, knownIds: const {}),
+      ),
+    ));
+
+    expect(find.text('Wörterbuch'), findsOneWidget);
+    expect(find.textContaining('Reihe'), findsOneWidget);
+    expect(find.textContaining('gelernt'), findsOneWidget);
+  });
+
+  testWidgets('each row shows its kana and the romanization of its first sound',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DictionarySheet(entries: _entries, knownIds: const {}),
+      ),
+    ));
+
+    expect(find.text('a'), findsOneWidget);
+    expect(find.text('ka'), findsOneWidget);
+    expect(find.text('か き く け こ が ぎ ぐ げ ご'), findsOneWidget);
+  });
+
+  testWidgets('the entry list names the row that was opened', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DictionarySheet(entries: _entries, knownIds: const {}),
+      ),
+    ));
+
+    await tester.tap(find.text('あ行'));
+    await tester.pump();
+
+    expect(find.text('あ行'), findsOneWidget);
+    expect(find.text('か行'), findsNothing);
+    expect(find.text('あめ'), findsOneWidget);
   });
 }

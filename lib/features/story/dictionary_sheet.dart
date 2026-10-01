@@ -6,7 +6,10 @@ import 'dictionary_groups.dart';
 
 /// Browses [entries] by gojūon row — no search field. Looking something up
 /// requires knowing its reading well enough to find the right row and
-/// character (brief §3.2 — the friction is deliberate). An entry's
+/// character (brief §3.2 — the friction is deliberate). The sheet opens with
+/// a header that names the book and says how to browse, and every row shows
+/// its kana plus the romanization of its first sound: without that, the row
+/// index read as a column of unrelated characters (device test 30.9.). An entry's
 /// [DictionaryEntry.meaning] only renders once its id is in [knownIds];
 /// otherwise only the headword shows. A margin note, when present, always
 /// shows regardless of known-state and has no gesture handler at all — not
@@ -52,21 +55,45 @@ class _DictionarySheetState extends State<DictionarySheet> {
   @override
   Widget build(BuildContext context) {
     final group = _selectedGroup;
+    final textTheme = Theme.of(context).textTheme;
     if (group == null) {
       final other = _otherEntries;
       return ListView(
         key: const ValueKey('dictionary-group-list'),
         children: [
+          Padding(
+            key: const ValueKey('dictionary-header'),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Wörterbuch', style: textTheme.titleMedium),
+                const SizedBox(height: 4),
+                Text(
+                  'Kein Suchfeld: Blättere zur Reihe des ersten Zeichens, '
+                  'dort steht das Wort. Bedeutungen stehen nur bei Wörtern, '
+                  'die du schon gelernt hast.',
+                  style: textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
           for (final g in dictionaryGroups)
             ListTile(
               key: ValueKey('dictionary-group-${g.name}'),
               title: Text(g.name),
+              subtitle: Text(g.characters.join(' ')),
+              trailing: Text(
+                g.romanizations.first,
+                style: textTheme.labelLarge,
+              ),
               onTap: () => setState(() => _selectedGroup = g),
             ),
           if (other.isNotEmpty)
             ListTile(
               key: const ValueKey('dictionary-group-other'),
               title: const Text(_otherGroupName),
+              subtitle: const Text('Katakana, Kanji und anderes'),
               onTap: () => setState(
                 () => _selectedGroup = const ScriptGroup(
                   name: _otherGroupName,
@@ -86,10 +113,26 @@ class _DictionarySheetState extends State<DictionarySheet> {
       key: const ValueKey('dictionary-entry-list'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        IconButton(
-          key: const ValueKey('dictionary-back'),
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => setState(() => _selectedGroup = null),
+        Row(
+          children: [
+            IconButton(
+              key: const ValueKey('dictionary-back'),
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Zurück',
+              onPressed: () => setState(() => _selectedGroup = null),
+            ),
+            Text(group.name, style: textTheme.titleMedium),
+            if (group.characters.isNotEmpty) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  group.characters.join(' '),
+                  style: textTheme.bodySmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ],
         ),
         Expanded(
           child: ListView(

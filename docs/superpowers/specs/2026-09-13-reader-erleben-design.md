@@ -41,7 +41,15 @@ als Defekt.
 - Pro Blase liegt im Episodenformat eine Tippfläche — das Schema hat dafür
   bereits `StoryBubble.hitArea` (Polygon, normierte Koordinaten relativ
   zum Panelbild); es wird jetzt erstmals mit Daten gefüllt und gerendert.
-  Tap auf die Fläche = anhören + Wörterbuch (bisheriges Verhalten, neuer Ort).
+  Tap auf die Fläche = anhören.
+  **Nachtrag 1.10.:** Ursprünglich „anhören + Wörterbuch". Im Gerätetest
+  (30.9.) wirkte der Reihen-Index des Buchs (あ行, か行 …) nach einem
+  Blasen-Tipp wie zufällige Zeichen ohne Bezug zum Gesprochenen. Deshalb
+  öffnet der Blasen-Tipp das Buch nicht mehr mit; das Buch hat einen eigenen
+  Einstieg (Buch-Chip rechts neben dem Zurück-Chip), und das Blatt trägt eine
+  Kopfzeile (kein Suchfeld, Reihe des ersten Zeichens, Bedeutungen nur bei
+  Gelerntem) sowie je Reihe Kana + Umschrift. Die Reibung des Briefs (§3.2)
+  bleibt — für den, der das Buch bewusst aufschlägt.
 - **Fallback (Übergang):** Ein Panel, dessen Blasen keine `hitArea` haben,
   rendert den Dialog wie heute unter dem Bild. So bleibt die App mit den
   aktuellen Panels lauffähig, bis die neuen Bilder da sind — App-Umbau und
