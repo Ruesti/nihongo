@@ -66,5 +66,32 @@ class T2IGraph(unittest.TestCase):
         self.assertEqual((lat["width"], lat["height"]), (928, 1664))
 
 
+class OutpaintGraph(unittest.TestCase):
+    def test_wiring_pad_mask_inpaint_no_controlnet(self):
+        g = cc.outpaint_graph("hoch_p05.png", 464, 0, "bg", "neg", 831, "p05_hochT1", feather=64)
+        pad = g[_node(g, "ImagePadForOutpaint")]["inputs"]
+        self.assertEqual((pad["left"], pad["top"], pad["right"], pad["bottom"]), (0, 464, 0, 0))
+        self.assertEqual(pad["feathering"], 64)
+        self.assertEqual(pad["image"], [_node(g, "LoadImage"), 0])
+        ic = _node(g, "InpaintModelConditioning")
+        self.assertEqual(g[ic]["inputs"]["pixels"], [_node(g, "ImagePadForOutpaint"), 0])
+        self.assertEqual(g[ic]["inputs"]["mask"], [_node(g, "ImagePadForOutpaint"), 1])
+        self.assertTrue(g[ic]["inputs"]["noise_mask"])
+        ks = g[_node(g, "KSampler")]["inputs"]
+        self.assertEqual(ks["positive"], [ic, 0])
+        self.assertEqual(ks["negative"], [ic, 1])
+        self.assertEqual(ks["latent_image"], [ic, 2])
+        self.assertAlmostEqual(ks["denoise"], 1.0)
+        self.assertEqual((ks["steps"], ks["cfg"], ks["seed"]), (24, 4.0, 831))
+        self.assertNotIn("ControlNetApplyAdvanced", [v["class_type"] for v in g.values()])
+        self.assertAlmostEqual(g[_node(g, "LoraLoaderModelOnly")]["inputs"]["strength_model"], 1.5)
+        self.assertTrue(g["4"]["inputs"]["text"].startswith("shotengai_style, "))   # "4" = positiver Prompt
+
+    def test_bottom_pass(self):
+        g = cc.outpaint_graph("x.png", 0, 128, "p", "n", 1, "p", feather=96)
+        pad = g[_node(g, "ImagePadForOutpaint")]["inputs"]
+        self.assertEqual((pad["top"], pad["bottom"], pad["feathering"]), (0, 128, 96))
+
+
 if __name__ == "__main__":
     unittest.main()
