@@ -39,22 +39,68 @@ M = (0.30, 0.36, 0.40, 0.13)    # mittig
 # lib/features/story/episodes/folge_01_regen.dart uebereinstimmen.
 # P2 und P10 tragen bewusst kein Lettering (keine Bubbles im Bauplan).
 BUBBLES = {
-    1: [('みなみまち駅', M, ('駅', 'えき'))],
+    1: [('みなみまち駅', S2, ('駅', 'えき'))],   # S2 statt M: M lag auf Miras Gesicht
     3: [('あめ！あめ！', S2), ('あめ、あめ… さむい、さむい', S1)],
     4: [('傘', M, ('傘', 'かさ')), ('…あめ', S1)],
-    5: [('あめ、あめ！', S2), ('これ？かさ？みせ！', S2B), ('ひとり？', S2C),
+    5: [('あめ、あめ！', S2), ('これ？かさ？みせ！', S2B),
+        ('ひとり？', (0.06, 0.31, 0.43, 0.09)),   # flacher: Unterkante 0.40 bleibt ueber W's Haaransatz (0.42)
         ('…はい。ひとり', S1)],
-    6: [('これ、こわれた', S2), ('はい、こわれた、こわれた。だめ、だめ', S2B),
-        ('…こわれた…？', S1)],
-    7: [('はい。かさ。どうぞ', S2), ('え？いくら？いくら？', S1),
-        ('いいえ、いいえ。どうぞ、どうぞ。かさ！', S2B), ('…ほんとう？', S1B),
-        ('ほんとう。だいじょうぶ、だいじょうぶ', S2C)],
+    # p06: Kopf des Mannes sitzt oben-mittig zwischen den Spalten -> links
+    # schmaler (bis x 0.41), rechts spaeter (ab 0.56), damit keine Ellipse ihn streift.
+    6: [('これ、こわれた', (0.04, 0.05, 0.35, 0.13)),
+        ('はい、こわれた、こわれた。だめ、だめ', (0.04, 0.20, 0.37, 0.11)),
+        ('…こわれた…？', (0.56, 0.05, 0.40, 0.13))],
+    # p07: rechte 2. Zeile hoeher (Miras Haaransatz bei y 0.26), linke 3. Zeile
+    # hoeher (Kopf des Mannes bei y 0.40); Zeilen dafuer etwas enger gestapelt.
+    7: [('はい。かさ。どうぞ', S2), ('え？いくら？いくら？', (0.52, 0.04, 0.42, 0.12)),
+        ('いいえ、いいえ。どうぞ、どうぞ。かさ！', (0.06, 0.19, 0.43, 0.10)),
+        ('…ほんとう？', (0.56, 0.17, 0.36, 0.08)),
+        ('ほんとう。だいじょうぶ、だいじょうぶ', (0.06, 0.30, 0.43, 0.09))],
     8: [('はいはい', S2),
         ('ありがとう… すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…', S1)],
     9: [('あめやどり', M), ('ここ…？あめ…やどり？', S1)],
     10: [('ここ…', S1)],
 }
 REACTIONS = [2, 5, 8]
+
+# Gesichter (normierte Rechtecke x, y, w, h) — kein Blasen-Slot darf eines
+# ueberlappen. Uli: "In einem Bild ueberdeckt die Sprechblase das Gesicht von
+# Mira. Das muessen wir ausschliessen." Zonen aus den Renders abgelesen.
+FACES = {
+    1: [(0.58, 0.20, 0.10, 0.12)],                          # Mira
+    5: [(0.62, 0.18, 0.10, 0.14), (0.30, 0.42, 0.10, 0.10)],  # Mira, W
+    6: [(0.44, 0.12, 0.09, 0.13)],                          # alter Mann
+    7: [(0.15, 0.40, 0.11, 0.12), (0.64, 0.26, 0.10, 0.14)],  # Mann, Mira
+    8: [(0.54, 0.20, 0.14, 0.18)],                          # Mira
+    9: [(0.38, 0.20, 0.12, 0.14)],                          # Mira
+    10: [(0.54, 0.30, 0.16, 0.20)],                         # Mira
+}
+
+
+def _overlaps(slot, face):
+    """Blase = Ellipse im Slot-Rechteck. Trifft die Ellipse das Gesichts-Rechteck?
+    Naechster Punkt des Rechtecks zum Ellipsen-Mittelpunkt, normiert auf die Radien."""
+    sx, sy, sw, sh = slot
+    fx, fy, fw, fh = face
+    cx, cy, rx, ry = sx + sw / 2, sy + sh / 2, sw / 2, sh / 2
+    px = min(max(cx, fx), fx + fw)
+    py = min(max(cy, fy), fy + fh)
+    return ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 <= 1.0
+
+
+def check_faces():
+    """Bricht ab, wenn ein Blasen-Slot ein Gesicht ueberlappt."""
+    bad = []
+    for n, bubbles in BUBBLES.items():
+        for entry in bubbles:
+            slot = entry[1]
+            for face in FACES.get(n, []):
+                if _overlaps(slot, face):
+                    bad.append((n, entry[0], slot, face))
+    if bad:
+        for n, text, slot, face in bad:
+            print(f'GESICHT VERDECKT: p{n:02d} "{text}" slot={slot} face={face}')
+        raise SystemExit('Lettering abgebrochen: Blase ueber Gesicht.')
 
 
 def load(n):
@@ -121,6 +167,7 @@ def letter(img, bubbles):
 
 
 def main():
+    check_faces()
     for n in range(1, 11):
         img = load(MAPPING[n])
         if n in BUBBLES:

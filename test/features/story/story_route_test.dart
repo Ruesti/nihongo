@@ -156,6 +156,9 @@ void main() {
         await tester.pumpAndSettle();
       }
     }
+    // Kein Auto-Popup mehr: Hinweis-Kasten auf dem Panel antippen, dann Blatt.
+    await tester.tap(find.byKey(const ValueKey('story-diegetic-prompt')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('diegetic-speak-sheet')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
