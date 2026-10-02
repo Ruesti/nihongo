@@ -20,6 +20,8 @@ void main() {
         if (bubble.tokens.isNotEmpty) {
           expect(bubble.hitArea.points, hasLength(4),
               reason: 'Panel ${panel.index}: Dialog-Bubble ohne Tippflaeche');
+          expect(bubble.hitAreaPortrait?.points, hasLength(4),
+              reason: 'Panel ${panel.index}: Dialog-Bubble ohne Hoch-Tippflaeche');
         }
       }
     }

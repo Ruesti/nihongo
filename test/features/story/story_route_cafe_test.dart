@@ -3,13 +3,99 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
+import 'package:nihongo_app/features/cafe/cafe_screen.dart';
+import 'package:nihongo_app/features/mining_slice/reading_tab.dart';
 import 'package:nihongo_app/features/story/episodes/folge_01_regen.dart';
 import 'package:nihongo_app/features/story/story_route.dart';
 import 'package:nihongo_app/l10n/app_localizations.dart';
 import 'package:nihongo_app/packs/ja/ja_seed.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+const _sheetKeys = [
+  ValueKey('dictionary-sheet'),
+  ValueKey('diegetic-speak-sheet'),
+  ValueKey('diegetic-trace-sheet'),
+];
+
+Future<void> _readToEndCard(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('story-title-card')));
+  await tester.pumpAndSettle();
+  for (var i = 0; i < 10; i++) {
+    await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+    await tester.pumpAndSettle();
+    for (final key in _sheetKeys) {
+      if (find.byKey(key).evaluate().isNotEmpty) {
+        await tester.tapAt(const Offset(400, 50));
+        await tester.pumpAndSettle();
+      }
+    }
+  }
+}
+
 void main() {
+  testWidgets(
+      'aus der Shell (Root-Navigator) geöffnet: „Ins Café" ersetzt den '
+      'Reader als Vollbild-Nachbesprechung, Zurück führt in die Shell',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final learning = LearningDb.forTesting();
+    await seedJaPack(learning);
+    addTearDown(() async => learning.close());
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [learningDbProvider.overrideWithValue(learning)],
+      child: MaterialApp(
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Navigator(
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (context) => Center(
+                child: TextButton(
+                  key: const ValueKey('open-reader'),
+                  onPressed: () => openStoryReader(context),
+                  child: const Text('Folge'),
+                ),
+              ),
+            ),
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: 0,
+            destinations: const [
+              NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+              NavigationDestination(
+                  icon: Icon(Icons.menu_book), label: 'Lesen'),
+            ],
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.byKey(const ValueKey('open-reader')));
+    await tester.pumpAndSettle();
+    await _readToEndCard(tester);
+    await tester.tap(find.byKey(const ValueKey('story-end-cafe')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    // Das Café ersetzt den Reader: Zurück schließt erst die Nachbesprechung,
+    // dann das Café — und landet in der Shell, NICHT wieder im Reader.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsNothing);
+    expect(find.byType(CafeScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(CafeScreen), findsNothing);
+    expect(find.byKey(const ValueKey('story-reader-panel')), findsNothing);
+    expect(find.byKey(const ValueKey('story-end-card')), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
   testWidgets('„Ins Café" von der Endkarte landet in der Nachbesprechung, '
       'und jedes Budget-Wort liegt vorher im Karteikasten', (tester) async {
     SharedPreferences.setMockInitialValues({});

@@ -1,0 +1,3 @@
+# Overrides für das Hochbild aus dem Querbild (folge01_hoch.py picks_manga.txt overrides_hoch.txt).
+# Grammatik: <motiv>_hoch [seed=N] [force]   — Standard-Seed 831; force erzwingt Neu-Ableitung trotz
+# vorhandener Ausgabe in ~/comfy_f01/hoch/. Umgebungssätze stehen in folge01_motifs.HOCH_UMGEBUNG.

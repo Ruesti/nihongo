@@ -1,0 +1,25 @@
+# Overrides für den Manga-Vollrender (folge01_manga.py full picks_foto.txt overrides_manga.txt).
+# Grammatik: <key> [control=depth|canny] [seed=N] [denoise=0.7] [strength=0.7] [force] [extra=<Positiv-Zusatz>;] [neg=<Negativ-Zusatz>]
+# Ein Override ändert nur, WIE ein Key gerendert wird. Liegt in manga/ schon eine Ausgabe, wird er
+# übersprungen. Neu rendern: das Wort `force` in die Zeile setzen (z. B. `p06_hoch force extra=…`)
+# und vorher die alte Ausgabe auf der Box löschen. Der Zähler (_00001_ → _00002_) läuft trotzdem in
+# ComfyUIs eigenem Ausgabeordner weiter → neuen Dateinamen danach in picks_manga.txt eintragen.
+# Nur ein paar Keys nachziehen: lieber eine verkleinerte Picks-Datei übergeben (siehe README.md).
+# Uli 29.9.: „Mira ist mir zu traurig. Sie kann nachdenklich sein" → Mira-Panels: nachdenklich, ruhig, gefasst.
+# Schirm-Panels (p07/p08): das Modell deutet die Reflexe des durchsichtigen Schirms als Schmutz (Feinschliff 28.9.).
+p01_quer extra=her expression calm, thoughtful and composed, quietly curious; neg=sad, crying, tearful, sorrowful, grieving, downcast expression
+p01_hoch extra=her expression calm, thoughtful and composed, quietly curious; neg=sad, crying, tearful, sorrowful, grieving, downcast expression
+p03_quer extra=her posture calm and thoughtful, walking with quiet purpose; neg=sad, crying, tearful, sorrowful, grieving, slumped
+p03_hoch extra=her posture calm and thoughtful, walking with quiet purpose; neg=sad, crying, tearful, sorrowful, grieving, slumped
+p05_quer extra=her expression alert and thoughtful, a small hopeful spark; neg=sad, crying, tearful, sorrowful, grieving
+p05_hoch extra=her expression alert and thoughtful, a small hopeful spark; neg=sad, crying, tearful, sorrowful, grieving
+p07_quer extra=her expression thoughtful and quietly surprised, soft eyes; neg=sad, crying, tearful, sorrowful, grieving, stains, dirt spots, rust spots, brown blotches, mud, dirty umbrella, torn umbrella
+p07_hoch extra=her expression thoughtful and quietly surprised, soft eyes; neg=sad, crying, tearful, sorrowful, grieving, stains, dirt spots, rust spots, brown blotches, mud, dirty umbrella, torn umbrella
+p08_quer extra=her expression thoughtful and gently grateful, a faint calm smile; neg=sad, crying, tearful, sorrowful, grieving, stains, dirt spots, rust spots, brown blotches, mud, dirty umbrella, torn umbrella
+p08_hoch extra=her expression thoughtful and gently grateful, a faint calm smile; neg=sad, crying, tearful, sorrowful, grieving, stains, dirt spots, rust spots, brown blotches, mud, dirty umbrella, torn umbrella
+p09_quer extra=her expression thoughtful and wondering, looking up with quiet curiosity; neg=sad, crying, tearful, sorrowful, grieving
+p09_hoch extra=her expression thoughtful and wondering, looking up with quiet curiosity; neg=sad, crying, tearful, sorrowful, grieving
+p10_quer extra=her expression thoughtful and composed, eyes lowered in reflection, not sad; neg=sad, crying, tearful, sorrowful, grieving, downcast mouth
+p10_hoch extra=her expression thoughtful and composed, eyes lowered in reflection, not sad; neg=sad, crying, tearful, sorrowful, grieving, downcast mouth
+titel_quer extra=her posture calm and thoughtful, watching the train leave with quiet resolve; neg=sad, crying, tearful, sorrowful, grieving
+titel_hoch extra=her posture calm and thoughtful, watching the train leave with quiet resolve; neg=sad, crying, tearful, sorrowful, grieving

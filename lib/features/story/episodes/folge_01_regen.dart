@@ -1,11 +1,13 @@
 import '../dictionary.dart';
 import '../episode.dart';
 import '../episode_validator.dart';
+import 'folge_01_layout.g.dart';
 
 /// Folge 01 „Regen" (ep_ja_shotengai_01) als gebündelter Produktions-
-/// Inhalt. Panel-Assets zeigen noch auf die V1-Renders; der Tausch gegen
-/// die finalen ckpt-6-Panels ist ein reiner Asset-Austausch in dieser Datei
-/// (Task 3).
+/// Inhalt. Panel-Assets sind der Manga-Satz aus Plan B „Bilder"
+/// (assets/story/folge01/, quer + hoch, plus Titelbild). Tippflächen je
+/// Blase und Format stammen generiert aus tool/comic/folge01_layout.json
+/// (lib/features/story/episodes/folge_01_layout.g.dart, INV-14).
 Episode loadFolge01() {
   final episode = Episode.fromJson(pilot01RegenJson);
   validateEpisode(episode);
@@ -24,6 +26,9 @@ const Map<String, dynamic> pilot01RegenJson = {
   'seasonId': 'season_ja_shotengai',
   'orderIndex': 1,
   'title': 'Regen',
+  'titleJa': '雨',
+  'cover': 'assets/story/folge01/titel.jpg',
+  'coverPortrait': 'assets/story/folge01/titel_hoch.jpg',
   'locale': 'ja',
   'era': '1996',
   'weather': 'rain',
@@ -306,17 +311,14 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 0,
-          'asset': 'assets/story/p01.jpg',
+          'asset': 'assets/story/folge01/p01.jpg',
+          'assetPortrait': 'assets/story/folge01/p01_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'signage',
               'text': 'みなみまち駅',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.05},
-                {'x': 0.48, 'y': 0.05},
-                {'x': 0.48, 'y': 0.18},
-                {'x': 0.06, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP01B0,
+              'hitAreaPortrait': f01HitHochP01B0,
               'tokens': [
                 {'surface': 'みなみまち', 'itemId': null},
                 {'surface': '駅', 'reading': 'えき', 'itemId': 'lex_ja_eki'},
@@ -350,7 +352,8 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 1,
-          'asset': 'assets/story/p02.jpg',
+          'asset': 'assets/story/folge01/p02.jpg',
+          'assetPortrait': 'assets/story/folge01/p02_hoch.jpg',
           'bubbles': [],
           'thoughts': [
             {'text': 'Der Regen war schneller als sie.'},
@@ -365,7 +368,8 @@ const Map<String, dynamic> pilot01RegenJson = {
                   'holt.',
               'target': 'め',
               'targetItemIds': <dynamic>[],
-              'reactionAsset': 'assets/story/p02_reaction.jpg',
+              'reactionAsset': 'assets/story/folge01/p02_reaction.jpg',
+              'reactionAssetPortrait': 'assets/story/folge01/p02_reaction_hoch.jpg',
               'reactionCaption':
                   'め. Was immer es heißt — jetzt gehört es ihr.',
             },
@@ -379,17 +383,14 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 2,
-          'asset': 'assets/story/p03.jpg',
+          'asset': 'assets/story/folge01/p03.jpg',
+          'assetPortrait': 'assets/story/folge01/p03_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'passant_a',
               'text': 'あめ！あめ！',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.05},
-                {'x': 0.48, 'y': 0.05},
-                {'x': 0.48, 'y': 0.18},
-                {'x': 0.06, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP03B0,
+              'hitAreaPortrait': f01HitHochP03B0,
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
@@ -398,12 +399,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'passant_b',
               'text': 'あめ、あめ… さむい、さむい',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.05},
-                {'x': 0.94, 'y': 0.05},
-                {'x': 0.94, 'y': 0.18},
-                {'x': 0.52, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP03B1,
+              'hitAreaPortrait': f01HitHochP03B1,
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
@@ -424,17 +421,14 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 3,
-          'asset': 'assets/story/p04.jpg',
+          'asset': 'assets/story/folge01/p04.jpg',
+          'assetPortrait': 'assets/story/folge01/p04_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'signage',
               'text': '傘',
-              'hitArea': [
-                {'x': 0.30, 'y': 0.36},
-                {'x': 0.70, 'y': 0.36},
-                {'x': 0.70, 'y': 0.49},
-                {'x': 0.30, 'y': 0.49},
-              ],
+              'hitArea': f01HitQuerP04B0,
+              'hitAreaPortrait': f01HitHochP04B0,
               'tokens': [
                 {'surface': '傘', 'reading': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
@@ -442,12 +436,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': '…あめ',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.05},
-                {'x': 0.94, 'y': 0.05},
-                {'x': 0.94, 'y': 0.18},
-                {'x': 0.52, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP04B1,
+              'hitAreaPortrait': f01HitHochP04B1,
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
               ],
@@ -475,17 +465,14 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 4,
-          'asset': 'assets/story/p05.jpg',
+          'asset': 'assets/story/folge01/p05.jpg',
+          'assetPortrait': 'assets/story/folge01/p05_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
               'text': 'あめ、あめ！',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.05},
-                {'x': 0.48, 'y': 0.05},
-                {'x': 0.48, 'y': 0.18},
-                {'x': 0.06, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP05B0,
+              'hitAreaPortrait': f01HitHochP05B0,
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
@@ -494,12 +481,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'ladenbesitzer',
               'text': 'これ？かさ？みせ！',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.20},
-                {'x': 0.49, 'y': 0.20},
-                {'x': 0.49, 'y': 0.31},
-                {'x': 0.06, 'y': 0.31},
-              ],
+              'hitArea': f01HitQuerP05B1,
+              'hitAreaPortrait': f01HitHochP05B1,
               'tokens': [
                 {'surface': 'これ', 'itemId': 'lex_ja_kore'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
@@ -509,12 +492,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'ladenbesitzer',
               'text': 'ひとり？',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.31},
-                {'x': 0.49, 'y': 0.31},
-                {'x': 0.49, 'y': 0.4},
-                {'x': 0.06, 'y': 0.4},
-              ],
+              'hitArea': f01HitQuerP05B2,
+              'hitAreaPortrait': f01HitHochP05B2,
               'tokens': [
                 {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
               ],
@@ -522,12 +501,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': '…はい。ひとり',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.05},
-                {'x': 0.94, 'y': 0.05},
-                {'x': 0.94, 'y': 0.18},
-                {'x': 0.52, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP05B3,
+              'hitAreaPortrait': f01HitHochP05B3,
               'tokens': [
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
                 {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
@@ -551,7 +526,8 @@ const Map<String, dynamic> pilot01RegenJson = {
                   'すみません.',
               'target': 'すみません',
               'targetItemIds': ['lex_ja_sumimasen'],
-              'reactionAsset': 'assets/story/p05_reaction.jpg',
+              'reactionAsset': 'assets/story/folge01/p05_reaction.jpg',
+              'reactionAssetPortrait': 'assets/story/folge01/p05_reaction_hoch.jpg',
               'reactionCaption':
                   'Er hat sie verstanden. Ihr erstes Wort in diesem Land — '
                   'und es funktioniert.',
@@ -565,17 +541,14 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 5,
-          'asset': 'assets/story/p06.jpg',
+          'asset': 'assets/story/folge01/p06.jpg',
+          'assetPortrait': 'assets/story/folge01/p06_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
               'text': 'これ、こわれた',
-              'hitArea': [
-                {'x': 0.04, 'y': 0.05},
-                {'x': 0.39, 'y': 0.05},
-                {'x': 0.39, 'y': 0.18},
-                {'x': 0.04, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP06B0,
+              'hitAreaPortrait': f01HitHochP06B0,
               'tokens': [
                 {'surface': 'これ', 'itemId': 'lex_ja_kore'},
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
@@ -584,12 +557,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'ladenbesitzer',
               'text': 'はい、こわれた、こわれた。だめ、だめ',
-              'hitArea': [
-                {'x': 0.04, 'y': 0.20},
-                {'x': 0.41, 'y': 0.20},
-                {'x': 0.41, 'y': 0.31},
-                {'x': 0.04, 'y': 0.31},
-              ],
+              'hitArea': f01HitQuerP06B1,
+              'hitAreaPortrait': f01HitHochP06B1,
               'tokens': [
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
@@ -601,12 +570,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': '…こわれた…？',
-              'hitArea': [
-                {'x': 0.56, 'y': 0.05},
-                {'x': 0.96, 'y': 0.05},
-                {'x': 0.96, 'y': 0.18},
-                {'x': 0.56, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP06B2,
+              'hitAreaPortrait': f01HitHochP06B2,
               'tokens': [
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
               ],
@@ -628,17 +593,14 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 6,
-          'asset': 'assets/story/p07.jpg',
+          'asset': 'assets/story/folge01/p07.jpg',
+          'assetPortrait': 'assets/story/folge01/p07_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
               'text': 'はい。かさ。どうぞ',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.05},
-                {'x': 0.48, 'y': 0.05},
-                {'x': 0.48, 'y': 0.18},
-                {'x': 0.06, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP07B0,
+              'hitAreaPortrait': f01HitHochP07B0,
               'tokens': [
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
@@ -648,12 +610,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': 'え？いくら？いくら？',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.04},
-                {'x': 0.94, 'y': 0.04},
-                {'x': 0.94, 'y': 0.16},
-                {'x': 0.52, 'y': 0.16},
-              ],
+              'hitArea': f01HitQuerP07B1,
+              'hitAreaPortrait': f01HitHochP07B1,
               'tokens': [
                 {'surface': 'え', 'itemId': null},
                 {'surface': 'いくら', 'itemId': 'lex_ja_ikura'},
@@ -663,12 +621,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'ladenbesitzer',
               'text': 'いいえ、いいえ。どうぞ、どうぞ。かさ！',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.19},
-                {'x': 0.49, 'y': 0.19},
-                {'x': 0.49, 'y': 0.29},
-                {'x': 0.06, 'y': 0.29},
-              ],
+              'hitArea': f01HitQuerP07B2,
+              'hitAreaPortrait': f01HitHochP07B2,
               'tokens': [
                 {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
                 {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
@@ -680,12 +634,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': '…ほんとう？',
-              'hitArea': [
-                {'x': 0.56, 'y': 0.17},
-                {'x': 0.92, 'y': 0.17},
-                {'x': 0.92, 'y': 0.25},
-                {'x': 0.56, 'y': 0.25},
-              ],
+              'hitArea': f01HitQuerP07B3,
+              'hitAreaPortrait': f01HitHochP07B3,
               'tokens': [
                 {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
               ],
@@ -693,12 +643,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'ladenbesitzer',
               'text': 'ほんとう。だいじょうぶ、だいじょうぶ',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.30},
-                {'x': 0.49, 'y': 0.30},
-                {'x': 0.49, 'y': 0.39},
-                {'x': 0.06, 'y': 0.39},
-              ],
+              'hitArea': f01HitQuerP07B4,
+              'hitAreaPortrait': f01HitHochP07B4,
               'tokens': [
                 {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
                 {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
@@ -722,17 +668,14 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 7,
-          'asset': 'assets/story/p08.jpg',
+          'asset': 'assets/story/folge01/p08.jpg',
+          'assetPortrait': 'assets/story/folge01/p08_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
               'text': 'はいはい',
-              'hitArea': [
-                {'x': 0.06, 'y': 0.05},
-                {'x': 0.48, 'y': 0.05},
-                {'x': 0.48, 'y': 0.18},
-                {'x': 0.06, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP08B0,
+              'hitAreaPortrait': f01HitHochP08B0,
               'tokens': [
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
@@ -741,12 +684,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': 'ありがとう… すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.05},
-                {'x': 0.94, 'y': 0.05},
-                {'x': 0.94, 'y': 0.18},
-                {'x': 0.52, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP08B1,
+              'hitAreaPortrait': f01HitHochP08B1,
               'tokens': [
                 {'surface': 'ありがとう', 'itemId': 'lex_ja_arigatou'},
                 {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
@@ -773,7 +712,8 @@ const Map<String, dynamic> pilot01RegenJson = {
               'promptText': 'Sag es ihm: ありがとう.',
               'target': 'ありがとう',
               'targetItemIds': ['lex_ja_arigatou'],
-              'reactionAsset': 'assets/story/p08_reaction.jpg',
+              'reactionAsset': 'assets/story/folge01/p08_reaction.jpg',
+              'reactionAssetPortrait': 'assets/story/folge01/p08_reaction_hoch.jpg',
               'reactionCaption':
                   'Ihr zweites Wort. Es wird nicht das letzte sein.',
             },
@@ -791,17 +731,14 @@ const Map<String, dynamic> pilot01RegenJson = {
       'panels': [
         {
           'index': 8,
-          'asset': 'assets/story/p09.jpg',
+          'asset': 'assets/story/folge01/p09.jpg',
+          'assetPortrait': 'assets/story/folge01/p09_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'signage',
               'text': 'あめやどり',
-              'hitArea': [
-                {'x': 0.30, 'y': 0.36},
-                {'x': 0.70, 'y': 0.36},
-                {'x': 0.70, 'y': 0.49},
-                {'x': 0.30, 'y': 0.49},
-              ],
+              'hitArea': f01HitQuerP09B0,
+              'hitAreaPortrait': f01HitHochP09B0,
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
                 {'surface': 'やどり', 'itemId': null},
@@ -810,12 +747,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'protagonist',
               'text': 'ここ…？あめ…やどり？',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.05},
-                {'x': 0.94, 'y': 0.05},
-                {'x': 0.94, 'y': 0.18},
-                {'x': 0.52, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP09B1,
+              'hitAreaPortrait': f01HitHochP09B1,
               'tokens': [
                 {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
@@ -842,17 +775,14 @@ const Map<String, dynamic> pilot01RegenJson = {
         },
         {
           'index': 9,
-          'asset': 'assets/story/p10.jpg',
+          'asset': 'assets/story/folge01/p10.jpg',
+          'assetPortrait': 'assets/story/folge01/p10_hoch.jpg',
           'bubbles': [
             {
               'speakerId': 'protagonist',
               'text': 'ここ…',
-              'hitArea': [
-                {'x': 0.52, 'y': 0.05},
-                {'x': 0.94, 'y': 0.05},
-                {'x': 0.94, 'y': 0.18},
-                {'x': 0.52, 'y': 0.18},
-              ],
+              'hitArea': f01HitQuerP10B0,
+              'hitAreaPortrait': f01HitHochP10B0,
               'tokens': [
                 {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
               ],

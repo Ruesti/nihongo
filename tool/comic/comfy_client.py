@@ -101,3 +101,76 @@ def relight_graph(input_name, prompt, seed, prefix):
         "13": {"class_type": "VAEDecode", "inputs": {"samples": ["12", 0], "vae": ["6", 0]}},
         "14": {"class_type": "SaveImage", "inputs": {"filename_prefix": prefix, "images": ["13", 0]}},
     }
+
+
+def manga_graph(input_name, prompt, negative, seed, prefix, control="depth", denoise=0.7,
+                strength=0.7, end_percent=0.8, lora_strength=1.5):
+    """Manga-Durchgang (Spec Manga-Vollbild §2.2): img2img über dem Foto-Final mit
+    Hausstil-LoRA und Struktur-Zügel (InstantX ControlNet-Union). control = "depth"
+    (Standard, Uli 23.9.) oder "canny" (Ausweich). input_name liegt in COMFY_INPUT."""
+    if control == "depth":
+        pre = {"class_type": "DepthAnythingV2Preprocessor",
+               "inputs": {"image": ["IN", 0], "resolution": 928}}
+    elif control == "canny":
+        pre = {"class_type": "CannyEdgePreprocessor",
+               "inputs": {"image": ["IN", 0], "low_threshold": 100, "high_threshold": 200, "resolution": 928}}
+    else:
+        raise ValueError("control muss depth oder canny sein, nicht %r" % control)
+    return {
+        "1": {"class_type": "UnetLoaderGGUF", "inputs": {"unet_name": "qwen-image-Q4_K_M.gguf"}},
+        "L": {"class_type": "LoraLoaderModelOnly", "inputs": {"model": ["1", 0],
+              "lora_name": "shotengai_style_ckpt6.safetensors", "strength_model": lora_strength}},
+        "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "type": "qwen_image"}},
+        "3": {"class_type": "VAELoader", "inputs": {"vae_name": "qwen_image_vae.safetensors"}},
+        "IN": {"class_type": "LoadImage", "inputs": {"image": input_name}},
+        "EN": {"class_type": "VAEEncode", "inputs": {"pixels": ["IN", 0], "vae": ["3", 0]}},
+        "4": {"class_type": "CLIPTextEncode", "inputs": {"text": "shotengai_style, " + prompt, "clip": ["2", 0]}},
+        "5": {"class_type": "CLIPTextEncode", "inputs": {"text": negative, "clip": ["2", 0]}},
+        "CN": {"class_type": "ControlNetLoader", "inputs": {"control_net_name": "Qwen-Image-InstantX-ControlNet-Union.safetensors"}},
+        "PRE": pre,
+        "CA": {"class_type": "ControlNetApplyAdvanced", "inputs": {"positive": ["4", 0], "negative": ["5", 0],
+               "control_net": ["CN", 0], "image": ["PRE", 0], "strength": strength,
+               "start_percent": 0.0, "end_percent": end_percent, "vae": ["3", 0]}},
+        "7": {"class_type": "KSampler", "inputs": {"seed": seed, "steps": 24, "cfg": 4.0, "sampler_name": "euler",
+              "scheduler": "simple", "denoise": denoise, "model": ["L", 0], "positive": ["CA", 0],
+              "negative": ["CA", 1], "latent_image": ["EN", 0]}},
+        "8": {"class_type": "VAEDecode", "inputs": {"samples": ["7", 0], "vae": ["3", 0]}},
+        "9": {"class_type": "SaveImage", "inputs": {"filename_prefix": prefix, "images": ["8", 0]}},
+    }
+
+
+def outpaint_graph(input_name, top, bottom, prompt, negative, seed, prefix, feather=64, lora_strength=1.5):
+    """Rand-Ausmalen (Spec §12.4): das Eingabebild wird oben/unten um `top`/`bottom` Pixel gepolstert,
+    nur der Rand (Maske, mit `feather` px Überblendung ins Bild) wird neu gezeichnet — Basis-Modell +
+    Hausstil-LoRA, kein ControlNet, denoise 1.0 im maskierten Bereich. input_name liegt in COMFY_INPUT."""
+    return {
+        "1": {"class_type": "UnetLoaderGGUF", "inputs": {"unet_name": "qwen-image-Q4_K_M.gguf"}},
+        "L": {"class_type": "LoraLoaderModelOnly", "inputs": {"model": ["1", 0],
+              "lora_name": "shotengai_style_ckpt6.safetensors", "strength_model": lora_strength}},
+        "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "type": "qwen_image"}},
+        "3": {"class_type": "VAELoader", "inputs": {"vae_name": "qwen_image_vae.safetensors"}},
+        "IN": {"class_type": "LoadImage", "inputs": {"image": input_name}},
+        "PAD": {"class_type": "ImagePadForOutpaint", "inputs": {"image": ["IN", 0], "left": 0, "top": top,
+                "right": 0, "bottom": bottom, "feathering": feather}},
+        "4": {"class_type": "CLIPTextEncode", "inputs": {"text": "shotengai_style, " + prompt, "clip": ["2", 0]}},
+        "5": {"class_type": "CLIPTextEncode", "inputs": {"text": negative, "clip": ["2", 0]}},
+        "IC": {"class_type": "InpaintModelConditioning", "inputs": {"positive": ["4", 0], "negative": ["5", 0],
+               "vae": ["3", 0], "pixels": ["PAD", 0], "mask": ["PAD", 1], "noise_mask": True}},
+        "7": {"class_type": "KSampler", "inputs": {"seed": seed, "steps": 24, "cfg": 4.0, "sampler_name": "euler",
+              "scheduler": "simple", "denoise": 1.0, "model": ["L", 0], "positive": ["IC", 0],
+              "negative": ["IC", 1], "latent_image": ["IC", 2]}},
+        "8": {"class_type": "VAEDecode", "inputs": {"samples": ["7", 0], "vae": ["3", 0]}},
+        "9": {"class_type": "SaveImage", "inputs": {"filename_prefix": prefix, "images": ["8", 0]}},
+    }
+
+
+def upscale_graph(input_name, prefix, width, height):
+    """4x-UltraSharp hoch, dann per Lanczos auf die Auslieferungsgröße (Spec §4.3)."""
+    return {
+        "1": {"class_type": "LoadImage", "inputs": {"image": input_name}},
+        "2": {"class_type": "UpscaleModelLoader", "inputs": {"model_name": "4x-UltraSharp.pth"}},
+        "3": {"class_type": "ImageUpscaleWithModel", "inputs": {"upscale_model": ["2", 0], "image": ["1", 0]}},
+        "4": {"class_type": "ImageScale", "inputs": {"image": ["3", 0], "upscale_method": "lanczos",
+              "width": width, "height": height, "crop": "disabled"}},
+        "5": {"class_type": "SaveImage", "inputs": {"filename_prefix": prefix, "images": ["4", 0]}},
+    }
