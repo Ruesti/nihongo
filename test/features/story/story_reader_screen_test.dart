@@ -459,8 +459,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
 
-      if (find.byKey(const ValueKey('dictionary-sheet')).evaluate().isNotEmpty) {
-        await tester.tapAt(const Offset(400, 50));
+      if (find.byKey(const ValueKey('episode-word-list')).evaluate().isNotEmpty) {
+        await tester.tap(find.byKey(const ValueKey('episode-word-list-back')));
         await tester.pumpAndSettle();
       }
     }
@@ -799,12 +799,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
   });
 
   testWidgets('a panel without a dictionary interaction does not open the sheet',
@@ -827,7 +827,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsNothing);
   });
 
   testWidgets(
@@ -850,22 +850,21 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
 
-    // Tap a point clearly above the sheet (which covers the bottom 70% of
-    // the screen) to hit the exposed modal barrier and dismiss it.
-    await tester.tapAt(const Offset(400, 50));
+    // Die Wortliste ist ganzseitig — ihr Zurück-Pfeil schließt sie.
+    await tester.tap(find.byKey(const ValueKey('episode-word-list-back')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsNothing);
 
     expect(find.text('Second panel text'), findsOneWidget);
   });
 
   testWidgets(
-      'reading the real Folge 01 fixture: the book button opens the '
-      'dictionary with nothing resolvable yet; tapping a bubble only speaks '
-      '(V2 hat keine automatische Dictionary-Interaktion mehr — die gab es '
-      'nur in V1 bei P09)',
+      'reading the real Folge 01 fixture: tapping a bubble opens its '
+      'Wörterkarte; the book button opens the word list with meanings '
+      'visible (V2 hat keine automatische Dictionary-Interaktion mehr — die '
+      'gab es nur in V1 bei P09)',
       (tester) async {
     final store = await _freshStore();
     final episode = Episode.fromJson(pilot01RegenJson);
@@ -883,26 +882,30 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('bubble-gloss-card')), findsNothing);
 
-    // Panel 1's signage bubble (みなみまち) carries a hitArea — tapping a
-    // bubble only reads it aloud. It no longer opens the dictionary (1.10.:
-    // the row index looked unrelated to the bubble, so the book got its own
-    // button next to "Zurück").
+    // Panel 1's signage bubble (みなみまち駅) carries a hitArea — tapping it
+    // reads it aloud and opens the Wörterkarte with exactly this bubble's
+    // words (2.10.: 駅 → Bahnhof), the meaning visible right away.
     await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('bubble-gloss-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('bubble-gloss-row-lex_ja_eki')),
+        findsOneWidget);
+    expect(find.textContaining('Bahnhof'), findsOneWidget);
+
+    // Karte schließen (Tipp oberhalb auf die Sperre), dann das Buch: die
+    // Wortliste der Folge — Bedeutungen immer lesbar, kein Kana-Blättern.
+    await tester.tapAt(const Offset(400, 50));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('bubble-gloss-card')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
     await tester.pumpAndSettle();
-
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
-
-    await tester.tap(find.text('さ行'));
-    await tester.pump();
-
-    expect(find.text('すみません'), findsOneWidget);
-    expect(find.text('Entschuldigung / Verzeihung'), findsNothing);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
+    expect(find.byKey(const ValueKey('episode-word-lex_ja_sumimasen')),
+        findsOneWidget);
+    expect(find.text('Entschuldigung / Verzeihung'), findsOneWidget);
   });
 
   testWidgets(
@@ -927,10 +930,10 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
 
     // Close the book and read on — the next panel carries the story on.
-    await tester.tapAt(const Offset(400, 50));
+    await tester.tap(find.byKey(const ValueKey('episode-word-list-back')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
     await tester.pumpAndSettle();
@@ -1427,7 +1430,7 @@ void main() {
   });
 
   testWidgets('eine Bubble mit hitArea wird Tippflaeche im Bild: '
-      'kein Dialogtext unter dem Panel, Tap spricht nur (kein Woerterbuch)',
+      'kein Dialogtext unter dem Panel, Tap spricht und oeffnet die Woerterkarte',
       (tester) async {
     final spoken = <String>[];
     await tester.pumpWidget(MaterialApp(
@@ -1453,12 +1456,20 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
     await tester.pumpAndSettle();
     expect(spoken, ['すみません']);
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+    // … und die Woerterkarte zur Blase liegt auf dem Panel (2.10.): das Wort
+    // mit seiner Bedeutung, sofort lesbar.
+    expect(find.byKey(const ValueKey('bubble-gloss-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('bubble-gloss-row-lex_ja_sumimasen')),
+        findsOneWidget);
+    expect(find.text('Entschuldigung'), findsOneWidget);
+    await tester.tapAt(const Offset(400, 50));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('bubble-gloss-card')), findsNothing);
 
-    // Das Woerterbuch hat seinen eigenen Einstieg neben Zurueck (1.10.).
+    // Das Buch (Wortliste der Folge) hat seinen eigenen Einstieg neben Zurueck.
     await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
     expect(spoken, ['すみません']); // das Buch liest nichts vor
   });
 

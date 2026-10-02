@@ -41,15 +41,24 @@ als Defekt.
 - Pro Blase liegt im Episodenformat eine Tippfläche — das Schema hat dafür
   bereits `StoryBubble.hitArea` (Polygon, normierte Koordinaten relativ
   zum Panelbild); es wird jetzt erstmals mit Daten gefüllt und gerendert.
-  Tap auf die Fläche = anhören.
-  **Nachtrag 1.10.:** Ursprünglich „anhören + Wörterbuch". Im Gerätetest
-  (30.9.) wirkte der Reihen-Index des Buchs (あ行, か行 …) nach einem
-  Blasen-Tipp wie zufällige Zeichen ohne Bezug zum Gesprochenen. Deshalb
-  öffnet der Blasen-Tipp das Buch nicht mehr mit; das Buch hat einen eigenen
-  Einstieg (Buch-Chip rechts neben dem Zurück-Chip), und das Blatt trägt eine
-  Kopfzeile (kein Suchfeld, Reihe des ersten Zeichens, Bedeutungen nur bei
-  Gelerntem) sowie je Reihe Kana + Umschrift. Die Reibung des Briefs (§3.2)
-  bleibt — für den, der das Buch bewusst aufschlägt.
+  Tap auf die Fläche = anhören + **Wörterkarte** zur Blase.
+  **Nachtrag 2.10. (ersetzt den vom 1.10.):** Das Kana-Blätter-Wörterbuch des
+  Story-Briefs (§3.2, Reihen-Index, Bedeutungen nur bei Gelerntem) ist raus —
+  Uli nach dem Gerätetest: „gefällt mir überhaupt nicht, weder optisch noch
+  von der Mechanik". Stattdessen, im Look eines alten Notizbuchs (Papier aus
+  der App-Palette, Linien, Lochung, rote Randlinie; Japanisch in Klee One,
+  Deutsch in Caveat, beide gebündelt):
+  - **Blasen-Tipp:** vorlesen + Wörterkarte (`BubbleGlossCard`, gut halbe
+    Höhe, leicht schief auf dem Panel): Blasentext groß mit „anhören", je
+    nachschlagbarem Wort eine Zeile — Japanisch (Kanji mit Lesung klein
+    darüber), deutsche Bedeutung, Lautsprecher; roter Haken bei Gelerntem;
+    Sprung „alle Wörter der Folge". Wörter ohne Eintrag fallen weg.
+  - **Buch-Chip:** Wortliste der Folge (`EpisodeWordList`, ganzseitig):
+    „Folge 1 · Regen 雨", alle Einträge in der Reihenfolge ihres ersten
+    Vorkommens in der Geschichte, Bedeutungen immer lesbar, Haken bei
+    Gelerntem, Randnotiz des Vorbesitzers (Brief §3.5) als Bleistift-Zeile.
+  - Die `dictionary`-Interaktion eines Panels öffnet jetzt die Wortliste.
+  Entwurfsseite: https://claude.ai/artifact/PAbMGn7WTBLKcULdgdjNmT
 - **Fallback (Übergang):** Ein Panel, dessen Blasen keine `hitArea` haben,
   rendert den Dialog wie heute unter dem Bild. So bleibt die App mit den
   aktuellen Panels lauffähig, bis die neuen Bilder da sind — App-Umbau und

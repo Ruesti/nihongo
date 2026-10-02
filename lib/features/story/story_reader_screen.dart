@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'bubble_gloss_card.dart';
 import 'dictionary.dart';
-import 'dictionary_sheet.dart';
 import 'diegetic_speak_sheet.dart';
 import 'diegetic_trace_sheet.dart';
 import 'episode.dart';
+import 'episode_words.dart';
 import 'panel_geometry.dart';
 import 'reader_system_ui.dart';
 import 'speak_evaluator.dart';
@@ -31,7 +32,7 @@ Rect _bboxOf(StoryPolygon polygon) {
 /// tap handler, no visual hint, no lock indicator (INV-7). Resumes from the
 /// last panel the reader reached, persisted via [progressStore]. A panel
 /// carrying a `dictionary` interaction automatically
-/// opens [DictionarySheet] as a dismissible sheet — no gate, no forced
+/// opens the word list ([EpisodeWordList]) as a dismissible sheet — no gate, no forced
 /// resolution (INV-1): the reader can dismiss it and keep reading exactly
 /// as with any other panel.
 class StoryReaderScreen extends StatefulWidget {
@@ -186,22 +187,73 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     if (!hasDictionaryInteraction) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _openDictionary();
+      _openWordList();
     });
   }
 
-  void _openDictionary() {
+  /// Die Wortliste der Folge (Buch-Chip, Sprung aus der Wörterkarte): als
+  /// ganzseitiges Blatt über dem Lesebild, damit das Vollbild stehen bleibt.
+  void _openWordList() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) => SizedBox(
-        key: const ValueKey('dictionary-sheet'),
-        height: MediaQuery.of(sheetContext).size.height * 0.7,
-        child: DictionarySheet(
+        height: MediaQuery.of(sheetContext).size.height,
+        child: EpisodeWordList(
+          episode: widget.episode,
           entries: widget.dictionaryEntries,
           knownIds: widget.knownIds,
+          speak: widget.speak,
+          onClose: () => Navigator.of(sheetContext).pop(),
         ),
       ),
+    );
+  }
+
+  /// Die Wörterkarte zur angetippten Blase: ein Notizbuchblatt, das von unten
+  /// über das Panel geschoben wird (gut halbe Höhe, leicht schief wie
+  /// hingelegt). Tipp daneben schließt es.
+  void _openBubbleCard(StoryBubble bubble) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x61000000),
+      builder: (sheetContext) {
+        final height = MediaQuery.of(sheetContext).size.height * 0.55;
+        return SizedBox(
+          height: height,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Transform.rotate(
+              angle: -0.007,
+              alignment: Alignment.bottomCenter,
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(6)),
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: height),
+                    child: BubbleGlossCard(
+                      bubble: bubble,
+                      entries: widget.dictionaryEntries,
+                      knownIds: widget.knownIds,
+                      speak: widget.speak,
+                      onShowAll: () {
+                        Navigator.of(sheetContext).pop();
+                        _openWordList();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -574,11 +626,14 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                     child: GestureDetector(
                       key: ValueKey('story-bubble-hit-$i'),
                       behavior: HitTestBehavior.opaque,
-                      // Nur vorlesen. Das Wörterbuch hat seinen eigenen
-                      // Einstieg (Buch-Chip neben Zurück): öffnete es sich
-                      // mit, wirkte sein Reihen-Index wie zufällige Zeichen
-                      // ohne Bezug zum Gesprochenen (Gerätetest 30.9.).
-                      onTap: () => widget.speak(panel.bubbles[i].text),
+                      // Vorlesen + Wörterkarte zur Blase (Uli, 2.10.): die
+                      // Karte zeigt genau die Wörter dieser Blase mit
+                      // Bedeutung — der Bezug zum Gesprochenen, der dem
+                      // alten Reihen-Wörterbuch fehlte.
+                      onTap: () {
+                        widget.speak(panel.bubbles[i].text);
+                        _openBubbleCard(panel.bubbles[i]);
+                      },
                     ),
                   ),
               // Bedienung und Erzählstimme über dem Bild, innerhalb der
@@ -597,7 +652,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                             onPressed: _goBack,
                           ),
                           const SizedBox(width: 8),
-                          _DictionaryChip(onPressed: _openDictionary),
+                          _DictionaryChip(onPressed: _openWordList),
                           const SizedBox(width: 8),
                           if (panel.thoughts.isNotEmpty)
                             Expanded(
@@ -783,10 +838,10 @@ class _BackChip extends StatelessWidget {
   }
 }
 
-/// Das Wörterbuch als Buch-Chip rechts neben Zurück — der einzige Einstieg
-/// ins Buch (Brief §3: Gegenstand in der Welt, kein Suchfeld). Bis 30.9.
-/// öffnete jeder Blasen-Tipp das Buch mit; sein Reihen-Index wirkte dann wie
-/// zufällige Zeichen ohne Bezug zur Blase. Key `story-dictionary-button`.
+/// Der Buch-Chip rechts neben Zurück öffnet die Wortliste der Folge
+/// (Notizbuchblatt, [EpisodeWordList]). Das Kana-Blätter-Wörterbuch des
+/// Briefs ist seit 2.10. Geschichte (Uli: „gefällt mir überhaupt nicht").
+/// Key `story-dictionary-button` bleibt für die Tests.
 class _DictionaryChip extends StatelessWidget {
   final VoidCallback onPressed;
   const _DictionaryChip({required this.onPressed});
@@ -801,7 +856,7 @@ class _DictionaryChip extends StatelessWidget {
       child: IconButton(
         key: const ValueKey('story-dictionary-button'),
         icon: const Icon(Icons.menu_book, color: Colors.white),
-        tooltip: 'Wörterbuch',
+        tooltip: 'Wörter der Folge',
         onPressed: onPressed,
       ),
     );
