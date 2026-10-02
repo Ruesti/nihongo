@@ -574,10 +574,11 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                     child: GestureDetector(
                       key: ValueKey('story-bubble-hit-$i'),
                       behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        widget.speak(panel.bubbles[i].text);
-                        _openDictionary();
-                      },
+                      // Nur vorlesen. Das Wörterbuch hat seinen eigenen
+                      // Einstieg (Buch-Chip neben Zurück): öffnete es sich
+                      // mit, wirkte sein Reihen-Index wie zufällige Zeichen
+                      // ohne Bezug zum Gesprochenen (Gerätetest 30.9.).
+                      onTap: () => widget.speak(panel.bubbles[i].text),
                     ),
                   ),
               // Bedienung und Erzählstimme über dem Bild, innerhalb der
@@ -595,6 +596,8 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                             enabled: position > 0,
                             onPressed: _goBack,
                           ),
+                          const SizedBox(width: 8),
+                          _DictionaryChip(onPressed: _openDictionary),
                           const SizedBox(width: 8),
                           if (panel.thoughts.isNotEmpty)
                             Expanded(
@@ -776,6 +779,31 @@ class _BackChip extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () {},
       child: chip,
+    );
+  }
+}
+
+/// Das Wörterbuch als Buch-Chip rechts neben Zurück — der einzige Einstieg
+/// ins Buch (Brief §3: Gegenstand in der Welt, kein Suchfeld). Bis 30.9.
+/// öffnete jeder Blasen-Tipp das Buch mit; sein Reihen-Index wirkte dann wie
+/// zufällige Zeichen ohne Bezug zur Blase. Key `story-dictionary-button`.
+class _DictionaryChip extends StatelessWidget {
+  final VoidCallback onPressed;
+  const _DictionaryChip({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Color(0x99000000),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        key: const ValueKey('story-dictionary-button'),
+        icon: const Icon(Icons.menu_book, color: Colors.white),
+        tooltip: 'Wörterbuch',
+        onPressed: onPressed,
+      ),
     );
   }
 }

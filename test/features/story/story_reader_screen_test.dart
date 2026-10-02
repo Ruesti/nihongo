@@ -862,9 +862,10 @@ void main() {
   });
 
   testWidgets(
-      'reading the real Folge 01 fixture: tapping a bubble opens the '
-      'dictionary with nothing resolvable yet (V2 hat keine automatische '
-      'Dictionary-Interaktion mehr — die gab es nur in V1 bei P09)',
+      'reading the real Folge 01 fixture: the book button opens the '
+      'dictionary with nothing resolvable yet; tapping a bubble only speaks '
+      '(V2 hat keine automatische Dictionary-Interaktion mehr — die gab es '
+      'nur in V1 bei P09)',
       (tester) async {
     final store = await _freshStore();
     final episode = Episode.fromJson(pilot01RegenJson);
@@ -884,10 +885,15 @@ void main() {
 
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
 
-    // Panel 1's signage bubble (みなみまち) carries a hitArea — tapping
-    // any bubble opens the dictionary, regardless of a dedicated
-    // `dictionary` interaction (that mechanic is gone in V2).
+    // Panel 1's signage bubble (みなみまち) carries a hitArea — tapping a
+    // bubble only reads it aloud. It no longer opens the dictionary (1.10.:
+    // the row index looked unrelated to the bubble, so the book got its own
+    // button next to "Zurück").
     await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
@@ -901,7 +907,7 @@ void main() {
 
   testWidgets(
       'reading the real Folge 01 fixture: closing a dictionary opened via '
-      'bubble tap and continuing reveals the next panel',
+      'the book button and continuing reveals the next panel',
       (tester) async {
     final store = await _freshStore();
     final episode = Episode.fromJson(pilot01RegenJson);
@@ -919,7 +925,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-title-card')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
+    await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
 
@@ -1421,7 +1427,7 @@ void main() {
   });
 
   testWidgets('eine Bubble mit hitArea wird Tippflaeche im Bild: '
-      'kein Dialogtext unter dem Panel, Tap spricht und oeffnet das Woerterbuch',
+      'kein Dialogtext unter dem Panel, Tap spricht nur (kein Woerterbuch)',
       (tester) async {
     final spoken = <String>[];
     await tester.pumpWidget(MaterialApp(
@@ -1447,7 +1453,13 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
     await tester.pumpAndSettle();
     expect(spoken, ['すみません']);
+    expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+
+    // Das Woerterbuch hat seinen eigenen Einstieg neben Zurueck (1.10.).
+    await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+    expect(spoken, ['すみません']); // das Buch liest nichts vor
   });
 
   testWidgets('thoughts erscheinen als Erzaehlkasten-Overlay', (tester) async {
