@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nihongo_app/features/story/diegetic_speak_sheet.dart'
+    show kDiegeticSuccessAutoClose;
 import 'package:nihongo_app/features/story/diegetic_trace_sheet.dart';
 import 'package:nihongo_app/features/story/trace_evaluator.dart';
 
@@ -56,6 +58,41 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('diegetic-trace-done')));
     await tester.pumpAndSettle();
     expect(successes, 1);
+
+    // Flush the auto-close timer so it doesn't leak past this test.
+    await tester.pump(kDiegeticSuccessAutoClose);
+  });
+
+  testWidgets('bei Erfolg schliesst sich das Sheet nach kurzer Pause von selbst',
+      (tester) async {
+    var skipped = 0;
+    await _pump(tester,
+        evaluator: _FakeTraceEvaluator(true),
+        onSuccess: () {},
+        onSkip: () => skipped++);
+
+    await tester.drag(find.byKey(const ValueKey('diegetic-trace-canvas')),
+        const Offset(60, 40));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('diegetic-trace-done')));
+    await tester.pump();
+    expect(find.text('Gut! ✓'), findsOneWidget);
+    expect(skipped, 0); // noch offen — das ✓ soll ankommen
+    await tester.pump(const Duration(milliseconds: 950));
+    expect(skipped, 1); // Auto-Close hat onSkip gerufen
+  });
+
+  testWidgets('the canvas shows a ghost template of the target character',
+      (tester) async {
+    await _pump(tester,
+        evaluator: _FakeTraceEvaluator(true), onSuccess: () {}, onSkip: () {});
+
+    expect(find.byKey(const ValueKey('diegetic-trace-ghost')), findsOneWidget);
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('diegetic-trace-ghost')),
+            matching: find.text('あめ')),
+        findsOneWidget);
   });
 
   testWidgets('a rejected trace does not fire onSuccess; skip fires onSkip',

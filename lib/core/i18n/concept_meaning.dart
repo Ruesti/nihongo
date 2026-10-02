@@ -18,6 +18,16 @@ const Map<String, String> conceptGlossDe = {
   'concept_yes': 'ja',
   'concept_here_you_go': 'bitte',
   'concept_thanks': 'danke',
+  'concept_station': 'Bahnhof',
+  'concept_cold': 'kalt',
+  'concept_shop': 'Laden',
+  'concept_alone': 'allein',
+  'concept_no_good': 'geht nicht / kaputt',
+  'concept_how_much': 'wie viel?',
+  'concept_no': 'nein',
+  'concept_really': 'wirklich?',
+  'concept_all_right': 'alles gut',
+  'concept_here': 'hier',
 };
 
 /// The meaning to show for [conceptId]: the German gloss if known, else

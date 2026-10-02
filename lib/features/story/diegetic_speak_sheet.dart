@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'speak_evaluator.dart';
 
+/// Wie lange das Erfolgs-✓ sichtbar bleibt, bevor sich ein diegetisches
+/// Sheet von selbst schliesst und das Panel reagieren kann (§2.4).
+const kDiegeticSuccessAutoClose = Duration(milliseconds: 900);
+
 /// The skippable, in-fiction speak-along shown at a `diegetic: true` speak
 /// panel (brief P6, Folge 01 P07/P22). The reader can hear the word (TTS,
 /// [speak]), say it into the mic ([evaluator]), and see gentle feedback. A
@@ -16,6 +20,10 @@ class DiegeticSpeakSheet extends StatefulWidget {
   final VoidCallback onSkip;
   final double threshold;
 
+  /// Drehbuch-eigene Aufgabenzeile (überschreibt den Standardtext). Null =
+  /// generischer Text.
+  final String? taskText;
+
   const DiegeticSpeakSheet({
     super.key,
     required this.targetText,
@@ -24,6 +32,7 @@ class DiegeticSpeakSheet extends StatefulWidget {
     required this.onSuccess,
     required this.onSkip,
     this.threshold = 0.6,
+    this.taskText,
   });
 
   @override
@@ -38,13 +47,17 @@ class _DiegeticSpeakSheetState extends State<DiegeticSpeakSheet> {
     final score = await widget.evaluator.evaluate(widget.targetText);
     if (!mounted) return;
     if (score >= widget.threshold) {
-      setState(() => _feedback = 'よくできました ✓');
+      setState(() => _feedback = 'Gut! ✓');
       if (!_succeeded) {
         _succeeded = true;
         widget.onSuccess();
+        Future.delayed(kDiegeticSuccessAutoClose, () {
+          if (mounted) widget.onSkip();
+        });
       }
     } else {
-      setState(() => _feedback = 'もう一度どうぞ');
+      setState(() =>
+          _feedback = "Fast — hör noch einmal und versuch's gleich nochmal.");
     }
   }
 
@@ -57,6 +70,8 @@ class _DiegeticSpeakSheetState extends State<DiegeticSpeakSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(widget.taskText ?? 'Hör zu und sprich nach:'),
+          const SizedBox(height: 8),
           Text(widget.targetText, style: const TextStyle(fontSize: 24)),
           const SizedBox(height: 16),
           Row(

@@ -15,5 +15,12 @@ void main() {
       expect(data.lengthInBytes, greaterThan(1000),
           reason: '${panel.asset} fehlt oder ist leer');
     }
+    for (final it in episode.allPanels.expand((p) => p.interactions)) {
+      final asset = it.reactionAsset;
+      if (asset != null) {
+        final data = await rootBundle.load(asset);
+        expect(data.lengthInBytes, greaterThan(1000));
+      }
+    }
   });
 }

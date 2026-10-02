@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'folge_01_dictionary_fixture.dart';
 
 void main() {
-  test('has exactly the 8 budgeted words from Folge 01, each with a German meaning',
+  test('has exactly the 18 budgeted words from Folge 01, each with a German meaning',
       () {
-    expect(folge01DictionaryEntries, hasLength(8));
+    expect(folge01DictionaryEntries, hasLength(18));
     for (final entry in folge01DictionaryEntries) {
       expect(entry.meaning, isNotEmpty);
     }

@@ -47,6 +47,17 @@ Future<void> seedJaPack(LearningDb db) async {
       ('concept_yes', 'yes', 'interjection', 'none'),
       ('concept_here_you_go', 'here_you_go', 'interjection', 'none'),
       ('concept_thanks', 'thanks', 'interjection', 'none'),
+      // Folge 01 V3: +10 Woerter (Uli: "Lerninhalt groesser").
+      ('concept_station', 'station', 'noun', 'image'),
+      ('concept_cold', 'cold', 'adjective', 'image'),
+      ('concept_shop', 'shop', 'noun', 'image'),
+      ('concept_alone', 'alone', 'adjective', 'none'),
+      ('concept_no_good', 'no_good', 'interjection', 'none'),
+      ('concept_how_much', 'how_much', 'pronoun', 'none'),
+      ('concept_no', 'no', 'interjection', 'none'),
+      ('concept_really', 'really', 'interjection', 'none'),
+      ('concept_all_right', 'all_right', 'interjection', 'none'),
+      ('concept_here', 'here', 'pronoun', 'none'),
     ];
     for (final (id, gloss, pos, assetType) in conceptRows) {
       await db.into(db.concepts).insertOnConflictUpdate(
@@ -75,6 +86,16 @@ Future<void> seedJaPack(LearningDb db) async {
       ('lex_ja_hai', 'concept_yes', 'はい', 'はい'),
       ('lex_ja_douzo', 'concept_here_you_go', 'どうぞ', 'どうぞ'),
       ('lex_ja_arigatou', 'concept_thanks', 'ありがとう', 'ありがとう'),
+      ('lex_ja_eki', 'concept_station', 'えき', 'えき'),
+      ('lex_ja_samui', 'concept_cold', 'さむい', 'さむい'),
+      ('lex_ja_mise', 'concept_shop', 'みせ', 'みせ'),
+      ('lex_ja_hitori', 'concept_alone', 'ひとり', 'ひとり'),
+      ('lex_ja_dame', 'concept_no_good', 'だめ', 'だめ'),
+      ('lex_ja_ikura', 'concept_how_much', 'いくら', 'いくら'),
+      ('lex_ja_iie', 'concept_no', 'いいえ', 'いいえ'),
+      ('lex_ja_hontou', 'concept_really', 'ほんとう', 'ほんとう'),
+      ('lex_ja_daijoubu', 'concept_all_right', 'だいじょうぶ', 'だいじょうぶ'),
+      ('lex_ja_koko', 'concept_here', 'ここ', 'ここ'),
     ];
     for (final (id, conceptId, form, reading) in lexemeRows) {
       await db.into(db.lexemes).insertOnConflictUpdate(

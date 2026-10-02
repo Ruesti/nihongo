@@ -96,6 +96,8 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('story-entry-fab')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('story-title-card')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('story-reader-panel')), findsOneWidget);
   });
 

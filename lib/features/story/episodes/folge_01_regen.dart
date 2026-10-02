@@ -3,15 +3,22 @@ import '../episode.dart';
 import '../episode_validator.dart';
 
 /// Folge 01 „Regen" (ep_ja_shotengai_01) als gebündelter Produktions-
-/// Inhalt. Panel-Assets zeigen noch auf den Platzhalter; der Tausch gegen
-/// die finalen Panels ist ein reiner Asset-Austausch in dieser Datei.
+/// Inhalt. Panel-Assets zeigen noch auf die V1-Renders; der Tausch gegen
+/// die finalen ckpt-6-Panels ist ein reiner Asset-Austausch in dieser Datei
+/// (Task 3).
 Episode loadFolge01() {
   final episode = Episode.fromJson(pilot01RegenJson);
   validateEpisode(episode);
   return episode;
 }
 
-/// Folge 01 — "Regen", encoded per docs/story/PILOT_01_REGEN.md.
+/// Folge 01 — "Regen", V2 nach docs/story/DREHBUCH_FOLGE_01_V2.md (BINDENDE
+/// Textquelle für alle deutschen Kästen/Gedanken und japanischen Dialoge)
+/// und dem Panel-Bauplan in
+/// docs/superpowers/plans/2026-09-13-folge01-v2.md. 10 dichte Panels statt
+/// V1s 24 — jedes Panel trägt Sprache oder treibt die Handlung. Mira, die
+/// Protagonistin, sucht anhand eines vom Regen fast unleserlich gemachten
+/// Zettels ihrer verstorbenen Großmutter eine Adresse in dieser Shotengai.
 const Map<String, dynamic> pilot01RegenJson = {
   'id': 'ep_ja_shotengai_01',
   'seasonId': 'season_ja_shotengai',
@@ -19,6 +26,12 @@ const Map<String, dynamic> pilot01RegenJson = {
   'title': 'Regen',
   'locale': 'ja',
   'era': '1996',
+  'intro':
+      'Eine junge Frau steigt allein aus dem Zug — es regnet. '
+      'In ihrer Hand: ein Zettel, dessen Tinte verläuft.',
+  'outro':
+      'Auf dem Zettel standen einmal drei Zeilen. Mira kennt jetzt: ein '
+      'Zeichen und vier Wörter. Hinter dieser Tür fängt der Rest an.',
   'budget': {
     'items': [
       {'id': 'lex_ja_sumimasen', 'refType': 'lexeme'},
@@ -29,445 +42,606 @@ const Map<String, dynamic> pilot01RegenJson = {
       {'id': 'lex_ja_hai', 'refType': 'lexeme'},
       {'id': 'lex_ja_douzo', 'refType': 'lexeme', 'singleton': true},
       {'id': 'lex_ja_arigatou', 'refType': 'lexeme'},
+      {'id': 'lex_ja_eki', 'refType': 'lexeme'},
+      {'id': 'lex_ja_samui', 'refType': 'lexeme'},
+      {'id': 'lex_ja_mise', 'refType': 'lexeme'},
+      {'id': 'lex_ja_hitori', 'refType': 'lexeme'},
+      {'id': 'lex_ja_dame', 'refType': 'lexeme'},
+      {'id': 'lex_ja_ikura', 'refType': 'lexeme'},
+      {'id': 'lex_ja_iie', 'refType': 'lexeme'},
+      {'id': 'lex_ja_hontou', 'refType': 'lexeme'},
+      {'id': 'lex_ja_daijoubu', 'refType': 'lexeme'},
+      {'id': 'lex_ja_koko', 'refType': 'lexeme'},
     ],
     'glyphs': [
       {'glyph': 'あ'},
       {'glyph': 'め'},
       {'glyph': 'か'},
+      {'glyph': '駅'},
+      {'glyph': '傘'},
     ],
   },
   'pages': [
-    // Seite 1 — Ankunft
+    // Seite 0 — Ankunft (P1-Bahnsteig bis P4-Shotengai-Eingang)
     {
-      'index': 1,
+      'index': 0,
       'panels': [
         {
-          'index': 1,
+          'index': 0,
           'asset': 'assets/story/p01.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Weitwinkel. Kleiner Bahnsteig, keine Menschen. Regen fällt '
-              'schräg durch Neonlicht. Sie steht mit Tasche, Kopf noch '
-              'nicht gehoben. Kein Wort in den ersten sechs Panels.',
-        },
-        {
-          'index': 2,
-          'asset': 'assets/story/p02.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Detail: ihre Hand hält einen handgeschriebenen Zettel, '
-              'Tinte läuft im Regen. Zettel zeigt verlaufene, unleserliche '
-              'Kanji — kein Antippen, keine Übersetzung.',
-        },
-        {
-          'index': 3,
-          'asset': 'assets/story/p03.jpg',
-          'bubbles': [],
-          'thoughts': [
-            {'text': 'Ich hätte anrufen sollen.'},
-          ],
-          'interactions': [],
-          'notes':
-              'Gedankenpanel, enger Ausschnitt, ihr Gesicht, Regen im Haar. '
-              'Einziger Hinweis auf ein Davor. Nicht ausbauen.',
-        },
-        {
-          'index': 4,
-          'asset': 'assets/story/p04.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Sie geht los. Rücken zur Kamera, leere Straße, Wasser auf '
-              'Asphalt, Kabelmasten gegen grauen Himmel.',
-        },
-      ],
-    },
-    // Seite 2 — Die Straße
-    {
-      'index': 2,
-      'panels': [
-        {
-          'index': 5,
-          'asset': 'assets/story/p05.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'anchorShot': 'A1',
-          'notes':
-              'Eingang der Shotengai. Überdachtes Dach, Regen prasselt '
-              'darauf. Innen trocken, warmes Licht, halb tot: drei von '
-              'sieben Rollläden geschlossen. Etablierungs-Panel.',
-        },
-        {
-          'index': 6,
-          'asset': 'assets/story/p06.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Sie tritt ein, schüttelt sich. Erleichterung. Erstes '
-              'trockenes Bild der Folge.',
-        },
-      ],
-    },
-    // Seite 3 — Das Wörterbuch versagt
-    {
-      'index': 3,
-      'panels': [
-        {
-          'index': 7,
-          'asset': 'assets/story/p07.jpg',
-          'bubbles': [
-            {
-              'speakerId': 'protagonist',
-              'text': 'すみません',
-              'tokens': [
-                {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
-              ],
-            },
-          ],
-          'thoughts': [],
-          'interactions': [
-            {'type': 'speak', 'diegetic': true},
-          ],
-          'notes':
-              'Eine ältere Frau kommt ihr entgegen, Einkaufstüte, zügig. '
-              'Die Figur hebt die Hand. Ihr erstes Wort der Serie, im Zug '
-              'auswendig gelernt. Sprechmoment 1.',
-        },
-        {
-          'index': 8,
-          'asset': 'assets/story/p08.jpg',
-          'bubbles': [
-            {
-              'speakerId': 'passantin',
-              'text': 'はい？',
-              'tokens': [
-                {'surface': 'はい', 'itemId': null},
-              ],
-            },
-          ],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Die Frau bleibt stehen, freundlich, wartend. はい ist hier '
-              'noch nicht im Bestand — wird erst P19 als Item eingeführt, '
-              'hier ist es Klang.',
-        },
-        {
-          'index': 9,
-          'asset': 'assets/story/p09.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [
-            {'type': 'dictionary', 'diegetic': true},
-          ],
-          'notes':
-              'Die Figur blättert hektisch im Wörterbuch. Nasse Finger, '
-              'Seiten kleben. Es gibt nichts zu finden, weil sie nicht '
-              'weiß, wonach sie sucht. Kernszene: das Werkzeug wird zuerst '
-              'als nutzlos vorgeführt.',
-        },
-        {
-          'index': 10,
-          'asset': 'assets/story/p10.jpg',
-          'bubbles': [],
-          'thoughts': [
-            {'text': 'Weg.'},
-          ],
-          'interactions': [],
-          'notes':
-              'Aufblick. Die Frau ist weg, nur noch ihr Rücken am Ende der '
-              'Straße. Wörterbuch schließt automatisch. Erste Demütigung, '
-              'nicht kommentiert.',
-        },
-      ],
-    },
-    // Seite 4 — Der Laden
-    {
-      'index': 4,
-      'panels': [
-        {
-          'index': 11,
-          'asset': 'assets/story/p11.jpg',
           'bubbles': [
             {
               'speakerId': 'signage',
-              'text': 'あめ',
+              'text': 'みなみまち駅',
+              'hitArea': [
+                {'x': 0.30, 'y': 0.36},
+                {'x': 0.70, 'y': 0.36},
+                {'x': 0.70, 'y': 0.49},
+                {'x': 0.30, 'y': 0.49},
+              ],
+              'tokens': [
+                {'surface': 'みなみまち', 'itemId': null},
+                {'surface': '駅', 'reading': 'えき', 'itemId': 'lex_ja_eki'},
+              ],
+            },
+          ],
+          'thoughts': [
+            {
+              'text':
+                  'Das ist Mira. Vor drei Wochen fand sie im Nachlass ihrer '
+                  'Großmutter einen Zettel: eine Adresse, irgendwo hier.',
+            },
+            {
+              'text':
+                  'Ihre Großmutter hat nie über Japan gesprochen. Kein Wort '
+                  '— auch nicht in ihrer eigenen Sprache. Mira hat nie '
+                  'erfahren, warum.',
+            },
+            {
+              'text':
+                  'Sie kann nichts lesen. Nicht einmal den Namen dieser '
+                  'Station.',
+            },
+            {'text': '„Ich hätte anrufen sollen. Aber wen?"'},
+          ],
+          'interactions': [],
+          'notes':
+              'Bestehendes Motiv (kleiner Bahnsteig, Regen schräg durch '
+              'Neonlicht, Mira mit Tasche, Kopf gesenkt). Neu: das '
+              'Stationsschild 「みなみまち」 sichtbar im Hintergrund.',
+        },
+        {
+          'index': 1,
+          'asset': 'assets/story/p02.jpg',
+          'bubbles': [],
+          'thoughts': [
+            {'text': 'Der Regen war schneller als sie.'},
+            {'text': '„Nein — nein, nicht jetzt. Nicht auch das noch."'},
+          ],
+          'interactions': [
+            {
+              'type': 'trace',
+              'diegetic': true,
+              'promptText':
+                  'Rette das Zeichen: Zeichne め nach, bevor der Regen es '
+                  'holt.',
+              'target': 'め',
+              'targetItemIds': <dynamic>[],
+              'reactionAsset': 'assets/story/p02_reaction.jpg',
+              'reactionCaption':
+                  'め. Was immer es heißt — jetzt gehört es ihr.',
+            },
+          ],
+          'notes':
+              'Nahaufnahme ihrer Hand mit dem Zettel. Die Tinte läuft. '
+              'Genau EIN Zeichen ist noch klar: 「め」. Das letzte lesbare '
+              'Zeichen verschwindet vor ihren Augen. Mira zeichnet es nach '
+              '— auf ihren Handrücken, mit dem Finger, bevor es weg ist. '
+              'Reaktion bei Erfolg: ihr Handrücken mit dem Zeichen.',
+        },
+        {
+          'index': 2,
+          'asset': 'assets/story/p03.jpg',
+          'bubbles': [
+            {
+              'speakerId': 'passant_a',
+              'text': 'あめ！あめ！',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.05},
+                {'x': 0.48, 'y': 0.05},
+                {'x': 0.48, 'y': 0.18},
+                {'x': 0.06, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+              ],
+            },
+            {
+              'speakerId': 'passant_b',
+              'text': 'あめ、あめ… さむい、さむい',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'さむい', 'itemId': 'lex_ja_samui'},
+                {'surface': 'さむい', 'itemId': 'lex_ja_samui'},
+              ],
+            },
+          ],
+          'thoughts': [
+            {'text': 'Ein Wort fliegt an ihr vorbei. Alle sagen es heute.'},
+            {'text': '„Ame. …Der Regen?"'},
+          ],
+          'interactions': [],
+          'notes':
+              'Leere Straße, sie geht; zwei Passanten flüchten unter ein '
+              'Vordach. Passant A: 「あめ！」 Passantin B: 「あめ、あめ…」 '
+              '(lachend, schulterzuckend).',
+        },
+        {
+          'index': 3,
+          'asset': 'assets/story/p04.jpg',
+          'bubbles': [
+            {
+              'speakerId': 'signage',
+              'text': '傘',
+              'hitArea': [
+                {'x': 0.30, 'y': 0.36},
+                {'x': 0.70, 'y': 0.36},
+                {'x': 0.70, 'y': 0.49},
+                {'x': 0.30, 'y': 0.49},
+              ],
+              'tokens': [
+                {'surface': '傘', 'reading': 'かさ', 'itemId': 'lex_ja_kasa'},
+              ],
+            },
+            {
+              'speakerId': 'protagonist',
+              'text': '…あめ',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
               'tokens': [
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
               ],
             },
           ],
           'thoughts': [
-            {'text': 'Regen.'},
+            {
+              'text':
+                  'Drinnen: trocken. Und zum ersten Mal ein Schild, das '
+                  'sich selbst erklärt.',
+            },
+            {'text': '„Kasa. Schirme. Das ist ja fast fair."'},
           ],
           'interactions': [],
           'notes':
-              'Sie steht allein, Blick nach oben aufs Dach, Regen trommelt. '
-              'Ein Wetterbericht-Aushang an einer Litfaßsäule zeigt あめ — '
-              'geschrieben, nicht gesprochen. Sie kann es hier noch nicht '
-              'lesen, der Leser auch nicht. Erste Verknüpfung Klang↔Zeichen.',
-        },
-        {
-          'index': 12,
-          'asset': 'assets/story/p12.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Ein einzelnes warmes Licht weiter hinten. Offene Schiebetür. '
-              'Ladenschild: Kanji, reine Bildtextur.',
-        },
-        {
-          'index': 13,
-          'asset': 'assets/story/p13.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Sie tritt unter das Vordach. Nicht hinein — sie will sich '
-              'nur unterstellen.',
-        },
-        {
-          'index': 14,
-          'asset': 'assets/story/p14.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Innen, aus ihrer Perspektive: Werkbank, Werkzeug an der '
-              'Wand, CRT-Fernseher läuft ohne Ton, ein alter Mann sitzt mit '
-              'dem Rücken zu ihr und arbeitet. Er dreht sich nicht um — er '
-              'registriert sie, sagt aber nichts. Das ist die Figur.',
+              'Eingang der Shotengai (Einkaufsstraße), innen warm und '
+              'trocken, halb tot: drei von zehn Läden offen. Vor einem '
+              'Laden ein Korb voller Schirme, darüber ein Schild: 「かさ」.',
         },
       ],
     },
-    // Seite 5 — Der Moment
+    // Seite 1 — Der Laden (P5-Kaputt bis P8-Danke)
     {
-      'index': 5,
+      'index': 1,
       'panels': [
         {
-          'index': 15,
-          'asset': 'assets/story/p15.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
+          'index': 4,
+          'asset': 'assets/story/p05.jpg',
+          'bubbles': [
+            {
+              'speakerId': 'ladenbesitzer',
+              'text': 'あめ、あめ！',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.05},
+                {'x': 0.48, 'y': 0.05},
+                {'x': 0.48, 'y': 0.18},
+                {'x': 0.06, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+              ],
+            },
+            {
+              'speakerId': 'ladenbesitzer',
+              'text': 'これ？かさ？みせ！',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.20},
+                {'x': 0.49, 'y': 0.20},
+                {'x': 0.49, 'y': 0.31},
+                {'x': 0.06, 'y': 0.31},
+              ],
+              'tokens': [
+                {'surface': 'これ', 'itemId': 'lex_ja_kore'},
+                {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
+                {'surface': 'みせ', 'itemId': 'lex_ja_mise'},
+              ],
+            },
+            {
+              'speakerId': 'ladenbesitzer',
+              'text': 'ひとり？',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.33},
+                {'x': 0.49, 'y': 0.33},
+                {'x': 0.49, 'y': 0.43},
+                {'x': 0.06, 'y': 0.43},
+              ],
+              'tokens': [
+                {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
+              ],
+            },
+            {
+              'speakerId': 'protagonist',
+              'text': '…はい。ひとり',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'はい', 'itemId': 'lex_ja_hai'},
+                {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
+              ],
+            },
+          ],
+          'thoughts': [
+            {'text': 'Sie versteht kein Wort. Aber sie versteht alles.'},
+            {
+              'text':
+                  '„Sag irgendwas. Das eine Wort, das die Frau im Zug zum '
+                  'Schaffner gesagt hat — sag es."',
+            },
+          ],
+          'interactions': [
+            {
+              'type': 'speak',
+              'diegetic': true,
+              'promptText':
+                  'Mira braucht Hilfe. Hör das Wort an und sprich es: '
+                  'すみません.',
+              'target': 'すみません',
+              'targetItemIds': ['lex_ja_sumimasen'],
+              'reactionAsset': 'assets/story/p05_reaction.jpg',
+              'reactionCaption':
+                  'Er hat sie verstanden. Ihr erstes Wort in diesem Land — '
+                  'und es funktioniert.',
+            },
+          ],
           'notes':
-              'Detail neben der Tür: ein Schirmständer mit drei Schirmen, '
-              'einer mit gebrochener Speiche, halb geöffnet, verkantet. '
-              'Erstauftritt kasa als Objekt, nicht als Wort — das Wort '
-              'kommt erst P21. Prinzip: Ding vor Wort.',
+              'Miras eigener Schirm — aufgespannt ein Gerippe, zwei Streben '
+              'gebrochen. Der alte Ladenbesitzer tritt heraus, sieht den '
+              'Schirm, lacht nicht unfreundlich. Er: 「あめ、あめ！」 '
+              '(deutet zum Himmel) — dann auf ihren Schirm: 「これ？」',
         },
         {
-          'index': 16,
-          'asset': 'assets/story/p16.jpg',
-          'bubbles': [],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Ihre Hände. Sie hat den Schirm aus dem Ständer genommen, '
-              'dreht ihn, findet die Bruchstelle. Reines Handwerks-Panel, '
-              'kein Gesicht. Der Kompetenz-Umschlag der Serie: sie tut, '
-              'was sie nicht sagen kann.',
-        },
-        {
-          'index': 17,
-          'asset': 'assets/story/p17.jpg',
+          'index': 5,
+          'asset': 'assets/story/p06.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
               'text': 'これ、こわれた',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.05},
+                {'x': 0.48, 'y': 0.05},
+                {'x': 0.48, 'y': 0.18},
+                {'x': 0.06, 'y': 0.18},
+              ],
               'tokens': [
                 {'surface': 'これ', 'itemId': 'lex_ja_kore'},
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
               ],
             },
-          ],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Er hat sich umgedreht, steht jetzt, zeigt auf den Schirm. '
-              'Seine ersten Worte: drei Wörter, kein Satzbau, keine '
-              'Höflichkeitsform — weil er so redet, nicht weil es '
-              'didaktisch bequem ist.',
-        },
-        {
-          'index': 18,
-          'asset': 'assets/story/p18.jpg',
-          'bubbles': [
-            {
-              'speakerId': 'protagonist',
-              'text': 'これ… こわれた…？',
-              'tokens': [
-                {'surface': 'これ', 'itemId': 'lex_ja_kore'},
-                {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
-              ],
-            },
-          ],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Sie schaut ihn an, hat kein Wort verstanden außer dem '
-              'Zeigen, spricht die Wörter probeweise nach — lautes '
-              'Einprägen, keine Kommunikation. Die eigentliche Frage '
-              'bleibt die Geste: sie nickt Richtung Werkbank.',
-        },
-        {
-          'index': 19,
-          'asset': 'assets/story/p19.jpg',
-          'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'はい',
+              'text': 'はい、こわれた、こわれた。だめ、だめ',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.20},
+                {'x': 0.49, 'y': 0.20},
+                {'x': 0.49, 'y': 0.31},
+                {'x': 0.06, 'y': 0.31},
+              ],
               'tokens': [
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
+                {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
+                {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
+                {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
+                {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
               ],
             },
-          ],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Er, minimal — ein Nicken. はい wird hier als Item '
-              'aufgenommen. Die erste gelungene Kommunikation der Folge — '
-              'und es ist eine gestische, keine sprachliche.',
-        },
-      ],
-    },
-    // Seite 6 — Der Schirm
-    {
-      'index': 6,
-      'panels': [
-        {
-          'index': 20,
-          'asset': 'assets/story/p20.jpg',
-          'bubbles': [
             {
               'speakerId': 'protagonist',
-              'text': 'ありがとう',
+              'text': '…こわれた…？',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
               'tokens': [
-                {'surface': 'ありがとう', 'itemId': 'lex_ja_arigatou'},
+                {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
               ],
             },
           ],
-          'thoughts': [],
+          'thoughts': [
+            {
+              'text':
+                  '„Kowareta. Kaputt. Wie ich das erste Wort meiner '
+                  'Großmutter lerne: über einen kaputten Schirm."',
+            },
+          ],
           'interactions': [],
           'notes':
-              'Zeitraffer-Panel, breit. Sie an der Werkbank, er im '
-              'Hintergrund am Fernseher, blickt nicht auf. Ein leiser Dank '
-              'zwischendurch, ohne Antwort — passt zu seiner '
-              'Zurückhaltung. Draußen dunkler geworden, Regen unverändert.',
+              'Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn '
+              'fachmännisch. Er: 「これ、こわれた」 (zeigt auf die Streben) '
+              '— 「こわれた、こわれた」 (kopfschüttelnd, fast zärtlich). '
+              'Mira (leise): 「…こわれた…？」',
         },
         {
-          'index': 21,
-          'asset': 'assets/story/p21.jpg',
+          'index': 6,
+          'asset': 'assets/story/p07.jpg',
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
               'text': 'はい。かさ。どうぞ',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.05},
+                {'x': 0.48, 'y': 0.05},
+                {'x': 0.48, 'y': 0.18},
+                {'x': 0.06, 'y': 0.18},
+              ],
               'tokens': [
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
                 {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
               ],
             },
-          ],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Sie hält den reparierten Schirm hoch, geöffnet. Er steht in '
-              'der Tür. Emotionaler Höhepunkt: er gibt ihr den Schirm, den '
-              'sie selbst repariert hat — die Geste ist größer als das '
-              'Objekt. Kein Panel darf das erklären.',
-        },
-        {
-          'index': 22,
-          'asset': 'assets/story/p22.jpg',
-          'bubbles': [
             {
               'speakerId': 'protagonist',
-              'text': 'ありがとう… すみません',
+              'text': 'え？いくら？いくら？',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
               'tokens': [
-                {'surface': 'ありがとう', 'itemId': 'lex_ja_arigatou'},
-                {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
+                {'surface': 'え', 'itemId': null},
+                {'surface': 'いくら', 'itemId': 'lex_ja_ikura'},
+                {'surface': 'いくら', 'itemId': 'lex_ja_ikura'},
               ],
             },
-          ],
-          'thoughts': [],
-          'interactions': [
-            {'type': 'speak', 'diegetic': true},
-          ],
-          'notes':
-              'Sie, Schirm in beiden Händen, Verbeugung angedeutet. Hängt '
-              'sumimasen an, weil es das einzige andere Wort ist, das sie '
-              'hat — falsch verwendet, und dadurch richtig. Er zieht eine '
-              'Augenbraue hoch statt sie zu korrigieren. Sprechmoment 2.',
-        },
-        {
-          'index': 23,
-          'asset': 'assets/story/p23.jpg',
-          'bubbles': [
             {
-              'speakerId': 'protagonist',
-              'text': 'かさ…',
+              'speakerId': 'ladenbesitzer',
+              'text': 'いいえ、いいえ。どうぞ、どうぞ。かさ！',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.20},
+                {'x': 0.49, 'y': 0.20},
+                {'x': 0.49, 'y': 0.31},
+                {'x': 0.06, 'y': 0.31},
+              ],
               'tokens': [
+                {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
+                {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
+                {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
+                {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
             },
-          ],
-          'thoughts': [],
-          'interactions': [],
-          'notes':
-              'Draußen, unter dem Schirm. Erste Einstellung mit ihr im '
-              'Regen und trocken, Licht des Ladens hinter ihr noch an. Sie '
-              'murmelt das neue Wort nach — erste unaufgeforderte '
-              'japanische Äußerung der Folge.',
-        },
-        {
-          'index': 24,
-          'asset': 'assets/story/p24.jpg',
-          'bubbles': [
             {
-              'speakerId': 'buch',
-              'text': 'あめ',
+              'speakerId': 'protagonist',
+              'text': '…ほんとう？',
+              'hitArea': [
+                {'x': 0.56, 'y': 0.20},
+                {'x': 0.92, 'y': 0.20},
+                {'x': 0.92, 'y': 0.31},
+                {'x': 0.56, 'y': 0.31},
+              ],
               'tokens': [
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
               ],
             },
             {
-              'speakerId': 'vorbesitzer_notiz',
-              'text': '(unleserliche Randnotiz, Kanji und Datum)',
-              'tokens': [],
+              'speakerId': 'ladenbesitzer',
+              'text': 'ほんとう。だいじょうぶ、だいじょうぶ',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.33},
+                {'x': 0.49, 'y': 0.33},
+                {'x': 0.49, 'y': 0.43},
+                {'x': 0.06, 'y': 0.43},
+              ],
+              'tokens': [
+                {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
+                {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
+                {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
+              ],
             },
           ],
-          'thoughts': [],
+          'thoughts': [
+            {
+              'text':
+                  'Sie hat nichts bestellt. Sie hat nichts bezahlt. Er gibt '
+                  'ihr den Schirm einfach so.',
+            },
+          ],
+          'interactions': [],
+          'notes':
+              'Er greift in den Korb, hält ihr einen Schirm hin — den '
+              'schlichtesten, aber heilen. Er: 「はい。かさ。どうぞ」 — '
+              'Mira: 「え？」 — Er (nachdrücklich, lächelnd): 「どうぞ、'
+              'どうぞ！」',
+        },
+        {
+          'index': 7,
+          'asset': 'assets/story/p08.jpg',
+          'bubbles': [
+            {
+              'speakerId': 'ladenbesitzer',
+              'text': 'はいはい',
+              'hitArea': [
+                {'x': 0.06, 'y': 0.05},
+                {'x': 0.48, 'y': 0.05},
+                {'x': 0.48, 'y': 0.18},
+                {'x': 0.06, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'はい', 'itemId': 'lex_ja_hai'},
+                {'surface': 'はい', 'itemId': 'lex_ja_hai'},
+              ],
+            },
+            {
+              'speakerId': 'protagonist',
+              'text': 'ありがとう… すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'ありがとう', 'itemId': 'lex_ja_arigatou'},
+                {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
+                {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
+                {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
+                {'surface': 'えき', 'itemId': 'lex_ja_eki'},
+                {'surface': 'みせ', 'itemId': 'lex_ja_mise'},
+              ],
+            },
+          ],
+          'thoughts': [
+            {
+              'text':
+                  'Es gibt genau ein Wort, das jetzt reicht. Sie kennt es '
+                  'aus jedem Film. Jetzt zählt es zum ersten Mal.',
+            },
+          ],
           'interactions': [
-            {'type': 'trace', 'diegetic': true},
+            {
+              'type': 'speak',
+              'diegetic': true,
+              'promptText': 'Sag es ihm: ありがとう.',
+              'target': 'ありがとう',
+              'targetItemIds': ['lex_ja_arigatou'],
+              'reactionAsset': 'assets/story/p08_reaction.jpg',
+              'reactionCaption':
+                  'Ihr zweites Wort. Es wird nicht das letzte sein.',
+            },
           ],
           'notes':
-              'Sie hat unter dem Vordach angehalten, das Wörterbuch '
-              'aufgeschlagen, sucht あめ. Die Seite ist bereits '
-              'angestrichen. Am Rand fremde Handschrift: ein kurzer '
-              'Vermerk in Kanji und ein Datum — nicht antippbar, nicht '
-              'auflösbar. Schlussbild: sie liest あめ zum ersten Mal '
-              'selbst und zeichnet あ め nach — der eine diegetische '
-              'Schreibmoment der Folge, Übergang in den Übungsmodus.',
+              'Mira mit dem neuen Schirm, halb verlegen, halb gerührt. Er '
+              'winkt ab, lacht: 「はいはい」. Mira (im Gehen, leise '
+              'übend): 「ありがとう… すみません… あめ… かさ…」',
+        },
+      ],
+    },
+    // Seite 2 — Das Zeichen (P9-Café bis P10-Schluss)
+    {
+      'index': 2,
+      'panels': [
+        {
+          'index': 8,
+          'asset': 'assets/story/p09.jpg',
+          'bubbles': [
+            {
+              'speakerId': 'signage',
+              'text': 'あめやどり',
+              'hitArea': [
+                {'x': 0.30, 'y': 0.36},
+                {'x': 0.70, 'y': 0.36},
+                {'x': 0.70, 'y': 0.49},
+                {'x': 0.30, 'y': 0.49},
+              ],
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'やどり', 'itemId': null},
+              ],
+            },
+            {
+              'speakerId': 'protagonist',
+              'text': 'ここ…？あめ…やどり？',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'やどり', 'itemId': null},
+              ],
+            },
+          ],
+          'thoughts': [
+            {
+              'text':
+                  'Das Zeichen vom Zettel. Hier, auf einem Caféschild, in '
+                  'der Straße, zu der ihre Großmutter sie geschickt hat.',
+            },
+            {'text': '„Das ist kein Zufall. Oder?"'},
+          ],
+          'interactions': [],
+          'notes':
+              'Weiter hinten in der Shotengai: ein kleines Café. Auf dem '
+              'handgemalten Schild ein Wort — und Mira erstarrt: Das zweite '
+              'Zeichen darauf ist 「め」. Dasselbe Zeichen wie auf ihrem '
+              'Handrücken. Sie hält die Hand neben das Schild. Caféschild '
+              '「あめやどり」 (antippbar; vorgelesen — verstehen muss sie '
+              'es noch nicht).',
+        },
+        {
+          'index': 9,
+          'asset': 'assets/story/p10.jpg',
+          'bubbles': [
+            {
+              'speakerId': 'protagonist',
+              'text': 'ここ…',
+              'hitArea': [
+                {'x': 0.52, 'y': 0.05},
+                {'x': 0.94, 'y': 0.05},
+                {'x': 0.94, 'y': 0.18},
+                {'x': 0.52, 'y': 0.18},
+              ],
+              'tokens': [
+                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
+              ],
+            },
+          ],
+          'thoughts': [
+            {
+              'text':
+                  'Auf dem Zettel standen einmal drei Zeilen. Mira kennt '
+                  'jetzt: ein Zeichen und vier Wörter. Hinter dieser Tür '
+                  'fängt der Rest an.',
+            },
+          ],
+          'interactions': [],
+          'notes':
+              'Mira vor der Cafétür, die Hand am Griff, drinnen warmes '
+              'Licht, eine Silhouette hinter dem Tresen.',
         },
       ],
     },
   ],
 };
 
-/// The 8 budgeted words from Folge 01 "Regen" (docs/story/PILOT_01_REGEN.md),
+/// The 18 budgeted words from Folge 01 "Regen" (docs/story/DREHBUCH_FOLGE_01_V2.md),
 /// with German meanings from the episode's own vocabulary table. あめ carries
-/// the previous owner's margin note first alluded to at P24 ("ein kurzer
-/// Vermerk in Kanji und ein Datum") — the only entry with one, matching the
-/// brief's dosage rule of at most one note per episode (§3.5).
+/// the previous owner's margin note — unchanged from V1 (dosage rule: at
+/// most one note per episode, §3.5).
 const List<DictionaryEntry> folge01DictionaryEntries = [
   DictionaryEntry(
     id: 'lex_ja_sumimasen',
@@ -509,5 +683,55 @@ const List<DictionaryEntry> folge01DictionaryEntries = [
     id: 'lex_ja_arigatou',
     headword: 'ありがとう',
     meaning: 'danke',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_eki',
+    headword: 'えき',
+    meaning: 'Bahnhof (Kanji: 駅)',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_samui',
+    headword: 'さむい',
+    meaning: 'kalt',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_mise',
+    headword: 'みせ',
+    meaning: 'Laden, Geschäft',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_hitori',
+    headword: 'ひとり',
+    meaning: 'allein / eine Person',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_dame',
+    headword: 'だめ',
+    meaning: 'geht nicht / kaputt / nein',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_ikura',
+    headword: 'いくら',
+    meaning: 'wie viel (kostet das)?',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_iie',
+    headword: 'いいえ',
+    meaning: 'nein',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_hontou',
+    headword: 'ほんとう',
+    meaning: 'wirklich?',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_daijoubu',
+    headword: 'だいじょうぶ',
+    meaning: 'alles gut / in Ordnung',
+  ),
+  DictionaryEntry(
+    id: 'lex_ja_koko',
+    headword: 'ここ',
+    meaning: 'hier',
   ),
 ];

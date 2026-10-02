@@ -51,6 +51,25 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
     await tester.pumpAndSettle();
     expect(successes, 1);
+
+    // Flush the auto-close timer so it doesn't leak past this test.
+    await tester.pump(kDiegeticSuccessAutoClose);
+  });
+
+  testWidgets('bei Erfolg schliesst sich das Sheet nach kurzer Pause von selbst',
+      (tester) async {
+    var skipped = 0;
+    await _pump(tester,
+        evaluator: _FakeEvaluator(0.9),
+        onSuccess: () {},
+        onSkip: () => skipped++);
+
+    await tester.tap(find.byKey(const ValueKey('diegetic-speak-mic')));
+    await tester.pump();
+    expect(find.text('Gut! ✓'), findsOneWidget);
+    expect(skipped, 0); // noch offen — das ✓ soll ankommen
+    await tester.pump(const Duration(milliseconds: 950));
+    expect(skipped, 1); // Auto-Close hat onSkip gerufen
   });
 
   testWidgets('a poor attempt does not fire onSuccess; skip fires onSkip',

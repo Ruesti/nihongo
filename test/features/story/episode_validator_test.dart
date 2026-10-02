@@ -45,12 +45,20 @@ void main() {
     );
   });
 
-  test('INV-4: rejects a non-singleton item that only appears in one panel', () {
+  test('INV-4: rejects a non-singleton item whose occurrences drop below two',
+      () {
+    // これ occurs exactly twice in the real fixture: once in Panel 5
+    // (これ？かさ？みせ！) and once in Panel 6 (これ、こわれた). Dropping the
+    // Panel-5 bubble
+    // leaves a single occurrence — below the ≥2 floor for a non-singleton
+    // item (INV-4 counts total occurrences, not distinct panels, since V2's
+    // dense panels legitimately repeat a word several times within one
+    // scene — see episode_validator.dart's doc comment).
     final tampered = _mutableCopy(pilot01RegenJson);
-    final lastPage = (tampered['pages'] as List).last as Map<String, dynamic>;
-    final lastPanel = (lastPage['panels'] as List).last as Map<String, dynamic>;
-    (lastPanel['bubbles'] as List)
-        .removeWhere((b) => (b as Map)['speakerId'] == 'buch');
+    final page1 = (tampered['pages'] as List)[1] as Map<String, dynamic>;
+    final panel5 = (page1['panels'] as List)[0] as Map<String, dynamic>;
+    (panel5['bubbles'] as List)
+        .removeWhere((b) => (b as Map)['text'] == 'これ？かさ？みせ！');
 
     final episode = Episode.fromJson(tampered);
 
@@ -60,7 +68,7 @@ void main() {
         isA<StoryValidationException>().having(
           (e) => e.violations.join(),
           'violations',
-          contains('lex_ja_ame'),
+          contains('lex_ja_kore'),
         ),
       ),
     );

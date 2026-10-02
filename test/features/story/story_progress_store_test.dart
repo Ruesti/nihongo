@@ -41,4 +41,13 @@ void main() {
 
     expect(await store.lastPosition('ep_ja_shotengai_01'), 5);
   });
+
+  test('markCompleted/isCompleted merken den Folgen-Abschluss pro Episode', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = StoryProgressStore(await SharedPreferences.getInstance());
+    expect(await store.isCompleted('ep_a'), isFalse);
+    await store.markCompleted('ep_a');
+    expect(await store.isCompleted('ep_a'), isTrue);
+    expect(await store.isCompleted('ep_b'), isFalse);
+  });
 }
