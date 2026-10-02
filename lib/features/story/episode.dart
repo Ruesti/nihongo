@@ -349,6 +349,10 @@ class Episode {
 
   /// Japanische Schreibung des Titels, nur Anzeige neben dem deutschen Titel.
   final String? titleJa;
+  /// Wetter der Folge (`'rain'` oder null). Das Café nimmt daraus das Licht
+  /// der Nachbesprechung (Spec Café-Szenen-und-Stimmen §5.3): Regen ersetzt
+  /// den Tag. Kein Story-Inhalt, nur Stimmung.
+  final String? weather;
 
   const Episode({
     required this.id,
@@ -365,6 +369,7 @@ class Episode {
     this.cover,
     this.coverPortrait,
     this.titleJa,
+    this.weather,
   });
 
   String? coverFor(PanelFormat format) => format == PanelFormat.portrait
@@ -393,6 +398,7 @@ class Episode {
         cover: j['cover'] as String?,
         coverPortrait: j['coverPortrait'] as String?,
         titleJa: j['titleJa'] as String?,
+        weather: j['weather'] as String?,
       );
 
   /// All panels across all pages, in reading order.

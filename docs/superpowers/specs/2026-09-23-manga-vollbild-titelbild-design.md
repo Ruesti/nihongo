@@ -3,6 +3,8 @@
 **Datum:** 2026-09-23
 **Status:** Von Uli freigegeben („Ja"; Manga-Methode: „M1 depth"). Abnahme
 der Bilder per Bogen-Picks, Abnahme des Readers per Gerätetest am S23.
+**Nachtrag 1.10. (§12, Hochbild aus dem Querbild):** Entwurf nach bestandenem
+Spike, wartet auf Ulis Review.
 **Basis:** Branch `fix/reader-ux-feedback` (PR #51, Reader mit Blasen im Bild,
 Mitmach-Hinweis, volle Panelbreite). Neuer Zweig `design/manga-vollbild`.
 **Anlass:** Uli: *„Ich möchte auf jeden Fall noch auf Manga gehen. So wie ich
@@ -86,12 +88,16 @@ den Standard. Erst danach der Vollrender.
   Serie (45 Folgen) wird das später ein Download-Paket; nicht Teil dieses
   Designs, aber der Grund, warum kein Bild größer als nötig ausgeliefert wird.
 
-### 3.2 Hochformat = eigener Render, nicht gestreckt (Weg A)
+### 3.2 Hochformat = eigener Render, nicht gestreckt (Weg A) — **abgelöst durch §12 (1.10.)**
 Hoch und quer werden getrennt gerendert: gleiche Beschreibung, gleicher
 Seed, andere Leinwand. Uli hat Weg A gewählt: auch die zehn Querbilder
 werden neu gerendert (statt die alten per Rand-Ausmalen zu strecken). Die
 damals korrigierten Inhaltsfehler (P04 Jacke, P11 draußen, P16 Schirm-Aktion,
 P17 Schirm liegt) stehen als Prüfliste auf dem Pick-Bogen.
+
+*Nachtrag 1.10.:* Der getrennte Hoch-Render ist am S23 durchgefallen
+(Uli: Hoch- und Querbild zeigen verschiedene Szenen, „wirkt komisch").
+Das Querbild bleibt der Master; das Hochbild wird daraus abgeleitet, siehe §12.
 
 ## 4. Die Pipeline (Skripte unter `tool/comic/`, laufen auf der Box)
 
@@ -258,7 +264,9 @@ NICHT eingebrannt.
 - Kein Schwarz-Weiß-Manga (Farbe bleibt, Entscheidung vom 1.9.).
 - Kein Umbau der Café-Bilder (PR #54); sie bekommen denselben
   Manga-Durchgang später, sobald die Picks dort stehen.
-- Kein Rand-Ausmalen alter Bilder (Weg B verworfen).
+- Kein Rand-Ausmalen alter **Foto**-Bilder auf Querformat (Weg B verworfen).
+  Das Rand-Ausmalen in §12 ist etwas anderes: es verlängert das freigegebene
+  **Manga**-Querbild nach oben und unten, der Kern bleibt unberührt.
 - Kein Download-Paket; Folge 01 wird gebündelt.
 - Keine Vollbild-Änderung an Café, Home oder Sheets.
 
@@ -294,3 +302,129 @@ NICHT eingebrannt.
   8. `run_finish.sh` → `final/*.jpg` nach `build/f01_raw/` → `check_bars.py`.
   9. `check_layout.py` → `gen_layout_dart.py` (formatiert selbst) → `letter_folge01.py` → `letter_preview.py`.
   10. App-Verdrahtung und Flutter-Tests.
+
+---
+
+## 12. Nachtrag 1.10.: Hochbild aus dem Querbild („Kern schützen, Rand beschneiden")
+
+**Anlass:** Gerätetest S23 am 30.9. Uli: *„Können wir das irgendwie hinbekommen,
+dass das Hochkant-Bild das selbe wie das Querbild ist vom Inhalt her? Wirkt
+komisch, wenn die Bilder inhaltlich verschieden sind."* und: *„Es gibt jeweils
+einen Kerninhalt der Bilder, der gesehen werden muss. Das Surrounding kann
+beschnitten werden."* Spike vom 30.9. bestanden (Bogen `~/kern-spike-bogen.png`,
+Befunde in §12.6).
+
+### 12.1 Das Prinzip
+- Das freigegebene **Manga-Querbild ist der Master** (unverändert, Picks aus
+  `picks_manga.txt`). Es gibt keinen eigenen Hoch-Render mehr.
+- Jedes Motiv hat einen **Kern**: der Bildteil, der in beiden Lagen vollständig
+  zu sehen sein muss. Alles außerhalb darf beschnitten werden.
+- Das **Hochbild ist ein Fenster** über dem Kern: volle Höhe des Querbilds,
+  Breite im Hochformat-Verhältnis (928 : 1664 ⇒ 31 % der Querbreite, 518 px im
+  Render-Maß). Zwei Fälle:
+  1. **Kern passt ins Fenster** → reiner Beschnitt, keine Bilderzeugung.
+     Fenster mittig über dem Kern, an den Bildrand geklemmt.
+  2. **Kern breiter als das Fenster** → der Kernstreifen (volle Höhe, volle
+     Kernbreite) wird auf 928 px Breite verkleinert und oben/unten vom Modell
+     im Hausstil **verlängert** (§12.4). Der Kern bleibt dabei inhaltlich unverändert; er durchläuft nur die Bildkodierung des Modells (VAE-Rundreise je Pass), was `check_kern.py` als Abweichung von ≈ 1–2 misst (Beschnitt ≈ 0,5, Grenze 10).
+- Reaktionsbilder (p02/p05/p08) entstehen wie bisher als getönte Variante des
+  geletterten Bildes, also automatisch auch hoch.
+
+### 12.2 Die Kerne der Folge 01 (von Uli bestätigt, 30.9.)
+
+| Motiv | Kern | Fall |
+|---|---|---|
+| p01 | Mira mit Koffer (das Bahnhofsschild darf wegfallen) | Beschnitt |
+| p02 | der Zettel in der Hand | Beschnitt |
+| p03 | Mira auf der nassen Straße | Beschnitt |
+| p04 | der Arkaden-Bogen | Beschnitt |
+| p05 | Mira (winkend), der Passant, die alte Frau | Verlängern |
+| p06 | der Mann **und** der kaputte Schirm auf der Werkbank | Verlängern |
+| p07 | der Mann, der Schirm, Mira | Verlängern |
+| p08 | Mira unter dem Schirm | Beschnitt |
+| p09 | Mira **und** die Anschlagtafel | Verlängern (knapp) |
+| p10 | Mira nah | Beschnitt |
+| Titel | Mira **und** der abfahrende Zug | Verlängern |
+
+Die Zahlen (Kern als Anteil der Querbreite) stehen in der Layout-Datei und
+werden mit der Vorschau (`kern_preview`, §12.3) gesetzt; der Fall ergibt sich
+rechnerisch aus Kernbreite und Fensterbreite, nicht aus der Tabelle.
+
+### 12.3 Daten und Werkzeuge
+- `tool/comic/folge01_layout.json`: je Motiv ein Feld
+  `"kern": [x0, x1]` (Anteile der Querbreite, 0..1). Pflicht für jedes Motiv.
+  Die Hoch-Blasen (`hoch.bubbles`), Hoch-Gesichter und Hoch-Nogo-Zonen
+  werden für die neuen Hochbilder **neu gesetzt**; die Hoch-Gesichter kann
+  ein Helfer aus den Quer-Gesichtern und der Fenster-Geometrie ableiten.
+- `tool/comic/folge01_motifs.py`: `HOCH_UMGEBUNG = {motiv: "…"}` — je Motiv
+  ein englischer Satz, was oben und unten an Umgebung dazukommt (z. B. p05:
+  Glasdach und Schilder oben, nasser Fliesenboden unten). Nur für den Fall
+  „Verlängern" nötig, Prompts gehören in die Motiv-Datei, Geometrie in die
+  Layout-Datei.
+- `tool/comic/folge01_hoch.py` (neu, läuft auf der Box): liest
+  `picks_manga.txt` (Quer-Master) und die Layout-Datei, entscheidet je Motiv
+  den Fall, erzeugt `~/comfy_f01/hoch/<motiv>_hoch.png` (928 × 1664) und endet
+  mit `HOCH_DONE`. Overrides `overrides_hoch.txt` (gleiche Lese-Routine wie
+  bisher, Whitelist `seed`, `force`): Standard-Seed 831, ein Seed je Motiv.
+- `tool/comic/kern_preview.py` (NUC): Bogen „quer mit Fenster | hoch" aus den
+  Quer-Mastern und der Layout-Datei, zum Setzen der Kerne vor dem Rendern.
+- `tool/comic/check_kern.py` (NUC): prüft am Auslieferungsbild, dass der Kern
+  des Hochbilds mit dem Kern des Querbilds übereinstimmt (beide auf dieselbe
+  Größe gebracht, mittlere Abweichung unter einer Schwelle). Exit 1 bei Verstoß.
+- Vergrößerung: `folge01_finish.py` nimmt für `*_hoch` jetzt `hoch/<motiv>_hoch.png`
+  statt der alten Manga-Hoch-Renders (Picks-Datei `picks_hoch.txt`, vom
+  Hoch-Skript geschrieben). Ziel bleibt 1080 × 1936, q88, `assets/story/folge01/*_hoch.jpg`.
+- Die bisherigen Hoch-Renders (Foto und Manga) und ihre Picks bleiben als
+  Protokoll in den Dateien, werden aber nicht mehr ausgeliefert.
+
+### 12.4 Das Rezept „Verlängern" (aus dem Spike, Runde 4/5)
+Modell wie im Manga-Durchgang (Qwen-Image Q4 + Hausstil-LoRA 1,5, 24 Steps,
+cfg 4), **kein** ControlNet; Rand per `ImagePadForOutpaint` (Maske) und
+`InpaintModelConditioning`, denoise 1,0 nur im maskierten Rand.
+1. **Unten, ein Pass, 128 px** (Überblendung 96 px): Prompt = Manga-Prompt des
+   Motivs (mit Figuren) + *„the figures' legs and feet continue naturally down
+   to the floor, nothing else added below them"*; Negativ = Manga-Negativ +
+   *duplicate person, second body, extra body, doubled figure, extra legs*.
+   So laufen Beine, Füße, Boden oder Bahnsteig weiter.
+2. **Oben, schrittweise, je Schritt höchstens ≈ 480 px** (Überblendung 64 px),
+   bis 1664 erreicht sind; jeder Schritt sieht das Ergebnis des vorigen.
+   Prompt = Stil-Prompt + *„empty background only"* + `HOCH_UMGEBUNG`-Satz;
+   Negativ = Manga-Negativ + *people, person, human figure, face, character,
+   duplicate …*. Der Kern ist maskiert, das Personen-Negativ trifft ihn nicht.
+3. Ergebnis 928 × 1664 → Vergrößerung wie gehabt.
+
+Ein Seed je Motiv reicht; passt ein Rand nicht, anderer Seed oder anderer
+Umgebungssatz über `overrides_hoch.txt` bzw. `HOCH_UMGEBUNG`.
+
+### 12.5 Reader
+Keine Änderung. Die App zeigt weiter `assetPortrait`/`coverPortrait`
+bildschirmfüllend; nur die Dateien und die Hoch-Tippflächen (generiert) ändern
+sich. Invarianten INV-14/15/16 gelten unverändert.
+
+**INV-17 Hoch und quer zeigen dieselbe Szene.** Der Kern des Hochbilds ist
+(bis auf Skalierung und die VAE-Rundreise des Rand-Ausmalens) pixelgleich mit dem Kern des Querbilds; `check_kern.py`
+erzwingt das vor dem Lettering.
+
+### 12.6 Spike-Befunde (30.9.), damit niemand die Fallen neu entdeckt
+- Mittig platzierter Kern (≈ 520 px oben und unten) → unten erfindet das
+  Modell einen zweiten Oberkörper, dazu eine harte Naht.
+- Mehr als ≈ 650 px auf einmal (912 px oben) → die Szene oder die Ladenfront
+  erscheint ein zweites Mal.
+- Personen im Negativ auch für den unteren Rand → die Beine enden an einer
+  Kante (Figuren „stehen hinter einer Mauer").
+- Was im Kern an die Kante stößt (Schirm oben, Beine unten), wird fortgesetzt;
+  deshalb oben Umgebungs-Prompt ohne Figuren, unten Figuren-Prompt mit kleinem Rand.
+- Verlängern braucht ≈ 100 s je Pass; ein Motiv mit zwei Schritten oben ≈ 5 Minuten.
+
+### 12.7 Produktion und Abnahme (ersetzt für die Hochbilder §6 Schritt „hoch")
+1. Kerne setzen (`kern_preview.py`), Bogen an Uli nur bei Zweifel.
+2. `folge01_hoch.py` auf der Box (≈ 30 Minuten: 5 Motive verlängern, Rest Beschnitt).
+3. Bogen „quer | hoch" aller 11 Motive an Uli → Freigabe oder Nachbesserung
+   (Seed, Umgebungssatz, Kern).
+4. `finish` → `check_bars.py` → `check_kern.py` → Hoch-Layout (Blasen, Gesichter,
+   Nogo) → `check_layout.py` → `gen_layout_dart.py` → `letter_folge01.py`.
+5. Flutter-Tests, Emulator-Sichtprüfung hoch, Gerätetest S23 (Drehen mitten
+   in der Folge: dieselbe Szene, andere Lage).
+
+Abnahme: Uli „ok" zum Bogen aus Schritt 3 und zum Gerätetest aus Schritt 5;
+`check_kern.py` und Layout-Test grün; Vollsuite grün bis auf die bekannten 8.

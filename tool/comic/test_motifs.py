@@ -39,5 +39,21 @@ class Motifs(unittest.TestCase):
         self.assertIn("anime", m.negative_for("p01"))          # Foto-Pass: Anti-Anime
 
 
+class HochUmgebung(unittest.TestCase):
+    def test_every_motif_has_a_surrounding_sentence(self):
+        want = ["p%02d" % i for i in range(1, 11)] + ["titel"]
+        self.assertEqual(sorted(m.HOCH_UMGEBUNG), sorted(want))
+        for k, v in m.HOCH_UMGEBUNG.items():
+            self.assertIn("above", v, k)
+            self.assertIn("below", v, k)
+
+    def test_hoch_negatives_build_on_manga_negative(self):
+        self.assertTrue(m.NEG_HOCH_UNTEN.startswith(", "))
+        self.assertIn("duplicate person", m.NEG_HOCH_UNTEN)
+        self.assertIn("person", m.NEG_HOCH_OBEN)
+        self.assertTrue(m.NEG_HOCH_OBEN.startswith(m.NEG_HOCH_UNTEN))
+        self.assertIn("legs and feet", m.HOCH_HINT_UNTEN)
+
+
 if __name__ == "__main__":
     unittest.main()

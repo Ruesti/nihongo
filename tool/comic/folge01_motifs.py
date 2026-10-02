@@ -29,6 +29,30 @@ NEG_MANGA = ("photo, photorealistic, text, watermark, oversaturated, bright, cut
              "blurry, deformed hands, extra fingers, distorted face")
 UMBRELLA_FIX = ", clean transparent umbrella without stains"
 
+# Hochbild aus dem Querbild (Spec §12.4): was oben und unten an Umgebung dazukommt, wenn der Kern breiter
+# als das Hochfenster ist. Nur Umgebung, keine Figuren — die Figuren sind maskiert und bleiben.
+HOCH_UMGEBUNG = {
+    "p01": "the station platform roof and a grey rainy night sky above, wet platform surface below",
+    "p02": "rain-streaked grey air above, wet ground below",
+    "p03": "grey evening sky with utility poles and wires above, wet asphalt with reflections below",
+    "p04": "grey dusk sky above the arcade roof, wet street with reflections below",
+    "p05": "the arcade's glass roof and hanging signs above, wet tiled arcade floor below",
+    "p06": "the workshop's ceiling with a bare fluorescent lamp and shelves above, "
+           "the workbench legs and the workshop floor below",
+    "p07": "the shop's upper facade with windows and a sign above the doorway, wet pavement with reflections below",
+    "p08": "the shop's awning and facade above, wet pavement below",
+    "p09": "the building's wall and eaves in the rain above, wet pavement below",
+    "p10": "grey rain-filled sky above, wet ground below",
+    "titel": "a wide open grey rainy night sky above, no roof overhead, wet platform edge below",
+}
+# Unten (kleiner Rand mit Figuren-Prompt): Beine/Füße laufen weiter, sonst nichts.
+HOCH_HINT_UNTEN = (", the figures' legs and feet continue naturally down to the floor, nothing else added "
+                   "below them, vertical framing")
+NEG_HOCH_UNTEN = (", black bars, letterbox, frame, border, seam, visible edge, duplicate person, second body, "
+                  "extra body, doubled figure, cloned figure, extra legs, extra arms, floating torso")
+# Oben (großer Rand mit Umgebungs-Prompt): zusätzlich keine Personen — der Kern ist maskiert.
+NEG_HOCH_OBEN = NEG_HOCH_UNTEN + ", people, person, human figure, face, character, portrait"
+
 FORMATS = {"quer": (1664, 928), "hoch": (928, 1664)}
 FORMAT_HINT = {"quer": ", wide cinematic framing", "hoch": ", vertical framing, tall composition"}
 SEEDS = (701, 702)

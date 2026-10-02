@@ -131,10 +131,34 @@ ssh pc 'rm -f ~/.no-idle-suspend'
 python3 tool/comic/check_bars.py build/f01_raw
 ```
 
+### 8b. Hochbild aus dem Querbild (Spec §12, seit 1.10.)
+
+Das Hochbild wird nicht mehr gerendert, sondern aus dem freigegebenen Manga-Querbild abgeleitet:
+Kern (`"kern": {motiv: [x0, x1]}` in `folge01_layout.json`) passt ins Hochfenster → Beschnitt;
+Kern breiter → Streifen + Rand-Ausmalen (unten 128 px Figuren-Prompt, oben Schritte ≤ 480 px
+Umgebungs-Prompt aus `folge01_motifs.HOCH_UMGEBUNG`).
+
+```
+python3 tool/comic/kern_preview.py                     # Vorschau: build/kern_preview.png (Kern rot, Fenster gelb)
+scp tool/comic/*.py tool/comic/*.sh tool/comic/*.txt tool/comic/folge01_layout.json pc:f01tool/
+ssh pc 'setsid nohup sh ~/f01tool/run_hoch.sh > ~/comfy_f01/hoch.log 2>&1 </dev/null &'
+```
+Marken: `CROP/EXTEND/OK/SKIP/ERR <motiv>`, `HOCH_DONE`. Ergebnis `~/comfy_f01/hoch/<motiv>_hoch.png`
+(fester Name, kein ComfyUI-Zähler) und `~/f01tool/picks_hoch.txt` (quer + hoch) für die Vergrößerung:
+```
+mkdir -p build/f01_hoch ; scp 'pc:comfy_f01/hoch/*_hoch.png' build/f01_hoch/ ; scp pc:f01tool/picks_hoch.txt build/f01_hoch/
+scp build/f01_hoch/picks_hoch.txt pc:f01tool/ ; ssh pc 'cd ~/f01tool && python3 folge01_finish.py picks_hoch.txt'
+scp 'pc:comfy_f01/final/*_hoch.jpg' build/f01_raw/
+python3 tool/comic/check_bars.py build/f01_raw && python3 tool/comic/check_kern.py build/f01_raw   # INV-17
+python3 tool/comic/kern_faces.py                       # Hoch-Gesichter zum Eintragen
+```
+Danach Abschnitt 9 (Layout, Tippflächen, Lettering). Nachbesserung einzelner Motive:
+`overrides_hoch.txt` → `<motiv>_hoch seed=<N> force`, Umgebungssatz in `HOCH_UMGEBUNG`, Lauf wiederholen.
+
 ### 9. Layout, Tippflächen, Lettering
 
 ```
-python3 tool/comic/layout_preview.py          # Sichtprüfung: build/layout_preview_{quer,hoch}.png
+python3 tool/comic/layout_preview.py          # Sichtprüfung auf build/f01_raw: build/layout_preview_{quer,hoch}.png
 python3 tool/comic/check_layout.py            # muss [] ausgeben
 python3 tool/comic/gen_layout_dart.py         # schreibt + formatiert lib/features/story/episodes/folge_01_layout.g.dart
 python3 tool/comic/letter_folge01.py          # 28 Dateien nach assets/story/folge01/
@@ -189,6 +213,11 @@ flutter test test/features/story/folge_01_layout_test.dart test/features/story/f
   `pkill -f` die eigene Shell. Klammer-Trick: `ssh pc 'pkill -f "[f]olge01_manga.py"'`.
 - **Box schlafen legen / ComfyUI hängt:** siehe Spec §11 (Kill-Switch, Modellwechsel = ComfyUI-Neustart).
 - **Mira nachdenklich, nicht traurig** (Uli 29.9.): Ausdruck über `extra=`/`neg=` in `overrides_manga.txt`.
+- **Hochbild aus Querbild — Kern geändert?** `folge01_hoch.py` überspringt Motive mit vorhandener
+  Ausgabe. Nach einer Kern-Änderung `force` setzen oder `~/comfy_f01/hoch/<motiv>_hoch.png` löschen.
+- **Rand-Ausmalen:** nie mehr als ~650 px auf einmal (Szene wiederholt sich), Kern nie mittig mit
+  großem unteren Rand (zweiter Oberkörper), Personen-Negativ nur für den oberen Rand (sonst enden
+  die Beine an einer Kante). Alles in `kern_geometry`/`folge01_hoch` fest verdrahtet.
 
 ## Dateien
 
@@ -207,5 +236,8 @@ flutter test test/features/story/folge_01_layout_test.dart test/features/story/f
 | `folge01_layout.json`, `check_layout.py`, `layout_preview.py` | NUC | Blasen-Layout + Prüfung |
 | `gen_layout_dart.py` | NUC | Tippflächen-Dart aus dem Layout |
 | `letter_folge01.py`, `letter_preview.py` | NUC | Lettering + Sichtprüfung |
+| `kern_geometry.py` | beide | Hochfenster, Kernstreifen, Schrittfolge, Gesichter-Abbildung (Spec §12) |
+| `folge01_hoch.py`, `run_hoch.sh`, `overrides_hoch.txt` | Box | Hochbild aus dem Querbild, schreibt `picks_hoch.txt` |
+| `kern_preview.py`, `kern_faces.py`, `check_kern.py` | NUC | Kern-Vorschau, Hoch-Gesichter, INV-17-Prüfung |
 
 Tests: `cd tool/comic && python3 -W error::ResourceWarning -m unittest discover -s . -p "test_*.py" -v`
