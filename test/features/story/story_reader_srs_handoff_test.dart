@@ -63,8 +63,8 @@ void main() {
     for (var i = 0; i < 9; i++) {
       await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
       await tester.pumpAndSettle();
-      if (find.byKey(const ValueKey('dictionary-sheet')).evaluate().isNotEmpty) {
-        await tester.tapAt(const Offset(400, 50));
+      if (find.byKey(const ValueKey('episode-word-list')).evaluate().isNotEmpty) {
+        await tester.tap(find.byKey(const ValueKey('episode-word-list-back')));
         await tester.pumpAndSettle();
       }
     }

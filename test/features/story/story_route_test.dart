@@ -76,7 +76,7 @@ void main() {
     // Sheet wird per Tap oberhalb geschlossen, statt eine Antwort
     // abzugeben.
     const sheetKeys = [
-      ValueKey('dictionary-sheet'),
+      ValueKey('episode-word-list'),
       ValueKey('diegetic-speak-sheet'),
       ValueKey('diegetic-trace-sheet'),
     ];
@@ -85,7 +85,11 @@ void main() {
       await tester.pumpAndSettle();
       for (final key in sheetKeys) {
         if (find.byKey(key).evaluate().isNotEmpty) {
-          await tester.tapAt(const Offset(400, 50));
+          if (key == const ValueKey('episode-word-list')) {
+            await tester.tap(find.byKey(const ValueKey('episode-word-list-back')));
+          } else {
+            await tester.tapAt(const Offset(400, 50));
+          }
           await tester.pumpAndSettle();
         }
       }

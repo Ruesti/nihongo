@@ -73,3 +73,12 @@ flutter:
     - assets/comic/
     - assets/story/folge01/
     - assets/comic/cafe/
+
+  # Notizbuch-Look der Wörterkarte / Wortliste (OFL, Lizenzen in assets/fonts/).
+  fonts:
+    - family: KleeOne
+      fonts:
+        - asset: assets/fonts/KleeOne-Regular.ttf
+    - family: Caveat
+      fonts:
+        - asset: assets/fonts/Caveat-Variable.ttf

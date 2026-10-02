@@ -296,31 +296,32 @@ void main() {
       expect(hit.width, closeTo(0.42 * 1170, 0.5));
     });
 
-    testWidgets('Tipp auf die Tippfläche liest nur vor, öffnet kein Wörterbuch',
+    testWidgets('Tipp auf die Tippfläche liest vor und öffnet die Wörterkarte',
         (tester) async {
       setScreen(tester, const Size(540, 1170));
       await startReading(tester);
       await tester.tap(find.byKey(const ValueKey('story-bubble-hit-0')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('dictionary-sheet')), findsNothing);
+      expect(find.byKey(const ValueKey('bubble-gloss-card')), findsOneWidget);
+      expect(find.byKey(const ValueKey('episode-word-list')), findsNothing);
     });
 
-    testWidgets('hochkant: das Buch-Symbol neben Zurück öffnet das Wörterbuch',
+    testWidgets('hochkant: das Buch-Symbol neben Zurück öffnet die Wortliste',
         (tester) async {
       setScreen(tester, const Size(540, 1170));
       await startReading(tester);
       await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+      expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
     });
 
-    testWidgets('quer: das Buch-Symbol neben Zurück öffnet das Wörterbuch',
+    testWidgets('quer: das Buch-Symbol neben Zurück öffnet die Wortliste',
         (tester) async {
       setScreen(tester, const Size(1170, 540));
       await startReading(tester);
       await tester.tap(find.byKey(const ValueKey('story-dictionary-button')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('dictionary-sheet')), findsOneWidget);
+      expect(find.byKey(const ValueKey('episode-word-list')), findsOneWidget);
     });
 
     testWidgets('Drehen mitten in der Folge behält die Position', (tester) async {
