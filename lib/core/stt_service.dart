@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 class SttService {
@@ -6,9 +7,16 @@ class SttService {
 
   Future<bool> init() async {
     _available = await _stt.initialize(
-      onError: (error) {},
-      onStatus: (status) {},
+      // Nie stumm scheitern: ohne diese Logs war "Erkennung geht nicht"
+      // auf dem Gerät nicht diagnostizierbar (fehlende RECORD_AUDIO-
+      // Permission blieb unsichtbar).
+      onError: (error) => debugPrint('SttService: $error'),
+      onStatus: (status) => debugPrint('SttService: status=$status'),
     );
+    if (!_available) {
+      debugPrint('SttService: initialize() fehlgeschlagen — '
+          'Mikrofon-Berechtigung oder Erkennungsdienst fehlt.');
+    }
     return _available;
   }
 

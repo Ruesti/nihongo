@@ -10,6 +10,7 @@ import '../comic/comic_pack.dart';
 import '../comic/comic_reader_screen.dart';
 import '../comic/comic_repository.dart';
 import '../language_select/language_select_screen.dart';
+import '../story/story_route.dart';
 import 'opening_gate.dart';
 import 'slice_pack.dart';
 import 'slice_repository.dart';
@@ -65,60 +66,70 @@ class ReadingTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(readingRepositoryProvider).when(
-          loading: () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
-          error: (e, _) => Scaffold(
-            body: Center(
-              child: Text('Lesen nicht verfügbar:\n$e',
-                  textAlign: TextAlign.center),
-            ),
+    final body = ref.watch(readingRepositoryProvider).when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Text('Lesen nicht verfügbar:\n$e',
+                textAlign: TextAlign.center),
           ),
           data: (repo) => repo == null
-              ? const Scaffold(
-                  body: Center(child: Text('Mining ist nicht konfiguriert.')))
-              : _ReadingTabBody(repo: repo),
+              ? const Center(child: Text('Mining ist nicht konfiguriert.'))
+              : OpeningGate(repo: repo),
         );
+
+    return Scaffold(
+      body: body,
+      floatingActionButton: const _ReadingFabs(),
+    );
   }
 }
 
-/// Hosts the default text-reading surface ([OpeningGate]) and, when a
-/// comic pack is bundled for the active language AND the shared mining
-/// store is wired up, an additional opt-in entry into [ComicReaderScreen].
-/// The text reader stays the default surface either way (§I8: no
-/// language branch decides this — bundled-asset + db presence do).
-class _ReadingTabBody extends ConsumerWidget {
-  final SliceRepository repo;
-  const _ReadingTabBody({required this.repo});
+/// Die Einstiege ins bebilderte Lesen. Der Folge-Einstieg (Story-Engine)
+/// ist IMMER da — „Lesen ab Tag 1": er haengt nur an der LearningDb, nie
+/// am Mining-Store. Der Comic-Einstieg bleibt opt-in wie gehabt
+/// (Mining-Store + gebuendeltes Comic-Pack).
+class _ReadingFabs extends ConsumerWidget {
+  const _ReadingFabs();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.watch(miningDbProvider);
     final comicPack = ref.watch(comicPackProvider).valueOrNull;
 
-    Widget? comicEntry;
-    if (db != null && comicPack != null) {
-      comicEntry = FloatingActionButton(
-        key: const ValueKey('comic-entry-fab'),
-        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => ComicReaderScreen(
-            repo: ComicRepository(
-              db: db,
-              pack: comicPack,
-              dictionary: const _EmptyComicDictionary(),
-            ),
-            // TODO(follow-up): source from the active pack's
-            // ScriptProfile.direction instead of a fixed ltr default.
-            direction: TextDirection.ltr,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (db != null && comicPack != null) ...[
+          FloatingActionButton(
+            key: const ValueKey('comic-entry-fab'),
+            heroTag: 'comic-entry',
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ComicReaderScreen(
+                repo: ComicRepository(
+                  db: db,
+                  pack: comicPack,
+                  dictionary: const _EmptyComicDictionary(),
+                ),
+                // TODO(follow-up): source from the active pack's
+                // ScriptProfile.direction instead of a fixed ltr default.
+                direction: TextDirection.ltr,
+              ),
+            )),
+            child: const Icon(Icons.auto_stories),
           ),
-        )),
-        child: const Icon(Icons.auto_stories),
-      );
-    }
-
-    return Scaffold(
-      body: OpeningGate(repo: repo),
-      floatingActionButton: comicEntry,
+          const SizedBox(height: 12),
+        ],
+        FloatingActionButton.extended(
+          key: const ValueKey('story-entry-fab'),
+          heroTag: 'story-entry',
+          icon: const Icon(Icons.menu_book),
+          label: const Text('Folge 1: Regen'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const StoryRoute()),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../core/stt_service.dart';
 
 /// Scores a spoken attempt at [target], returning 0.0–1.0. An interface so the
@@ -20,6 +22,11 @@ class SttSpeakEvaluator implements SpeakEvaluator {
   @override
   Future<double> evaluate(String target) async {
     final heard = await stt.listen(locale: locale);
-    return SttService.similarity(heard, target);
+    final score = SttService.similarity(heard, target);
+    // Diagnose am Gerät: ohne dieses Log ist "Sprechen hatte keinen
+    // Effekt" nicht von "nichts erkannt" unterscheidbar.
+    debugPrint('SttSpeakEvaluator: gehört="$heard" soll="$target" '
+        'score=${score.toStringAsFixed(2)}');
+    return score;
   }
 }
