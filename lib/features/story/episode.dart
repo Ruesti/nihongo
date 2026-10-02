@@ -308,6 +308,11 @@ class Episode {
   /// Bedeutung und die Stelle in der Folge.
   final Map<String, DebriefNote> debrief;
 
+  /// Wetter der Folge (`'rain'` oder null). Das Café nimmt daraus das Licht
+  /// der Nachbesprechung (Spec Café-Szenen-und-Stimmen §5.3): Regen ersetzt
+  /// den Tag. Kein Story-Inhalt, nur Stimmung.
+  final String? weather;
+
   const Episode({
     required this.id,
     required this.seasonId,
@@ -320,6 +325,7 @@ class Episode {
     this.intro,
     this.outro,
     this.debrief = const {},
+    this.weather,
   });
 
   factory Episode.fromJson(Map<String, dynamic> j) => Episode(
@@ -341,6 +347,7 @@ class Episode {
             e.key as String:
                 DebriefNote.fromJson(e.value as Map<String, dynamic>),
         },
+        weather: j['weather'] as String?,
       );
 
   /// All panels across all pages, in reading order.

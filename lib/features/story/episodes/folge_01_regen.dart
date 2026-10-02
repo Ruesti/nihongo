@@ -26,6 +26,7 @@ const Map<String, dynamic> pilot01RegenJson = {
   'title': 'Regen',
   'locale': 'ja',
   'era': '1996',
+  'weather': 'rain',
   'intro':
       'Eine junge Frau steigt allein aus dem Zug — es regnet. '
       'In ihrer Hand: ein Zettel, dessen Tinte verläuft.',

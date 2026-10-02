@@ -9,6 +9,7 @@ import 'cafe_debrief.dart';
 import 'cafe_debrief_card.dart';
 import 'cafe_occupancy.dart';
 import 'cafe_prompts.dart';
+import 'cafe_scenes.dart';
 import 'cafe_speaker_plan.dart';
 import 'cafe_turn_screen.dart';
 
@@ -29,6 +30,9 @@ class CafeDebriefScreen extends StatefulWidget {
   final String languageId;
   final KnowledgeBridge? bridge;
 
+  /// Licht der Szenen; null = Uhr plus Regen der Folge (Spec §5.3).
+  final CafeLight? light;
+
   const CafeDebriefScreen({
     super.key,
     required this.db,
@@ -36,6 +40,7 @@ class CafeDebriefScreen extends StatefulWidget {
     required this.progressStore,
     this.languageId = 'lang_ja',
     this.bridge,
+    this.light,
   });
 
   @override
@@ -53,6 +58,8 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
   DebriefCardContent? _card;
   _DebriefPhase _phase = _DebriefPhase.loading;
   bool _advancing = false;
+  late final CafeLight _light = widget.light ??
+      lightFor(DateTime.now(), rain: widget.episode.weather == 'rain');
 
   String get _languageCode => widget.languageId.replaceFirst('lang_', '');
 
@@ -152,6 +159,7 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
         // Reihenfolge (Final-Review 19.9., F2).
         doneLine: wirtinDebriefClosing(sessionOffset ~/ 3),
         episodes: [widget.episode],
+        light: _light,
       ),
     ));
   }
@@ -188,6 +196,18 @@ class _CafeDebriefScreenState extends State<CafeDebriefScreen> {
         _DebriefPhase.explain => Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              SizedBox(
+                height: 96,
+                width: double.infinity,
+                child: Image.asset(
+                  sceneAsset(CafeMotif.wirtinTisch, _light),
+                  key: const ValueKey('cafe-debrief-band'),
+                  fit: BoxFit.cover,
+                  excludeFromSemantics: true,
+                  errorBuilder: (_, _, _) =>
+                      Container(color: const Color(0xFF2A3035)),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                 child: Text(

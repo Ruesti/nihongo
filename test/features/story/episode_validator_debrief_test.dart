@@ -30,7 +30,7 @@ Map<String, dynamic> _episode({Map<String, dynamic>? debrief}) => {
         ],
         'glyphs': [],
       },
-      if (debrief != null) 'debrief': debrief,
+      'debrief': ?debrief,
       'pages': [
         {
           'index': 0,
