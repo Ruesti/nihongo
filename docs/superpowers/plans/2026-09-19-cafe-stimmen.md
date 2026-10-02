@@ -430,7 +430,10 @@ Expected: `All tests passed!` (die 4 alten + 6 neuen).
 - [ ] **Step 5: Zählen, dass die Spec-Menge stimmt** (45 neue Zeilen: 27 Stimm-Zeilen + 9 Einstiege + 9 Reaktionen der Gleichaltrigen)
 
 Run: `grep -c "^      '" lib/features/cafe/cafe_guest_script.dart`
-Expected: `76` (31 alte Reaktionen + 45 neue Zeilen; jede Zeile beginnt mit sechs Leerzeichen und `'`; die drei mehrzeiligen Vielredner-Zeilen zählen je einmal, ihre Fortsetzungen beginnen mit zehn Leerzeichen).
+Expected: `67` — Reaktionen und Stimm-Zeilen stehen mit sechs Leerzeichen Einzug: 31 alte Reaktionen + 27 Stimm-Zeilen + 9 Reaktionen der Gleichaltrigen (die drei mehrzeiligen Vielredner-Zeilen zählen je einmal, ihre Fortsetzungen beginnen mit zehn Leerzeichen).
+
+Run: `grep -c "^    '" lib/features/cafe/cafe_guest_script.dart`
+Expected: `9` — die Einstiegszeilen stehen mit vier Leerzeichen Einzug (3 + 2 + 2 + 2). Zusammen 27 + 9 + 9 = 45 neue Zeilen (Spec §4).
 
 - [ ] **Step 6: Commit**
 
@@ -1198,7 +1201,7 @@ Import ergänzen (nach `import 'cafe_prompts.dart';`):
 import 'cafe_speaker_plan.dart';
 ```
 
-Den `pushReplacement`-Block ersetzen durch:
+Den Block von der bestehenden Zeile `if (!mounted) return;` bis zum schließenden `));` des `pushReplacement` **vollständig** ersetzen durch (der alte Kommentar „Nach Sitzung rotieren …" und die alte `doneLine`-Zeile gehen darin auf — nichts doppelt lassen):
 
 ```dart
     if (!mounted) return;

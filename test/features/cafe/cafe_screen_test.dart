@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/features/cafe/cafe_screen.dart';
-import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
 
 void main() {
   late LearningDb db;

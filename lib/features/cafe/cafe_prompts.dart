@@ -54,3 +54,15 @@ String wirtinDebriefClosing(int index) {
   ];
   return lines[index % lines.length];
 }
+
+/// Die Wirtin gibt in der Nachbesprechung einen Block an einen Gast ab
+/// (Spec Café-Szenen-und-Stimmen §3.1) — eine Zeile im selben Bildschirm,
+/// kein Zwischenscreen (Brief §6). Rotiert nach Blocknummer.
+String wirtinHandoverLine(int index) {
+  const lines = [
+    'Frag du mal.',
+    'Nimm du die nächsten.',
+    'Mach du weiter, ich hol Tee.',
+  ];
+  return lines[index % lines.length];
+}
