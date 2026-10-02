@@ -26,4 +26,29 @@ class StoryProgressStore {
 
   Future<bool> isCompleted(String episodeId) async =>
       _prefs.getBool('$_completedPrefix$episodeId') ?? false;
+
+  static const _debriefIndexPrefix = 'story_debrief_index_';
+  static const _debriefDonePrefix = 'story_debrief_done_';
+
+  /// Nachbesprechung, Akt 1: Index der nächsten noch nicht erklärten Karte
+  /// (Spec Café-Nachbesprechung §3.6 — Abbruch setzt beim ersten offenen
+  /// Item fort). 0, wenn noch nichts erklärt wurde.
+  Future<int> debriefIndex(String episodeId) async =>
+      _prefs.getInt('$_debriefIndexPrefix$episodeId') ?? 0;
+
+  Future<void> saveDebriefIndex(String episodeId, int index) async =>
+      await _prefs.setInt('$_debriefIndexPrefix$episodeId', index);
+
+  /// Akt 1 vollständig gesehen. Kein Fortschritt im Sinne von INV-10: schaltet
+  /// nichts frei, wird nirgends gezählt — die Wirtin erklärt nur nicht zweimal.
+  Future<void> markDebriefDone(String episodeId) async =>
+      await _prefs.setBool('$_debriefDonePrefix$episodeId', true);
+
+  Future<bool> isDebriefDone(String episodeId) async =>
+      _prefs.getBool('$_debriefDonePrefix$episodeId') ?? false;
+
+  /// Offen = Folge zu Ende gelesen UND Akt 1 noch nicht vollständig gesehen
+  /// (§3.6). Vor dem Folgen-Ende ist eine Nachbesprechung nie offen (INV-11).
+  Future<bool> isDebriefPending(String episodeId) async =>
+      await isCompleted(episodeId) && !await isDebriefDone(episodeId);
 }

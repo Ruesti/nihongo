@@ -42,4 +42,17 @@ void main() {
           reason: '${item.id} hat keinen Woerterbuch-Eintrag');
     }
   });
+
+  test('jedes Budget-Wort hat einen Erklärungsblock der Wirtin (Gebrauch, '
+      '≤2 Varianten) — und nur Budget-Wörter haben einen', () {
+    final episode = loadFolge01();
+    for (final item in episode.budget.items) {
+      final note = episode.debrief[item.id];
+      expect(note, isNotNull, reason: '${item.id} ohne Erklärungsblock');
+      expect(note!.usage.trim(), isNotEmpty);
+      expect(note.variants.length, lessThanOrEqualTo(2));
+    }
+    expect(episode.debrief.keys.toSet(),
+        {for (final i in episode.budget.items) i.id});
+  });
 }

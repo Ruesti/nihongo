@@ -61,6 +61,243 @@ const Map<String, dynamic> pilot01RegenJson = {
       {'glyph': '傘'},
     ],
   },
+  // Erklärungsblock der Wirtin (Spec Café-Nachbesprechung §6): Gebrauch in
+  // ein bis zwei Sätzen, höchstens zwei Varianten. Varianten sind Wissen am
+  // Wort, keine Items — der Validator hält sie vom Budget fern.
+  'debrief': {
+    'lex_ja_eki': {
+      'usage': '„Bahnhof". Auf dem Schild steht es als Kanji 駅, gesprochen '
+          'えき — Miras erstes Schild in dieser Stadt.',
+      'variants': [],
+    },
+    'lex_ja_samui': {
+      'usage': '„kalt" — fürs Wetter und fürs Frösteln, nicht für kaltes '
+          'Wasser.',
+      'variants': [
+        {
+          'form': 'つめたい',
+          'reading': 'つめたい',
+          'meaning': 'kalt zum Anfassen',
+          'note': 'Wasser, Hände, ein Getränk',
+        },
+        {
+          'form': 'さむいですね',
+          'reading': 'さむいですね',
+          'meaning': 'kalt, nicht wahr?',
+          'note': 'der Smalltalk-Satz',
+        },
+      ],
+    },
+    'lex_ja_ame': {
+      'usage': '„Regen". Das Wort vom Zettel, das erste, das Mira selbst '
+          'gelesen hat. Vorsicht: mit anderer Betonung heißt あめ auch '
+          '„Bonbon" — man hört den Unterschied.',
+      'variants': [],
+    },
+    'lex_ja_sumimasen': {
+      'usage': '„Entschuldigung" — aber genauso „Hallo, darf ich mal?". Mira '
+          'benutzt es, um jemanden anzusprechen, nicht nur zum Entschuldigen.',
+      'variants': [
+        {
+          'form': 'ごめんなさい',
+          'reading': 'ごめんなさい',
+          'meaning': 'tut mir leid',
+          'note': 'persönlicher, für eigene Fehler',
+        },
+        {
+          'form': 'すみませんでした',
+          'reading': 'すみませんでした',
+          'meaning': 'Entschuldigung',
+          'note': 'für etwas, das schon passiert ist',
+        },
+      ],
+    },
+    'lex_ja_koko': {
+      'usage': '„hier" — der Ort bei mir.',
+      'variants': [
+        {'form': 'そこ', 'reading': 'そこ', 'meaning': 'da', 'note': 'bei dir'},
+        {
+          'form': 'あそこ',
+          'reading': 'あそこ',
+          'meaning': 'dort',
+          'note': 'weit weg von uns beiden',
+        },
+      ],
+    },
+    'lex_ja_mise': {
+      'usage': '„Laden, Geschäft" — jeder Laden in der Shotengai ist ein みせ.',
+      'variants': [
+        {
+          'form': 'おみせ',
+          'reading': 'おみせ',
+          'meaning': 'Laden',
+          'note': 'höflicher, mit お davor',
+        },
+      ],
+    },
+    'lex_ja_hitori': {
+      'usage': '„allein" oder „eine Person". Mira ist ひとり in dieser Stadt.',
+      'variants': [
+        {
+          'form': 'ひとりで',
+          'reading': 'ひとりで',
+          'meaning': 'allein (als Art und Weise)',
+          'note': 'allein reisen, allein essen',
+        },
+      ],
+    },
+    'lex_ja_kasa': {
+      'usage': '„Schirm". Erst ein Ding in Miras Hand, dann ein Wort. Als '
+          'Kanji: 傘.',
+      'variants': [
+        {
+          'form': 'あまがさ',
+          'reading': 'あまがさ',
+          'meaning': 'Regenschirm',
+          'note': 'wörtlich あめ + かさ',
+        },
+      ],
+    },
+    'lex_ja_kore': {
+      'usage': '„das hier" — das Ding bei mir, in meiner Hand.',
+      'variants': [
+        {'form': 'それ', 'reading': 'それ', 'meaning': 'das da', 'note': 'bei dir'},
+        {
+          'form': 'あれ',
+          'reading': 'あれ',
+          'meaning': 'das dort',
+          'note': 'weit weg',
+        },
+      ],
+    },
+    'lex_ja_kowareta': {
+      'usage': '„kaputt" — genauer: „ist kaputtgegangen". Die Form sagt: Es '
+          'ist schon passiert.',
+      'variants': [
+        {
+          'form': 'こわれている',
+          'reading': 'こわれている',
+          'meaning': 'ist kaputt',
+          'note': 'als Zustand',
+        },
+        {
+          'form': 'こわれました',
+          'reading': 'こわれました',
+          'meaning': 'ist kaputtgegangen',
+          'note': 'dasselbe, höflicher',
+        },
+      ],
+    },
+    'lex_ja_dame': {
+      'usage': '„geht nicht / kaputt / nein" — das Alltagswort, wenn etwas '
+          'nicht geht.',
+      'variants': [
+        {
+          'form': 'だめです',
+          'reading': 'だめです',
+          'meaning': 'geht nicht',
+          'note': 'höflicher',
+        },
+        {
+          'form': 'むり',
+          'reading': 'むり',
+          'meaning': 'unmöglich',
+          'note': 'noch deutlicher',
+        },
+      ],
+    },
+    'lex_ja_ikura': {
+      'usage': '„wie viel (kostet das)?" — die Frage im Laden.',
+      'variants': [
+        {
+          'form': 'いくらですか',
+          'reading': 'いくらですか',
+          'meaning': 'wie viel kostet das?',
+          'note': 'höflich, der ganze Satz',
+        },
+      ],
+    },
+    'lex_ja_iie': {
+      'usage': '„nein" — höflich, im Gespräch mit Fremden.',
+      'variants': [
+        {'form': 'いや', 'reading': 'いや', 'meaning': 'nein', 'note': 'locker'},
+        {
+          'form': 'ううん',
+          'reading': 'ううん',
+          'meaning': 'nein',
+          'note': 'unter Freunden, oft nur ein Laut',
+        },
+      ],
+    },
+    'lex_ja_hontou': {
+      'usage': '„wirklich?" — als Frage, wenn man etwas kaum glauben kann.',
+      'variants': [
+        {
+          'form': 'ほんとうに',
+          'reading': 'ほんとうに',
+          'meaning': 'wirklich (als Verstärkung)',
+          'note': 'wirklich kalt, wirklich allein',
+        },
+        {
+          'form': 'ほんと',
+          'reading': 'ほんと',
+          'meaning': 'wirklich?',
+          'note': 'kurz, gesprochen',
+        },
+      ],
+    },
+    'lex_ja_daijoubu': {
+      'usage': '„alles gut / in Ordnung" — als Frage und als Antwort.',
+      'variants': [
+        {
+          'form': 'だいじょうぶです',
+          'reading': 'だいじょうぶです',
+          'meaning': 'alles in Ordnung',
+          'note': 'höflicher',
+        },
+        {
+          'form': 'へいき',
+          'reading': 'へいき',
+          'meaning': 'macht nichts',
+          'note': 'lockerer',
+        },
+      ],
+    },
+    'lex_ja_hai': {
+      'usage': '„ja". Und beim Überreichen: „hier, bitte" (はい、どうぞ).',
+      'variants': [
+        {'form': 'ええ', 'reading': 'ええ', 'meaning': 'ja', 'note': 'weicher'},
+        {
+          'form': 'うん',
+          'reading': 'うん',
+          'meaning': 'ja',
+          'note': 'locker, unter Freunden',
+        },
+      ],
+    },
+    'lex_ja_douzo': {
+      'usage': '„bitte, hier" — wenn man etwas gibt oder anbietet. Nicht das '
+          '„bitte" einer Bitte. Das Gegenstück ist ありがとう.',
+      'variants': [],
+    },
+    'lex_ja_arigatou': {
+      'usage': '„danke".',
+      'variants': [
+        {
+          'form': 'ありがとうございます',
+          'reading': 'ありがとうございます',
+          'meaning': 'vielen Dank',
+          'note': 'höflicher — zu Fremden und Älteren',
+        },
+        {
+          'form': 'どうも',
+          'reading': 'どうも',
+          'meaning': 'danke',
+          'note': 'kurz und beiläufig',
+        },
+      ],
+    },
+  },
   'pages': [
     // Seite 0 — Ankunft (P1-Bahnsteig bis P4-Shotengai-Eingang)
     {

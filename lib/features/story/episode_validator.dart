@@ -26,6 +26,9 @@ void validateEpisode(Episode episode) {
   final violations = <String>[];
   final budgetIds = {for (final item in episode.budget.items) item.id};
   final occurrencesByItem = <String, int>{};
+  // Oberflächen aller Budget-Items, wie sie in der Folge stehen — die Menge,
+  // gegen die Varianten der Nachbesprechung geprüft werden (§5.6).
+  final budgetSurfaces = <String>{};
 
   // Structural check: panel indices must be unique across the whole episode
   final seenPanelIndices = <int>{};
@@ -50,6 +53,7 @@ void validateEpisode(Episode episode) {
           );
           continue;
         }
+        budgetSurfaces.add(token.surface);
         occurrencesByItem[itemId] = (occurrencesByItem[itemId] ?? 0) + 1;
       }
     }
@@ -68,6 +72,47 @@ void validateEpisode(Episode episode) {
         'Item "${item.id}" occurs $count time(s) but requires at '
         'least $minRequired (singleton=${item.singleton}) (INV-4).',
       );
+    }
+  }
+
+  // Nachbesprechung (Spec Café-Nachbesprechung §5.6): Die Wirtin erklärt nur
+  // Budget-Items; Varianten („man kann auch sagen") sind Wissen am Item, keine
+  // Items — höchstens zwei, und keine Variante darf selbst ein Budget-Item
+  // dieser Folge sein (dann gehört sie ins Budget, nicht in die Randnotiz).
+  //
+  // Bewusste Abweichung: Geprüft wird gegen [budgetSurfaces] — die
+  // Token-Oberflächen der Budget-Items —, nicht gegen `lexemes.writtenForm`.
+  // Das Folgen-JSON hat keinen Zugriff auf die Lexem-Tabelle, die Oberflächen
+  // in der Folge sind der Stellvertreter dafür, der im Prozess verfügbar ist.
+  // Zwei Folgen daraus: ein Item, das nur über `targetItemIds` eines
+  // Sprechmoments getragen wird, steuert keine Oberfläche bei und wird so
+  // nicht erkannt; und eine Variante, die zwar ein Budget-Item ist, aber in
+  // der Folge in einer anderen Schreibung steht, rutscht durch. Die exakte
+  // Prüfung gegen `writtenForm` gehört in einen späteren Schritt mit
+  // DB-Zugriff (Spec §5.6, Notiz).
+  for (final entry in episode.debrief.entries) {
+    final itemId = entry.key;
+    final note = entry.value;
+    if (!budgetIds.contains(itemId)) {
+      violations.add(
+        'Debrief "$itemId" erklärt ein Item, das nicht im Budget dieser Folge '
+        'steht (Nachbesprechung erklärt nur Eingeführtes, INV-8/INV-11).',
+      );
+    }
+    if (note.variants.length > 2) {
+      violations.add(
+        'Debrief "$itemId" nennt ${note.variants.length} Varianten; erlaubt '
+        'sind höchstens 2 (keine Varianten-Kaskade).',
+      );
+    }
+    for (final v in note.variants) {
+      if (budgetSurfaces.contains(v.form)) {
+        violations.add(
+          'Debrief "$itemId": Variante "${v.form}" ist selbst ein Budget-Item '
+          'dieser Folge — dann gehört sie ins Budget, nicht in „man kann auch '
+          'sagen".',
+        );
+      }
     }
   }
 

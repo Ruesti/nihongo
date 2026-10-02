@@ -246,6 +246,47 @@ class StoryPage {
       );
 }
 
+/// „Man kann auch sagen …" — eine Variante, die die Wirtin in der
+/// Nachbesprechung nennt (Spec Café-Nachbesprechung §3.3/§4). Wissen am
+/// eingeführten Wort, NIE ein eigenes Item: keine Karteikarte, nie abgefragt.
+class DebriefVariant {
+  final String form;
+  final String reading;
+  final String meaning;
+  final String? note;
+
+  const DebriefVariant({
+    required this.form,
+    required this.reading,
+    required this.meaning,
+    this.note,
+  });
+
+  factory DebriefVariant.fromJson(Map<String, dynamic> j) => DebriefVariant(
+        form: j['form'] as String,
+        reading: j['reading'] as String? ?? j['form'] as String,
+        meaning: j['meaning'] as String,
+        note: j['note'] as String?,
+      );
+}
+
+/// Der Erklärungsblock der Wirtin zu einem Budget-Item (Spec §5.1):
+/// Gebrauch in ein bis zwei Sätzen plus höchstens zwei Varianten.
+class DebriefNote {
+  final String usage;
+  final List<DebriefVariant> variants;
+
+  const DebriefNote({required this.usage, this.variants = const []});
+
+  factory DebriefNote.fromJson(Map<String, dynamic> j) => DebriefNote(
+        usage: j['usage'] as String,
+        variants: [
+          for (final v in (j['variants'] as List? ?? const []))
+            DebriefVariant.fromJson(v as Map<String, dynamic>),
+        ],
+      );
+}
+
 class Episode {
   final String id;
   final String seasonId;
@@ -262,6 +303,11 @@ class Episode {
   /// Deutscher Erzählhaken der Endkarte (§2.6).
   final String? outro;
 
+  /// Erklärungsblöcke der Wirtin je Budget-Item-Id (Spec Café-Nachbesprechung
+  /// §5.1). Optional: fehlt der Block, zeigt die Karte nur Wort, Lesung,
+  /// Bedeutung und die Stelle in der Folge.
+  final Map<String, DebriefNote> debrief;
+
   const Episode({
     required this.id,
     required this.seasonId,
@@ -273,6 +319,7 @@ class Episode {
     required this.pages,
     this.intro,
     this.outro,
+    this.debrief = const {},
   });
 
   factory Episode.fromJson(Map<String, dynamic> j) => Episode(
@@ -289,6 +336,11 @@ class Episode {
         ],
         intro: j['intro'] as String?,
         outro: j['outro'] as String?,
+        debrief: {
+          for (final e in ((j['debrief'] as Map?) ?? const {}).entries)
+            e.key as String:
+                DebriefNote.fromJson(e.value as Map<String, dynamic>),
+        },
       );
 
   /// All panels across all pages, in reading order.
