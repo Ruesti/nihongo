@@ -152,9 +152,14 @@ StoryBubble(speakerId: 'protagonist', text: '…', tokens: [],
 - **Reader:** Blasen ohne Tokens und ohne `audioRef` werden nicht tippbar gemacht
   (heute landen tokenlose Blasen im Fallback-Fuß; die „…“-Blase mit Tippfläche wird
   schlicht übersprungen).
-- **Layout-Datei** (`tool/comic/folge01_layout.json`): Die Blase bekommt `"stumm":
-  true`; `letter_folge01.py` lettert „…“ in Blasenform, `gen_layout_dart.py` exportiert
-  ihre Tippfläche wie jede andere. INV-14 (eine Quelle) gilt unverändert.
+- **Layout-Datei** (`tool/comic/folge01_layout.json`): Die stumme Blase ist eine
+  gewöhnliche Blase mit dem Text „…“; das ist zugleich ihre Markierung (wie
+  `StoryBubble.isSilence` in der App). `letter_folge01.py` lettert sie wie jede
+  andere, `gen_layout_dart.py` exportiert ihre Tippfläche. INV-14 (eine Quelle)
+  gilt unverändert.
+- **INV-3 für wiederverwendete Wörter:** Tokens mit Ids früherer Folgen
+  (`priorItemIds`) sind erlaubt, ohne im Budget zu stehen; sie zählen nicht für
+  INV-4.
 
 ### 4.3 Drehbuch V3 — die Nebenfiguren tragen die Dichte
 
