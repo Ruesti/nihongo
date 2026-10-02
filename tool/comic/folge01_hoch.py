@@ -91,7 +91,7 @@ def extend(motif, strip, plan, seed, out_path):
         last = i == len(steps) - 1
         prefix = "%s_hoch" % motif if last else "%s_hochT%d" % (motif, i + 1)
         got = cc.run(cc.outpaint_graph(cur, top, 0, prompt, NEG_MANGA + NEG_HOCH_OBEN, seed + i, prefix,
-                                       feather=FEATHER_OBEN), prefix, OUT if last else TMP, "f01hoch")
+                                       feather=FEATHER_OBEN), prefix, TMP, "f01hoch")
         last_file = got[0]
         if not last:
             cur = _to_input(last_file, "hoch_%s_T%d.png" % (motif, i + 1))
@@ -118,9 +118,13 @@ def main(picks_path, overrides_path=None):
         if os.path.exists(out_path) and not opts.get("force"):
             print("SKIP", m, flush=True)
             continue
+        if opts.get("force") and os.path.exists(out_path):
+            os.remove(out_path)   # sonst bliebe nach force + ERR ein veraltetes Bild stehen, das finish stillschweigend nimmt
         plan = kg.plan_for(kerne[m])
         try:
             with Image.open(src) as raw:
+                if raw.size != kg.QUER:
+                    raise ValueError("%s: Quelle ist %s, erwartet %s (Render-Maß)" % (m, raw.size, kg.QUER))
                 strip = strip_image(raw.convert("RGB"), plan)
             if plan["mode"] == "crop":
                 print("CROP", m, plan["x0"], plan["x1"], flush=True)

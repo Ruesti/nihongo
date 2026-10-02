@@ -146,7 +146,7 @@ ssh pc 'setsid nohup sh ~/f01tool/run_hoch.sh > ~/comfy_f01/hoch.log 2>&1 </dev/
 Marken: `CROP/EXTEND/OK/SKIP/ERR <motiv>`, `HOCH_DONE`. Ergebnis `~/comfy_f01/hoch/<motiv>_hoch.png`
 (fester Name, kein ComfyUI-Zähler) und `~/f01tool/picks_hoch.txt` (quer + hoch) für die Vergrößerung:
 ```
-scp 'pc:comfy_f01/hoch/*_hoch.png' build/f01_hoch/ ; scp pc:f01tool/picks_hoch.txt build/f01_hoch/
+mkdir -p build/f01_hoch ; scp 'pc:comfy_f01/hoch/*_hoch.png' build/f01_hoch/ ; scp pc:f01tool/picks_hoch.txt build/f01_hoch/
 scp build/f01_hoch/picks_hoch.txt pc:f01tool/ ; ssh pc 'cd ~/f01tool && python3 folge01_finish.py picks_hoch.txt'
 scp 'pc:comfy_f01/final/*_hoch.jpg' build/f01_raw/
 python3 tool/comic/check_bars.py build/f01_raw && python3 tool/comic/check_kern.py build/f01_raw   # INV-17

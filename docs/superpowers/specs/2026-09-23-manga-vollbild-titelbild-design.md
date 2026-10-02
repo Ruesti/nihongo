@@ -326,7 +326,7 @@ Befunde in §12.6).
      Fenster mittig über dem Kern, an den Bildrand geklemmt.
   2. **Kern breiter als das Fenster** → der Kernstreifen (volle Höhe, volle
      Kernbreite) wird auf 928 px Breite verkleinert und oben/unten vom Modell
-     im Hausstil **verlängert** (§12.4). Der Kern bleibt dabei pixelgleich.
+     im Hausstil **verlängert** (§12.4). Der Kern bleibt dabei inhaltlich unverändert; er durchläuft nur die Bildkodierung des Modells (VAE-Rundreise je Pass), was `check_kern.py` als Abweichung von ≈ 1–2 misst (Beschnitt ≈ 0,5, Grenze 10).
 - Reaktionsbilder (p02/p05/p08) entstehen wie bisher als getönte Variante des
   geletterten Bildes, also automatisch auch hoch.
 
@@ -402,7 +402,7 @@ bildschirmfüllend; nur die Dateien und die Hoch-Tippflächen (generiert) änder
 sich. Invarianten INV-14/15/16 gelten unverändert.
 
 **INV-17 Hoch und quer zeigen dieselbe Szene.** Der Kern des Hochbilds ist
-(bis auf Skalierung) pixelgleich mit dem Kern des Querbilds; `check_kern.py`
+(bis auf Skalierung und die VAE-Rundreise des Rand-Ausmalens) pixelgleich mit dem Kern des Querbilds; `check_kern.py`
 erzwingt das vor dem Lettering.
 
 ### 12.6 Spike-Befunde (30.9.), damit niemand die Fallen neu entdeckt

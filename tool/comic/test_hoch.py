@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Aufruf: cd tool/comic && python3 -m unittest test_hoch (ohne Box: cc.run wird ersetzt)"""
+import contextlib
+import io
 import json
 import os
 import tempfile
@@ -133,6 +135,30 @@ class Main(Base):
             self.assertIn("human figure", c[4])
         with Image.open(os.path.join(fh.OUT, "p05_hoch.png")) as im:
             self.assertEqual(im.size, (928, 1664))
+        self.assertEqual(sorted(os.listdir(fh.OUT)), ["%s_hoch.png" % m for m in sorted(MOTIFS)])  # nur feste Namen in OUT
+
+    def test_force_removes_stale_output_before_rendering(self):
+        fh.main(self.picks)                                   # p05 liegt
+        stale = os.path.join(fh.OUT, "p05_hoch.png")
+        self.assertTrue(os.path.exists(stale))
+
+        def failing_run(graph, prefix, out_dir, client_id="x"):
+            raise RuntimeError("Box weg")
+        cc.run = failing_run
+        ov = os.path.join(self.d, "ov.txt")
+        with open(ov, "w", encoding="utf-8") as f:
+            f.write("p05_hoch force\n")
+        fh.main(self.picks, ov)
+        self.assertFalse(os.path.exists(stale))               # altes Bild weg, finish meldet FEHLT statt Veraltetes zu nehmen
+
+    def test_wrong_source_size_is_err_not_silent_crop(self):
+        gradient(1920, 1072).save(self.quer["p03"])          # Auslieferungsgröße statt Render-Maß
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            fh.main(self.picks)
+        self.assertIn("ERR p03", buf.getvalue())
+        self.assertIn("1664", buf.getvalue())
+        self.assertFalse(os.path.exists(os.path.join(fh.OUT, "p03_hoch.png")))
 
     def test_main_skips_existing_unless_force(self):
         fh.main(self.picks)
