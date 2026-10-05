@@ -188,6 +188,7 @@ Prüfregeln von `check_layout` (alle Meldungen werden gesammelt, dann bricht das
   vom Oval zu diesem Bildrand; der Keil wird wie die Ellipse auf `GESICHT VERDECKT`, `ÜBERLAGERUNG`
   und `SICHERE ZONE` (inkl. Bildrand) geprüft, ein unbekannter Wert meldet `ZEIGER`. Die Tippfläche
   bleibt das Oval-Rechteck. Pflicht für jede Blase, deren Sprecher nicht im Bild ist.
+- Stumme Blase: Text `…`, keine Tokens; Platz neben Mira, Breite ≥ 0.08 (Spec Mira schweigt §4.2).
 - `KLEINSCHRIFT` — die größte passende Schrift liegt unter der Mindestgröße (quer 34 px auf 1920
   breit, hoch 30 px auf 1080 breit). Abhilfe: Blase im Layout vergrößern oder für lange Aufzählungen
   `"lines": 4` setzen — nie die Schrift verkleinern.
