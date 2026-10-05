@@ -70,6 +70,64 @@ class CheckLayout(unittest.TestCase):
         self.assertEqual(lf.out_name("p02", "hoch", reaction=True), "p02_reaction_hoch.jpg")
 
 
+class OffTail(unittest.TestCase):
+    """Off-Zeiger: Keil vom Ovalrand zum Bildrand, wird wie die Ellipse geprueft."""
+
+    def off_layout(self, rect, off, face=None, fmt="quer"):
+        lay = layout(rect, face=face, fmt=fmt)
+        lay["panels"]["p01"][fmt]["bubbles"][0]["off"] = off
+        return lay
+
+    def test_tail_points_toward_edge(self):
+        box = (100.0, 200.0, 500.0, 300.0)   # Oval 400 x 100, Mitte (300, 250)
+        tips = {off: lf.tail_points(box, off)[2] for off in lf.OFF_DIRS}
+        self.assertEqual(tips["right"], (550.0, 250.0))   # 0,5 x Hoehe hinter dem Ovalrand
+        self.assertEqual(tips["left"], (50.0, 250.0))
+        self.assertEqual(tips["bottom"], (300.0, 350.0))
+        self.assertEqual(tips["top"], (300.0, 150.0))
+        for off in lf.OFF_DIRS:   # Ansatz liegt im Oval → nahtlose Form
+            for px, py in lf.tail_points(box, off)[:2]:
+                self.assertLess(((px - 300) / 200) ** 2 + ((py - 250) / 50) ** 2, 1.0, off)
+
+    def test_tail_clear_is_ok(self):
+        self.assertEqual(lf.check_layout(self.off_layout([0.2, 0.2, 0.3, 0.1], "left")), [])
+
+    def test_tail_over_face_is_violation(self):
+        # Gesicht rechts neben dem Oval: Oval frei, nur der Zeiger nach rechts trifft es
+        rect, face = [0.2, 0.2, 0.3, 0.1], [0.51, 0.24, 0.03, 0.02]
+        self.assertEqual(lf.check_layout(layout(rect, face=face)), [])
+        msgs = lf.check_layout(self.off_layout(rect, "right", face=face))
+        self.assertEqual(len(msgs), 1, msgs)
+        self.assertTrue(msgs[0].startswith("GESICHT VERDECKT p01 quer") and "Zeiger=right" in msgs[0], msgs)
+        self.assertEqual(lf.check_layout(self.off_layout(rect, "left", face=face)), [])
+
+    def test_tail_over_nogo_and_out_of_safe_zone(self):
+        lay = self.off_layout([0.2, 0.3, 0.3, 0.1], "top")
+        lay["panels"]["p01"]["quer"]["nogo"] = [[0.0, 0.0, 1.0, 0.27]]
+        self.assertTrue(any(m.startswith("ÜBERLAGERUNG") and "Zeiger=top" in m for m in lf.check_layout(lay)))
+        msgs = lf.check_layout(self.off_layout([0.2, 0.11, 0.3, 0.1], "top"))
+        self.assertTrue(any(m.startswith("SICHERE ZONE") and "Zeiger=top" in m for m in msgs), msgs)
+        msgs = lf.check_layout(self.off_layout([0.12, 0.3, 0.3, 0.06], "left", fmt="hoch"))
+        self.assertTrue(any(m.startswith("SICHERE ZONE") and "Zeiger=left" in m for m in msgs), msgs)
+
+    def test_bad_direction(self):
+        msgs = lf.check_layout(self.off_layout([0.2, 0.2, 0.3, 0.1], "up"))
+        self.assertTrue(msgs and msgs[0].startswith("ZEIGER p01 quer"), msgs)
+
+    def test_tail_drawn_only_with_off(self):
+        from PIL import Image
+        rect = [0.2, 0.3, 0.3, 0.2]
+        plain = lf.letter(Image.new("RGB", (1600, 800), (90, 90, 90)), [{"text": "…", "rect": rect}])
+        tailed = lf.letter(Image.new("RGB", (1600, 800), (90, 90, 90)), [{"text": "…", "rect": rect, "off": "right"}])
+        # Oval x 320–800, y 240–400 (Mitte y 320, Hoehe 160 → Zeiger 80 px bis x 880)
+        self.assertEqual(plain.getpixel((830, 320)), (90, 90, 90))
+        self.assertEqual(tailed.getpixel((830, 320)), (255, 255, 255))
+        self.assertEqual(tailed.getpixel((890, 320)), (90, 90, 90))
+        # keine Naht: an der Ovalkontur (x 797) auf Mittelhoehe ist es mit Zeiger weiss
+        self.assertEqual(plain.getpixel((797, 320)), (0, 0, 0))
+        self.assertEqual(tailed.getpixel((797, 320)), (255, 255, 255))
+
+
 class Wrap(unittest.TestCase):
     def test_short_stays_one_line(self):
         self.assertEqual(lf.wrap("みなみまち駅"), "みなみまち駅")

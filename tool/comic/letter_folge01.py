@@ -10,6 +10,12 @@ ueber das Bild legt (Erzaehlkasten oben, Mitmach-/Reaktionszeile unten). Eine Bl
 eine davon schneidet → ÜBERLAGERUNG (gleiche Ellipsen-Rechteck-Mathematik wie bei Gesichtern).
 Mindest-Schrift: faellt fit_font unter MIN_FONT (quer 34 px auf 1920 breit, hoch 30 px auf 1080
 breit) → KLEINSCHRIFT; Abhilfe ist immer eine groessere Blase im Layout, nie kleinere Schrift.
+Off-Zeiger: eine Blase mit "off": "left"|"right"|"top"|"bottom" spricht von ausserhalb des Bildes
+(Sprecher steht in dieser Richtung hinter dem Bildrand) und bekommt einen kurzen, spitz zulaufenden
+Zeiger (0,5 × Blasenhoehe lang) vom Ovalrand zu diesem Bildrand — gleiche Fuellung/Kontur wie das Oval.
+Der Zeiger-Keil wird wie die Ellipse auf Gesichter (GESICHT VERDECKT), Nogo-Zonen (ÜBERLAGERUNG),
+sichere Zone und Bildrand (SICHERE ZONE) geprueft; die Tippflaeche bleibt das Oval-Rechteck.
+Blasen ohne "off" werden unveraendert (byte-gleich) gezeichnet.
 Die Reihenfolge der Blasen je Panel und Format in folge01_layout.json ist verbindlich und muss der
 Reihenfolge in lib/features/story/episodes/folge_01_regen.dart entsprechen (geprueft von
 test/features/story/folge_01_layout_test.dart).
@@ -39,6 +45,62 @@ def _overlaps(slot, face):
     px = min(max(cx, fx), fx + fw)
     py = min(max(cy, fy), fy + fh)
     return ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 <= 1.0
+
+
+def _tri_hits_rect(tri, rect):
+    """Schneidet das Dreieck tri [(x,y)*3] das Rechteck rect [x,y,w,h]? (Trennachsen-Test)"""
+    rx, ry, rw, rh = rect
+    corners = [(rx, ry), (rx + rw, ry), (rx + rw, ry + rh), (rx, ry + rh)]
+    axes = [(1.0, 0.0), (0.0, 1.0)]
+    for i in range(3):
+        (ax, ay), (bx, by) = tri[i], tri[(i + 1) % 3]
+        axes.append((by - ay, ax - bx))
+    for nx, ny in axes:
+        t = [px * nx + py * ny for px, py in tri]
+        c = [px * nx + py * ny for px, py in corners]
+        if max(t) < min(c) or max(c) < min(t):
+            return False
+    return True
+
+
+OFF_DIRS = ("left", "right", "top", "bottom")
+TAIL_LEN = 0.5    # Zeigerlaenge ab Ovalrand, Anteil der Blasenhoehe
+TAIL_BASE = 0.4   # Zeigerbreite am Ansatz, Anteil der Blasenhoehe
+TAIL_SINK = 0.3   # Ansatz so weit (Anteil der kleinen Halbachse) ins Oval versenkt -> nahtloser Uebergang
+
+
+def tail_points(box, off):
+    """Zeiger-Keil einer Off-Blase in Pixeln: [Ansatz1, Ansatz2, Spitze]. box = (x0, y0, x1, y1) des Ovals."""
+    x0, y0, x1, y1 = box
+    cx, cy, rx, ry = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2
+    h = y1 - y0
+    length, hb, sink = TAIL_LEN * h, TAIL_BASE * h / 2, TAIL_SINK * min(rx, ry)
+    if off in ("left", "right"):
+        s = 1 if off == "right" else -1
+        bx = cx + s * (rx * math.sqrt(1 - (hb / ry) ** 2) - sink)
+        return [(bx, cy - hb), (bx, cy + hb), (cx + s * (rx + length), cy)]
+    s = 1 if off == "bottom" else -1
+    by = cy + s * (ry * math.sqrt(1 - min(1.0, hb / rx) ** 2) - sink)
+    return [(cx - hb, by), (cx + hb, by), (cx, cy + s * (ry + length))]
+
+
+def tail_norm(b, W, H):
+    """Zeiger-Keil bildnormiert (fuer die Pruefung) oder None ohne "off"."""
+    if not b.get("off"):
+        return None
+    x, y, w, h = b["rect"]
+    return [(px / W, py / H) for px, py in tail_points((x * W, y * H, (x + w) * W, (y + h) * H), b["off"])]
+
+
+def _shrink(tri, d):
+    """Dreieck um d Pixel nach innen versetzt (Streckung um den Inkreismittelpunkt)."""
+    (ax, ay), (bx, by), (cx, cy) = tri
+    a, b, c = math.dist((bx, by), (cx, cy)), math.dist((ax, ay), (cx, cy)), math.dist((ax, ay), (bx, by))
+    p = a + b + c
+    ix, iy = (a * ax + b * bx + c * cx) / p, (a * ay + b * by + c * cy) / p
+    area = abs((bx - ax) * (cy - ay) - (cx - ax) * (by - ay)) / 2
+    k = max(0.0, 1 - d / (2 * area / p))
+    return [(ix + (px - ix) * k, iy + (py - iy) * k) for px, py in tri]
 
 
 def _in_safe_zone(rect, fmt, safe):
@@ -72,6 +134,21 @@ def check_layout(layout):
                         msgs.append("ÜBERLAGERUNG %s %s %r rect=%s nogo=%s" % (pid, fmt, b["text"], b["rect"], zone))
                 if not _in_safe_zone(b["rect"], fmt, safe):
                     msgs.append("SICHERE ZONE %s %s %r rect=%s" % (pid, fmt, b["text"], b["rect"]))
+                if "off" in b and b["off"] not in OFF_DIRS:
+                    msgs.append("ZEIGER %s %s %r off=%r (erlaubt: %s)" % (pid, fmt, b["text"], b["off"], "/".join(OFF_DIRS)))
+                elif b.get("off"):
+                    tri = tail_norm(b, W, H)
+                    xs, ys = [p[0] for p in tri], [p[1] for p in tri]
+                    bbox = [min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys)]
+                    for face in spec.get("faces", []):
+                        if _tri_hits_rect(tri, face):
+                            msgs.append("GESICHT VERDECKT %s %s %r Zeiger=%s face=%s" % (pid, fmt, b["text"], b["off"], face))
+                    for zone in spec.get("nogo", []):
+                        if _tri_hits_rect(tri, zone):
+                            msgs.append("ÜBERLAGERUNG %s %s %r Zeiger=%s nogo=%s" % (pid, fmt, b["text"], b["off"], zone))
+                    if not _in_safe_zone(bbox, fmt, safe) or min(xs) < 0 or min(ys) < 0 or max(xs) > 1 or max(ys) > 1:
+                        msgs.append("SICHERE ZONE %s %s %r Zeiger=%s bbox=%s" % (pid, fmt, b["text"], b["off"],
+                                                                              [round(v, 4) for v in bbox]))
                 size = bubble_font(draw, b, W, H)[1].size
                 if size < MIN_FONT[fmt]:
                     msgs.append("KLEINSCHRIFT %s %s %s %dpx" % (pid, fmt, b["text"], size))
@@ -136,7 +213,15 @@ def letter(img, bubbles):
     for b in bubbles:
         furi = b.get("furigana")
         box, font, reserve, shown = bubble_font(draw, b, W, H)
-        draw.ellipse(box, fill="white", outline="black", width=4)
+        if b.get("off"):
+            # Zeiger + Oval als eine Form: schwarzer Keil, weisses Oval mit Kontur darueber,
+            # dann der um die Konturbreite geschrumpfte weisse Keil (loescht die Naht am Ansatz).
+            tri = tail_points(box, b["off"])
+            draw.polygon(tri, fill="black")
+            draw.ellipse(box, fill="white", outline="black", width=4)
+            draw.polygon(_shrink(tri, 4), fill="white")
+        else:
+            draw.ellipse(box, fill="white", outline="black", width=4)
         l, t, r, bb = draw.multiline_textbbox((0, 0), shown, font=font)
         cx = (box[0] + box[2]) / 2 - (r - l) / 2 - l
         cy = (box[1] + box[3]) / 2 - (bb - t) / 2 - t + reserve / 2

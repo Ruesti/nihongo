@@ -183,6 +183,11 @@ Prüfregeln von `check_layout` (alle Meldungen werden gesammelt, dann bricht das
   - Mitmach-/Reaktionszeile unten (Panels mit `interactions`, p02/p05/p08): hoch y ab 0,86, quer y ab
     0,80, volle Breite.
   Ändern sich Erzähltexte oder Overlay-Layout in der App, die Zonen neu messen.
+- Off-Zeiger: `"off": "left"|"right"|"top"|"bottom"` an einer Blase heißt „Sprecher steht außerhalb
+  des Bildes in dieser Richtung" — das Lettering zeichnet dann einen kurzen Keil (0,5 × Blasenhöhe)
+  vom Oval zu diesem Bildrand; der Keil wird wie die Ellipse auf `GESICHT VERDECKT`, `ÜBERLAGERUNG`
+  und `SICHERE ZONE` (inkl. Bildrand) geprüft, ein unbekannter Wert meldet `ZEIGER`. Die Tippfläche
+  bleibt das Oval-Rechteck. Pflicht für jede Blase, deren Sprecher nicht im Bild ist.
 - `KLEINSCHRIFT` — die größte passende Schrift liegt unter der Mindestgröße (quer 34 px auf 1920
   breit, hoch 30 px auf 1080 breit). Abhilfe: Blase im Layout vergrößern oder für lange Aufzählungen
   `"lines": 4` setzen — nie die Schrift verkleinern.
