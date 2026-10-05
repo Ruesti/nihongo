@@ -236,7 +236,8 @@ const Map<String, dynamic> pilot01RegenJson = {
       ],
     },
     'lex_ja_hontou': {
-      'usage': '„wirklich?" — als Frage, wenn man etwas kaum glauben kann.',
+      'usage':
+          '„wirklich" — hier als Beteuerung: ほんとう、ほんとう heißt „wirklich, ganz ehrlich". Als Frage ほんとう？ heißt es „wirklich?".',
       'variants': [
         {
           'form': 'ほんとうに',
