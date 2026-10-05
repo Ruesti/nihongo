@@ -171,10 +171,10 @@ der Blasen in `folge01_layout.json` muss der in `folge_01_regen.dart` entspreche
 
 Prüfregeln von `check_layout` (alle Meldungen werden gesammelt, dann bricht das Lettering ab):
 
-- `GESICHT VERDECKT` — Blasen-Ellipse schneidet ein `faces`-Rechteck.
+- `GESICHT VERDECKT` — Blasen-Ellipse (bei Schildern das volle Rechteck) schneidet ein `faces`-Rechteck.
 - `SICHERE ZONE` — Blase außerhalb des Bereichs, den das Cover-Beschneiden am Telefon stehen lässt
   (quer: y in 0,1–0,9; hoch: x in 0,1–0,9).
-- `ÜBERLAGERUNG` — Blasen-Ellipse schneidet ein `nogo`-Rechteck. `nogo` (optional je Panel/Format,
+- `ÜBERLAGERUNG` — Blasen-Ellipse (bei Schildern das volle Rechteck) schneidet ein `nogo`-Rechteck. `nogo` (optional je Panel/Format,
   bildnormiert `[x, y, w, h]`) sind die Flächen, die die App über das Bild legt, gemessen am
   S23-Emulator (1080×2340, Dichte 2,625) im echten Vollbild:
   - Erzählkasten oben (jedes Panel mit `thoughts`): hoch volle Breite, y 0 bis Kastenunterkante +
@@ -182,13 +182,23 @@ Prüfregeln von `check_layout` (alle Meldungen werden gesammelt, dann bricht das
     der Schirmbreite gedeckelt, plus Kamera-Ausschnitt/Zurück-Chip), y 0 bis 0,26 … 0,42.
   - Mitmach-/Reaktionszeile unten (Panels mit `interactions`, p02/p05/p08): hoch y ab 0,86, quer y ab
     0,80, volle Breite.
-  Ändern sich Erzähltexte oder Overlay-Layout in der App, die Zonen neu messen.
-- Off-Zeiger: `"off": "left"|"right"|"top"|"bottom"` an einer Blase heißt „Sprecher steht außerhalb
-  des Bildes in dieser Richtung" — das Lettering zeichnet dann einen kurzen Keil (0,5 × Blasenhöhe)
-  vom Oval zu diesem Bildrand; der Keil wird wie die Ellipse auf `GESICHT VERDECKT`, `ÜBERLAGERUNG`
-  und `SICHERE ZONE` (inkl. Bildrand) geprüft, ein unbekannter Wert meldet `ZEIGER`. Die Tippfläche
-  bleibt das Oval-Rechteck. Pflicht für jede Blase, deren Sprecher nicht im Bild ist.
-- Stumme Blase: Text `…`, keine Tokens; Platz neben Mira, Breite ≥ 0.08 (Spec Mira schweigt §4.2).
+  Ändern sich Erzähltexte oder Overlay-Layout in der App, die Zonen neu messen. Stand 5.10.
+  (Erzähltexte der stummen Momente): Kastenunterkante per Widget-Test mit echtem Roboto auf
+  S23-Maß (411×891 dp bzw. quer 891×411, Dichte 2,625) gemessen, dann der bisherige Abstand zur
+  Emulator-Messung aufgeschlagen — hoch +0,084, quer +0,041 (bildnormiert, quer nach Cover-Beschnitt).
+  Ergebnis: hoch p03 0,21 · p04/p06/p07 0,23 · p05 0,23 · p08 0,27 · p09 0,25 · p10 0,27;
+  quer p03/p04/p05/p06 0,30 · p07–p10 0,35 (p01/p02 unverändert).
+- Schilder: `"form": "schild"` (Stationsschild, Ladenschild, Caféschild) letters die Blase als
+  rechteckiges Schild-Etikett — gerade Kanten, dünne dunkle Kontur, helles Schildweiß, Eckradius
+  6 px — statt als Oval; Schrift, Einpassung und Furigana wie beim Oval. Gesicht und Nogo-Zonen
+  werden gegen das volle Rechteck geprüft; ein anderer Wert als `oval`/`schild` meldet `FORM`.
+  Die Tippfläche ist wie immer `rect`.
+- Keine Zeiger (Uli, 5.10.): Spricht jemand von außerhalb des Bildes, steht seine Blase am Bildrand
+  auf seiner Seite und weg von Miras Gesicht und Körper; der Erzähltext nennt ihn („Hinter ihr ruft
+  der Ladenbesitzer."). Keine Blase eines anderen Sprechers direkt neben Miras Gesicht, sonst liest
+  man sie als ihre.
+- Mira hat keine Blase, auch keine „…"-Blase: Ihr Schweigen steht im Erzähltext (Spec Mira
+  schweigt §4, Änderung 5.10.).
 - `KLEINSCHRIFT` — die größte passende Schrift liegt unter der Mindestgröße (quer 34 px auf 1920
   breit, hoch 30 px auf 1080 breit). Abhilfe: Blase im Layout vergrößern oder für lange Aufzählungen
   `"lines": 4` setzen — nie die Schrift verkleinern.

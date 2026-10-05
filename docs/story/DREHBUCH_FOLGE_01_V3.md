@@ -7,9 +7,14 @@ klüger als die Geschichte erlaubt. V3 setzt die **Mira-Regel** um
 (INV-18: Mira spricht nur Wörter aus früheren Folgen; INV-19: ein
 Sprechmoment spricht nur nach, was vorher eine andere Figur gesagt hat).
 In Folge 01 sagt Mira daher kein Wort Japanisch. Wo sie etwas sagen will
-und nicht kann, steht eine **„…“-Blase** — ein stummer Moment, den das Café
-nachbereitet („Was hättest du sagen können?"). Die Nebenfiguren reden dafür
-mehr. Spec: `docs/superpowers/specs/2026-10-02-mira-schweigt-erzaehl-mal-cafe-manga-design.md`
+und nicht kann, ist ein **stummer Moment**, den das Café nachbereitet („Was
+hättest du sagen können?"). Die Nebenfiguren reden dafür mehr.
+
+**Änderung 5.10. (Ulis Gerätesicht):** Keine „…“-Blase mehr — Miras Schweigen
+steht im Erzähltext (je ein kurzer Satz in P4, P6, P7, P10). Schilder werden
+als Kasten gelettert, nicht als Sprechblase. Keine Zeiger an Blasen von
+Sprechern außerhalb des Bildes; der Erzähltext nennt sie (P3, P8). P10 und
+Endkarte: „ein Zeichen und acht Wörter“, passend zu P8. Spec: `docs/superpowers/specs/2026-10-02-mira-schweigt-erzaehl-mal-cafe-manga-design.md`
 (§3, §4). V2 bleibt unverändert als Protokoll
 (`docs/story/DREHBUCH_FOLGE_01_V2.md`). Die Bilder sind dieselben; nur das
 Lettering ist neu.
@@ -37,10 +42,14 @@ der Situation, nie umgekehrt.
   Momente) = 50. Jedes Wort wird mindestens zweimal gehört oder geübt.
 - **Mira-Regel (INV-18/19):** Mira spricht in Folge N nur Wörter aus
   Folgen vor N; ein Sprechmoment spricht nur nach, was vorher eine andere
-  Figur gesagt hat. Wo sie etwas sagen will und nicht kann: „…“-Blase an
-  ihrer Position (inert im Reader), höchstens eine je Panel.
+  Figur gesagt hat. Wo sie etwas sagen will und nicht kann: ein stummer
+  Moment, erzählt im deutschen Gedankenkasten (keine Blase), höchstens einer
+  je Panel.
 - **Kanji on the fly:** Kanji kommen als Schilder in der Welt, mit kleiner
   Kana-Lesehilfe darüber (Furigana) — 駅 am Bahnhof, 傘 am Schirmladen.
+  Schilder sind im Bild ein rechteckiger Schild-Kasten, keine Sprechblase.
+- **Sprecher außerhalb des Bildes:** Blase am Bildrand auf seiner Seite, kein
+  Zeiger; der Erzähltext nennt ihn.
 - Deutsch = Erzählstimme (Kästen: Kontext, Innenleben, Fragen).
   Japanisch = Welt (Blasen, Schilder, der Zettel).
 - Jede Interaktion (Antippen, Sprechen, Nachzeichnen) hat einen Grund in
@@ -104,7 +113,8 @@ holt."* (Graue Vorlage in der Zeichenfläche.)
 Vordach.
 **Welt:** Passant A drängelt vorbei: 「すみません！あめ！あめ！」
 Passantin B, unterm Vordach, lachend: 「ありがとう！あめ、あめ… さむい、さむい」
-**Erzählkasten:** *„Ein Wort fliegt an ihr vorbei. Alle sagen es heute."*
+**Erzählkasten:** *„Passanten drängeln sich unters Vordach. Ein Wort fliegt
+an ihr vorbei. Alle sagen es heute."*
 **Gedanke:** *„Ame. …Der Regen?"*
 **Interaktion:** Blasen antippbar (anhören + nachschlagen) — der erste
 Worterwerb passiert, wie er im echten Leben passiert: durch Wiederholung
@@ -117,10 +127,12 @@ halb tot: drei von zehn Läden offen. Vor einem Laden ein Korb voller
 Schirme, darüber ein Schild: 「傘」 (Kanji, Furigana かさ).
 **Erzählkasten:** *„Drinnen: trocken. Und zum ersten Mal ein Schild, das
 sich selbst erklärt."*
-**Welt:** Schild 「傘」 (かさ) über dem Schirmkorb (antippbar). Mira: „…“
+**Welt:** Schild 「傘」 (かさ) über dem Schirmkorb (antippbar).
 **Gedanke:** *„Kasa. Schirme. Das ist ja fast fair."*
-**STUMMER MOMENT (Ziel あめ):** Die „…“-Blase ist inert (kein Tipp, kein
-Vorlesen). Wirtin-Frage im Café: *„Unter dem Dach, als du das Schild
+**Erzählkasten:** *„Das Wort von der Straße liegt ihr auf der Zunge. Es
+bleibt dort."*
+**STUMMER MOMENT (Ziel あめ):** Keine Blase; der Erzählkasten trägt den
+Moment. Wirtin-Frage im Café: *„Unter dem Dach, als du das Schild
 gesehen hast und das Wort von der Straße noch im Ohr hattest. Was hättest
 du leise sagen können?"*
 
@@ -145,7 +157,7 @@ und es funktioniert."*
 **Bild:** Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn fachmännisch.
 **Welt:** Er: 「これ、こわれた」 (zeigt auf die Streben) — 「はい、こわれた、
 こわれた。だめ、だめ」 (kopfschüttelnd, fast zärtlich).
-Mira will etwas sagen — „…“
+**Erzählkasten:** *„Mira will etwas sagen. Sie bringt es nicht heraus."*
 **Gedanke:** *„Kowareta. Kaputt. Wie ich das erste Wort meiner Großmutter
 lerne: über einen kaputten Schirm."*
 **STUMMER MOMENT (Ziel こわれた):** Wirtin-Frage im Café: *„Er hat dir den
@@ -155,10 +167,11 @@ können?"*
 ### P7 — Das Geschenk
 **Bild:** Er greift in den Korb, hält ihr einen Schirm hin — den
 schlichtesten, aber heilen.
-**Welt:** Er: 「はい。かさ。どうぞ」 — Mira greift zum Geldbeutel: „…“ —
+**Welt:** Er: 「はい。かさ。どうぞ」 — Mira greift zum Geldbeutel, stumm —
 Er sieht es: 「いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！」 — Dann:
 「ほんとう、ほんとう。だいじょうぶ、だいじょうぶ」
 **Gedanke:** *„Was kostet der? Wie fragt man das?"*
+**Erzählkasten:** *„Sie bleibt stumm."*
 **Erzählkasten:** *„Sie hat nichts bestellt. Sie hat nichts bezahlt. Er
 gibt ihr den Schirm einfach so."*
 **STUMMER MOMENT (Ziel いくら):** Wirtin-Frage im Café: *„Als du zum
@@ -175,7 +188,9 @@ jedem Film. Jetzt zählt es zum ersten Mal."*
 **Reaktion bei Erfolg:** Er winkt ab, lacht: 「はいはい」 — Erzählzeile:
 *„Ihr zweites Wort. Es wird nicht das letzte sein."*
 **Erzählkasten (statt des V2-Murmelns):** *„Acht Wörter heute. Sie zählt
-sie an den Fingern ab, auf dem Weg die Straße hinunter."*
+sie an den Fingern ab, auf dem Weg die Straße hinunter. Hinter ihr ruft der
+Ladenbesitzer."* (Der Ladenbesitzer ist nicht im Bild; seine Blase 「はいはい」
+steht am linken Bildrand.)
 
 ### P9 — Das Zeichen
 **Bild:** Weiter hinten in der Shotengai: ein kleines Café. Auf dem
@@ -191,10 +206,11 @@ der Straße, zu der ihre Großmutter sie geschickt hat."*
 ### P10 — Vor der Tür (Schluss)
 **Bild:** Mira vor der Cafétür, die Hand am Griff, drinnen warmes Licht,
 eine Silhouette hinter dem Tresen.
-**Welt:** Mira, die Hand am Griff: „…“
+**Welt:** Mira, die Hand am Griff (keine Blase).
 **Gedanke:** *„Was sagt man, wenn man irgendwo hereinkommt?"*
+**Erzählkasten:** *„Sie bleibt stumm vor der Tür."*
 **Erzählkasten (Endkarten-Haken):** *„Auf dem Zettel standen einmal drei
-Zeilen. Mira kennt jetzt: ein Zeichen und vier Wörter. Hinter dieser
+Zeilen. Mira kennt jetzt: ein Zeichen und acht Wörter. Hinter dieser
 Tür fängt der Rest an."*
 **STUMMER MOMENT (Ziel すみません):** Wirtin-Frage im Café: *„Und dann
 standest du vor meiner Tür, die Hand am Griff. Was sagt man, wenn man

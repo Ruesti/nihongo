@@ -86,6 +86,8 @@ Drei Dinge, die zusammengehören:
 kleinerem Index liegt (Reihenfolge aus `EpisodeRegistry`). Außerhalb ihrer Tokens
 enthält der Blasentext keine Kana und keine Kanji; erlaubt sind „…“, Satzzeichen und
 Leerraum. Die „…“-Blase ist damit die einzige Mira-Blase der Folge 01.
+*(Seit 5.10. überholt, siehe die Änderung am Anfang von §4: Folge 01 hat gar keine
+Mira-Blase mehr, eine tokenlose Mira-Blase ist ein Verstoß.)*
 
 **INV-19 Mira spricht nur nach, was sie gehört hat.** Das Ziel eines Sprechmoments
 (`InteractionType.speak`) muss vorher in derselben Folge (frühere Panel-Nummer oder
@@ -106,6 +108,38 @@ darf. Der Serienplan (`docs/story/STAFFEL_1_DIE_ADRESSE.md`) bekommt diese Regel
 Format-Regel neben die Budgets.
 
 ## 4. Stumme Momente in der Folge
+
+> **Änderung 5.10. nach Ulis Gerätesicht: keine „…“-Blase; Schweigen im Erzähltext;
+> Schilder als Kasten; keine Off-Zeiger.**
+>
+> - **Keine „…“-Blase.** Miras Schweigen steht im deutschen Erzähltext, gerade wenn sie
+>   nicht im Bild ist. Die vier „…“-Blasen (P4, P6, P7, P10) sind aus Daten, Layout-Datei
+>   und Lettering entfernt. Jeder stumme Moment bekommt stattdessen einen kurzen Satz im
+>   Gedankenkasten: P4 *„Das Wort von der Straße liegt ihr auf der Zunge. Es bleibt
+>   dort.“*, P6 *„Mira will etwas sagen. Sie bringt es nicht heraus.“*, P7 *„Sie bleibt
+>   stumm.“*, P10 *„Sie bleibt stumm vor der Tür.“*
+> - **Daten bleiben:** die Interaktion `silent` (Ziel, `targetItemIds`, Wirtin-Frage)
+>   bleibt unverändert, das Café braucht sie.
+> - **Validator neu:** Ein Panel mit `silent` hat **keine** Mira-Blase und mindestens
+>   einen Gedankenkasten; eine Mira-Blase ohne Wörter (auch „…“) ist überall ein Verstoß
+>   („Miras Schweigen steht im Erzähltext“). Ziel im Budget/früher, irgendwo gehört,
+>   genau ein Ziel, höchstens ein stummer Moment je Panel sowie INV-18/19 gelten weiter.
+>   `StoryBubble.isSilence` und der Reader-Filter bleiben als harmloser Schutz.
+> - **Schilder als Kasten:** Schild-Texte (P1 みなみまち駅, P4 傘, P9 あめやどり) werden als
+>   rechteckiges Schild-Etikett gelettert (`"form": "schild"` in der Layout-Datei),
+>   nicht als Sprechblase.
+> - **Keine Off-Zeiger:** Das Feld `"off"` und die Zeiger sind entfernt. Blasen von
+>   Sprechern außerhalb des Bildes stehen am Bildrand auf ihrer Seite, weg von Miras
+>   Gesicht; der Erzähltext nennt sie (P3 *„Passanten drängeln sich unters Vordach.“*,
+>   P8 *„Hinter ihr ruft der Ladenbesitzer.“*).
+> - **„Acht Wörter“:** P10 und Endkarte sagen jetzt *„ein Zeichen und acht Wörter“*,
+>   passend zu P8 *„Acht Wörter heute.“*
+> - **Folge für Plan 2 „Erzähl mal“ (§5):** Das Café kann das Wort nicht mehr in Miras
+>   „…“-Blase schreiben, die gibt es nicht mehr. Die Auflösung im Szenen-Turn braucht
+>   eine neue Idee (z. B. eine Blase, die das Café selbst über das Panel legt, oder die
+>   Auflösung nur im Café-Text) — vor Plan 2 mit Uli klären.
+>
+> Der Text unten ist der ursprüngliche Stand vom 2.10.
 
 ### 4.1 Erlebnis im Reader
 
