@@ -267,10 +267,10 @@ const List<Map<String, double>> f01HitQuerP08B0 = [
 
 /// p08 hoch: はいはい
 const List<Map<String, double>> f01HitHochP08B0 = [
-  {'x': 0.17, 'y': 0.64},
-  {'x': 0.53, 'y': 0.64},
-  {'x': 0.53, 'y': 0.71},
-  {'x': 0.17, 'y': 0.71},
+  {'x': 0.165, 'y': 0.3},
+  {'x': 0.34, 'y': 0.3},
+  {'x': 0.34, 'y': 0.37},
+  {'x': 0.165, 'y': 0.37},
 ];
 
 /// p09 quer: あめやどり
