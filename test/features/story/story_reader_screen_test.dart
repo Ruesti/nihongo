@@ -469,7 +469,7 @@ void main() {
     expect(
       find.text(
         'Auf dem Zettel standen einmal drei Zeilen. Mira kennt jetzt: ein '
-        'Zeichen und vier Wörter. Hinter dieser Tür fängt der Rest an.',
+        'Zeichen und acht Wörter. Hinter dieser Tür fängt der Rest an.',
       ),
       findsOneWidget,
     );

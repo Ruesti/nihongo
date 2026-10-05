@@ -617,9 +617,10 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                 ),
               ),
               // Tippflächen der gelettertern Blasen, relativ zum Bildrechteck.
-              // Die „…“-Blase eines stummen Moments ist inert (Spec Mira
-              // schweigt §4.1): kein Vorlesen, keine Karte — der Tipp fällt
-              // zum Weiterblättern durch.
+              // Eine tokenlose „…“-Blase bleibt inert (Schutz; seit 5.10.
+              // steht Miras Schweigen im Erzähltext, Spec Mira schweigt §4):
+              // kein Vorlesen, keine Karte — der Tipp fällt zum Weiterblättern
+              // durch.
               for (var i = 0; i < panel.bubbles.length; i++)
                 if (!panel.bubbles[i].isSilence &&
                     panel.bubbles[i].hitAreaFor(shown).points.isNotEmpty)

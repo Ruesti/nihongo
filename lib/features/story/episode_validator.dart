@@ -170,10 +170,13 @@ void validateEpisode(Episode episode, {Set<String> priorItemIds = const {}}) {
     }
   }
 
-  // Stumme Momente (Spec Mira schweigt §4.2): Mira wollte etwas sagen und
-  // konnte nicht. Ein Panel mit `silent` hat genau eine „…“-Blase von Mira
-  // und genau ein Ziel; das Ziel liegt im Budget dieser oder einer früheren Folge und
-  // wird in der Folge von jemand anderem gesagt (auch nach dem Moment).
+  // Stumme Momente (Spec Mira schweigt §4.2, Änderung 5.10.): Mira wollte
+  // etwas sagen und konnte nicht. Ihr Schweigen steht im Erzähltext, nicht in
+  // einer „…“-Blase: Ein Panel mit `silent` hat keine Blase von Mira und
+  // mindestens einen Gedankenkasten; es hat genau ein Ziel, das im Budget
+  // dieser oder einer früheren Folge liegt und in der Folge von jemand
+  // anderem gesagt wird (auch nach dem Moment). Eine Mira-Blase ohne Wörter
+  // (auch „…“) ist überall ein Verstoß.
   final heardInEpisode = <String>{
     for (final p in episode.allPanels)
       for (final b in p.bubbles)
@@ -182,38 +185,27 @@ void validateEpisode(Episode episode, {Set<String> priorItemIds = const {}}) {
             if (t.itemId != null) t.itemId!,
   };
   for (final panel in episode.allPanels) {
+    for (final b in panel.bubbles) {
+      if (b.speakerId == kProtagonist && b.tokens.isEmpty) {
+        violations.add('Panel ${panel.index}: Miras Blase „${b.text}" hat '
+            'keine Wörter — Miras Schweigen steht im Erzähltext (stummer '
+            'Moment).');
+      }
+    }
     final silents =
         panel.interactions.where((i) => i.type == InteractionType.silent).toList();
-    // Nur Mira schweigt: eine „…“-Blase zählt nur, wenn sie ihr gehört.
-    for (final b in panel.bubbles) {
-      if (b.isSilence && b.speakerId != kProtagonist) {
-        violations.add('Panel ${panel.index}: „…"-Blase von „${b.speakerId}"; '
-            'schweigen kann nur Mira (stummer Moment).');
-      }
-      // Eine tokenlose Mira-Blase ist genau „…“ — keine Variante wie "..."
-      // oder „……“, die sonst als tippbare Blase durchrutschen würde.
-      if (b.speakerId == kProtagonist && b.tokens.isEmpty && !b.isSilence) {
-        violations.add('Panel ${panel.index}: Miras Blase „${b.text}" hat '
-            'keine Wörter und ist nicht genau „…" (stummer Moment).');
-      }
-    }
-    final silences = panel.bubbles
-        .where((b) => b.isSilence && b.speakerId == kProtagonist)
-        .length;
-    if (silents.isEmpty) {
-      if (silences > 0) {
-        violations.add('Panel ${panel.index}: „…"-Blase ohne Interaktion '
-            'silent (stummer Moment).');
-      }
-      continue;
-    }
+    if (silents.isEmpty) continue;
     if (silents.length > 1) {
       violations.add('Panel ${panel.index}: ${silents.length} stumme Momente; '
           'erlaubt ist einer je Panel (stummer Moment).');
     }
-    if (silences != 1) {
-      violations.add('Panel ${panel.index}: $silences „…"-Blasen; ein stummer '
-          'Moment braucht genau eine (stummer Moment).');
+    if (panel.bubbles.any((b) => b.speakerId == kProtagonist)) {
+      violations.add('Panel ${panel.index}: stummer Moment mit einer Blase von '
+          'Mira — sie schweigt hier (stummer Moment).');
+    }
+    if (panel.thoughts.isEmpty) {
+      violations.add('Panel ${panel.index}: stummer Moment ohne Erzähltext — '
+          'Miras Schweigen steht im Gedankenkasten (stummer Moment).');
     }
     for (final it in silents) {
       final ids = it.targetItemIds ?? const <String>[];

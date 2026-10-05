@@ -126,8 +126,10 @@ class StoryBubble {
   StoryPolygon hitAreaFor(PanelFormat format) =>
       format == PanelFormat.portrait ? (hitAreaPortrait ?? hitArea) : hitArea;
 
-  /// Die stumme Blase eines stummen Moments: „…“, keine Tokens (Spec §4.2).
-  /// Inert im Reader; das Café zeichnet später das Wort hinein.
+  /// Eine tokenlose „…“-Blase. Seit der Änderung vom 5.10. (Spec Mira
+  /// schweigt §4) gibt es sie in Folgen nicht mehr — Miras Schweigen steht im
+  /// Erzähltext, der Validator lehnt tokenlose Mira-Blasen ab. Der Reader
+  /// behält sie als harmlosen Schutz inert (kein Vorlesen, keine Fußzeile).
   bool get isSilence => tokens.isEmpty && text.trim() == '…';
 
   factory StoryBubble.fromJson(Map<String, dynamic> j) => StoryBubble(

@@ -14,23 +14,26 @@ with open("tool/comic/folge01_layout.json", encoding="utf-8") as f:
 
 print(letter_folge01.check_layout(layout))
 
-# Drehbuch V3 (Mira schweigt, docs/story/DREHBUCH_FOLGE_01_V3.md): Miras Zeilen sind „…“.
+# Drehbuch V3 (Mira schweigt, docs/story/DREHBUCH_FOLGE_01_V3.md): Mira hat keine Blase, ihr Schweigen
+# steht im Erzaehltext (Aenderung 5.10.).
 EXPECTED = {
     "p01": ["みなみまち駅"],
     "p02": [],
     "p03": ["すみません！あめ！あめ！", "ありがとう！あめ、あめ… さむい、さむい"],
-    "p04": ["傘", "…"],
+    "p04": ["傘"],
     "p05": ["ここ、ここ！", "あめ、あめ！", "これ？かさ？みせ！みせ！", "えき？ひとり？ひとり…"],
-    "p06": ["これ、こわれた", "はい、こわれた、こわれた。だめ、だめ", "…"],
-    "p07": ["はい。かさ。どうぞ", "…", "いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！",
+    "p06": ["これ、こわれた", "はい、こわれた、こわれた。だめ、だめ"],
+    "p07": ["はい。かさ。どうぞ", "いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！",
             "ほんとう、ほんとう。だいじょうぶ、だいじょうぶ"],
     "p08": ["はいはい"],
     "p09": ["あめやどり"],
-    "p10": ["…"],
+    "p10": [],
 }
 # Panels, deren Texte seit V2 unveraendert sind — nur die werden noch gegen die Git-Quelle geprueft.
 UNCHANGED_SINCE_V2 = ["p01", "p02"]
-FURI = {"p01": [["駅", "えき"]], "p04": [["傘", "かさ"], None]}
+FURI = {"p01": [["駅", "えき"]], "p04": [["傘", "かさ"]]}
+# Schilder (Spec Mira schweigt §4, Aenderung 5.10.): als Kasten gelettert.
+SCHILD = {"p01": ["みなみまち駅"], "p04": ["傘"], "p09": ["あめやどり"]}
 
 # Gegenprobe gegen die Git-Quelle (BUBBLES im alten Lettering-Skript).
 src = subprocess.run(["git", "show", "f49e164:tool/letter_folge01.py"],
@@ -64,6 +67,9 @@ for pid, texts in EXPECTED.items():
             assert [b.get("furigana") for b in spec["bubbles"]] == FURI[pid], (pid, fmt)
         else:
             assert all("furigana" not in b for b in spec["bubbles"]), (pid, fmt)
+        schilder = [b["text"] for b in spec["bubbles"] if b.get("form") == "schild"]
+        assert schilder == SCHILD.get(pid, []), (pid, fmt, "schild", schilder)
+        assert all("off" not in b for b in spec["bubbles"]), (pid, fmt, "keine Zeiger mehr")
         for face in spec["faces"]:
             assert len(face) == 4, (pid, fmt, face)
-print("OK: 10 Panels x 2 Formate, Texte = Drehbuch V3 (p01/p02 = Git-Quelle), reactions ok, kern 11/11")
+print("OK: 10 Panels x 2 Formate, Texte = Drehbuch V3 (p01/p02 = Git-Quelle), reactions ok, kern 11/11, Schilder 3")

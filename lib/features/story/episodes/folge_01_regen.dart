@@ -37,7 +37,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'In ihrer Hand: ein Zettel, dessen Tinte verläuft.',
   'outro':
       'Auf dem Zettel standen einmal drei Zeilen. Mira kennt jetzt: ein '
-      'Zeichen und vier Wörter. Hinter dieser Tür fängt der Rest an.',
+      'Zeichen und acht Wörter. Hinter dieser Tür fängt der Rest an.',
   'budget': {
     'items': [
       {'id': 'lex_ja_sumimasen', 'refType': 'lexeme'},
@@ -413,7 +413,11 @@ const Map<String, dynamic> pilot01RegenJson = {
             },
           ],
           'thoughts': [
-            {'text': 'Ein Wort fliegt an ihr vorbei. Alle sagen es heute.'},
+            {
+              'text':
+                  'Passanten drängeln sich unters Vordach. Ein Wort fliegt an '
+                  'ihr vorbei. Alle sagen es heute.',
+            },
             {'text': '„Ame. …Der Regen?"'},
           ],
           'interactions': [],
@@ -437,13 +441,6 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'surface': '傘', 'reading': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
             },
-            {
-              'speakerId': 'protagonist',
-              'text': '…',
-              'hitArea': f01HitQuerP04B1,
-              'hitAreaPortrait': f01HitHochP04B1,
-              'tokens': [],
-            },
           ],
           'thoughts': [
             {
@@ -452,6 +449,11 @@ const Map<String, dynamic> pilot01RegenJson = {
                   'sich selbst erklärt.',
             },
             {'text': '„Kasa. Schirme. Das ist ja fast fair."'},
+            {
+              'text':
+                  'Das Wort von der Straße liegt ihr auf der Zunge. Es bleibt '
+                  'dort.',
+            },
           ],
           'interactions': [
             {
@@ -584,15 +586,9 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
               ],
             },
-            {
-              'speakerId': 'protagonist',
-              'text': '…',
-              'hitArea': f01HitQuerP06B2,
-              'hitAreaPortrait': f01HitHochP06B2,
-              'tokens': [],
-            },
           ],
           'thoughts': [
+            {'text': 'Mira will etwas sagen. Sie bringt es nicht heraus.'},
             {
               'text':
                   '„Kowareta. Kaputt. Wie ich das erste Wort meiner '
@@ -614,7 +610,7 @@ const Map<String, dynamic> pilot01RegenJson = {
               'Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn '
               'fachmännisch. Er: 「これ、こわれた」 (zeigt auf die Streben) '
               '— 「こわれた、こわれた」 (kopfschüttelnd, fast zärtlich). '
-              'Mira will etwas sagen — „…"',
+              'Mira will etwas sagen und bleibt stumm (keine Blase).',
         },
         {
           'index': 6,
@@ -633,17 +629,10 @@ const Map<String, dynamic> pilot01RegenJson = {
               ],
             },
             {
-              'speakerId': 'protagonist',
-              'text': '…',
-              'hitArea': f01HitQuerP07B1,
-              'hitAreaPortrait': f01HitHochP07B1,
-              'tokens': [],
-            },
-            {
               'speakerId': 'ladenbesitzer',
               'text': 'いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！',
-              'hitArea': f01HitQuerP07B2,
-              'hitAreaPortrait': f01HitHochP07B2,
+              'hitArea': f01HitQuerP07B1,
+              'hitAreaPortrait': f01HitHochP07B1,
               'tokens': [
                 {'surface': 'いくら', 'itemId': 'lex_ja_ikura'},
                 {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
@@ -656,8 +645,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'speakerId': 'ladenbesitzer',
               'text': 'ほんとう、ほんとう。だいじょうぶ、だいじょうぶ',
-              'hitArea': f01HitQuerP07B3,
-              'hitAreaPortrait': f01HitHochP07B3,
+              'hitArea': f01HitQuerP07B2,
+              'hitAreaPortrait': f01HitHochP07B2,
               'tokens': [
                 {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
                 {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
@@ -668,6 +657,7 @@ const Map<String, dynamic> pilot01RegenJson = {
           ],
           'thoughts': [
             {'text': '„Was kostet der? Wie fragt man das?"'},
+            {'text': 'Sie bleibt stumm.'},
             {
               'text':
                   'Sie hat nichts bestellt. Sie hat nichts bezahlt. Er gibt '
@@ -688,7 +678,8 @@ const Map<String, dynamic> pilot01RegenJson = {
           'notes':
               'Er greift in den Korb, hält ihr einen Schirm hin — den '
               'schlichtesten, aber heilen. Er: 「はい。かさ。どうぞ」 — '
-              'Mira greift zum Geldbeutel: „…". Er sieht es: 「いくら？'
+              'Mira greift zum Geldbeutel, stumm (keine Blase). Er sieht '
+              'es: 「いくら？'
               'いいえ、いいえ。どうぞ、どうぞ。かさ！」 Dann: 「ほんとう、'
               'ほんとう。だいじょうぶ、だいじょうぶ」',
         },
@@ -717,7 +708,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {
               'text':
                   'Acht Wörter heute. Sie zählt sie an den Fingern ab, auf '
-                  'dem Weg die Straße hinunter.',
+                  'dem Weg die Straße hinunter. Hinter ihr ruft der '
+                  'Ladenbesitzer.',
             },
           ],
           'interactions': [
@@ -781,21 +773,14 @@ const Map<String, dynamic> pilot01RegenJson = {
           'index': 9,
           'asset': 'assets/story/folge01/p10.jpg',
           'assetPortrait': 'assets/story/folge01/p10_hoch.jpg',
-          'bubbles': [
-            {
-              'speakerId': 'protagonist',
-              'text': '…',
-              'hitArea': f01HitQuerP10B0,
-              'hitAreaPortrait': f01HitHochP10B0,
-              'tokens': [],
-            },
-          ],
+          'bubbles': [],
           'thoughts': [
             {'text': '„Was sagt man, wenn man irgendwo hereinkommt?"'},
+            {'text': 'Sie bleibt stumm vor der Tür.'},
             {
               'text':
                   'Auf dem Zettel standen einmal drei Zeilen. Mira kennt '
-                  'jetzt: ein Zeichen und vier Wörter. Hinter dieser Tür '
+                  'jetzt: ein Zeichen und acht Wörter. Hinter dieser Tür '
                   'fängt der Rest an.',
             },
           ],

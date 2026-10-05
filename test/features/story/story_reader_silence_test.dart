@@ -20,6 +20,10 @@ const _hitB = [
   {'x': 0.6, 'y': 0.7},
 ];
 
+/// Schutz-Test: Seit 5.10. (Spec Mira schweigt §4) lehnt der Validator
+/// tokenlose Mira-Blasen ab, Folgen haben keine „…“-Blase mehr. Der Reader
+/// hält eine solche Blase trotzdem inert — die Fixture wird bewusst nicht
+/// validiert.
 Episode _silenceEpisode({required bool withHitAreas}) => Episode.fromJson({
       'id': 'ep_silence',
       'seasonId': 'season_test',

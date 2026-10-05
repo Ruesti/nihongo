@@ -27,26 +27,26 @@ const List<Map<String, double>> f01HitQuerP03B0 = [
 
 /// p03 quer: ありがとう！あめ、あめ… さむい、さむい
 const List<Map<String, double>> f01HitQuerP03B1 = [
-  {'x': 0.06, 'y': 0.7},
-  {'x': 0.44, 'y': 0.7},
-  {'x': 0.44, 'y': 0.86},
-  {'x': 0.06, 'y': 0.86},
+  {'x': 0.02, 'y': 0.72},
+  {'x': 0.38, 'y': 0.72},
+  {'x': 0.38, 'y': 0.88},
+  {'x': 0.02, 'y': 0.88},
 ];
 
 /// p03 hoch: すみません！あめ！あめ！
 const List<Map<String, double>> f01HitHochP03B0 = [
-  {'x': 0.45, 'y': 0.74},
-  {'x': 0.82, 'y': 0.74},
-  {'x': 0.82, 'y': 0.815},
-  {'x': 0.45, 'y': 0.815},
+  {'x': 0.6, 'y': 0.212},
+  {'x': 0.9, 'y': 0.212},
+  {'x': 0.9, 'y': 0.277},
+  {'x': 0.6, 'y': 0.277},
 ];
 
 /// p03 hoch: ありがとう！あめ、あめ… さむい、さむい
 const List<Map<String, double>> f01HitHochP03B1 = [
-  {'x': 0.17, 'y': 0.86},
-  {'x': 0.77, 'y': 0.86},
-  {'x': 0.77, 'y': 0.935},
-  {'x': 0.17, 'y': 0.935},
+  {'x': 0.1, 'y': 0.915},
+  {'x': 0.72, 'y': 0.915},
+  {'x': 0.72, 'y': 0.99},
+  {'x': 0.1, 'y': 0.99},
 ];
 
 /// p04 quer: 傘
@@ -57,28 +57,12 @@ const List<Map<String, double>> f01HitQuerP04B0 = [
   {'x': 0.33, 'y': 0.48},
 ];
 
-/// p04 quer: …
-const List<Map<String, double>> f01HitQuerP04B1 = [
-  {'x': 0.8005, 'y': 0.68},
-  {'x': 0.8995, 'y': 0.68},
-  {'x': 0.8995, 'y': 0.8},
-  {'x': 0.8005, 'y': 0.8},
-];
-
 /// p04 hoch: 傘
 const List<Map<String, double>> f01HitHochP04B0 = [
   {'x': 0.12, 'y': 0.36},
   {'x': 0.38, 'y': 0.36},
   {'x': 0.38, 'y': 0.46},
   {'x': 0.12, 'y': 0.46},
-];
-
-/// p04 hoch: …
-const List<Map<String, double>> f01HitHochP04B1 = [
-  {'x': 0.6045, 'y': 0.78},
-  {'x': 0.7755, 'y': 0.78},
-  {'x': 0.7755, 'y': 0.85},
-  {'x': 0.6045, 'y': 0.85},
 ];
 
 /// p05 quer: ここ、ここ！
@@ -147,10 +131,10 @@ const List<Map<String, double>> f01HitHochP05B3 = [
 
 /// p06 quer: これ、こわれた
 const List<Map<String, double>> f01HitQuerP06B0 = [
-  {'x': 0.02, 'y': 0.28},
-  {'x': 0.34, 'y': 0.28},
-  {'x': 0.34, 'y': 0.41},
-  {'x': 0.02, 'y': 0.41},
+  {'x': 0.02, 'y': 0.31},
+  {'x': 0.34, 'y': 0.31},
+  {'x': 0.34, 'y': 0.44},
+  {'x': 0.02, 'y': 0.44},
 ];
 
 /// p06 quer: はい、こわれた、こわれた。だめ、だめ
@@ -161,68 +145,44 @@ const List<Map<String, double>> f01HitQuerP06B1 = [
   {'x': 0.58, 'y': 0.47},
 ];
 
-/// p06 quer: …
-const List<Map<String, double>> f01HitQuerP06B2 = [
-  {'x': 0.03, 'y': 0.64},
-  {'x': 0.183, 'y': 0.64},
-  {'x': 0.183, 'y': 0.77},
-  {'x': 0.03, 'y': 0.77},
-];
-
 /// p06 hoch: これ、こわれた
 const List<Map<String, double>> f01HitHochP06B0 = [
-  {'x': 0.1, 'y': 0.19},
-  {'x': 0.56, 'y': 0.19},
-  {'x': 0.56, 'y': 0.25},
-  {'x': 0.1, 'y': 0.25},
+  {'x': 0.1, 'y': 0.24},
+  {'x': 0.56, 'y': 0.24},
+  {'x': 0.56, 'y': 0.3},
+  {'x': 0.1, 'y': 0.3},
 ];
 
 /// p06 hoch: はい、こわれた、こわれた。だめ、だめ
 const List<Map<String, double>> f01HitHochP06B1 = [
-  {'x': 0.12, 'y': 0.255},
-  {'x': 0.88, 'y': 0.255},
-  {'x': 0.88, 'y': 0.325},
-  {'x': 0.12, 'y': 0.325},
-];
-
-/// p06 hoch: …
-const List<Map<String, double>> f01HitHochP06B2 = [
-  {'x': 0.3, 'y': 0.855},
-  {'x': 0.534, 'y': 0.855},
-  {'x': 0.534, 'y': 0.935},
-  {'x': 0.3, 'y': 0.935},
+  {'x': 0.12, 'y': 0.31},
+  {'x': 0.88, 'y': 0.31},
+  {'x': 0.88, 'y': 0.38},
+  {'x': 0.12, 'y': 0.38},
 ];
 
 /// p07 quer: はい。かさ。どうぞ
 const List<Map<String, double>> f01HitQuerP07B0 = [
-  {'x': 0.015, 'y': 0.28},
-  {'x': 0.2, 'y': 0.28},
-  {'x': 0.2, 'y': 0.47},
-  {'x': 0.015, 'y': 0.47},
-];
-
-/// p07 quer: …
-const List<Map<String, double>> f01HitQuerP07B1 = [
-  {'x': 0.8015, 'y': 0.1},
-  {'x': 0.9185, 'y': 0.1},
-  {'x': 0.9185, 'y': 0.23},
-  {'x': 0.8015, 'y': 0.23},
+  {'x': 0.01, 'y': 0.355},
+  {'x': 0.205, 'y': 0.355},
+  {'x': 0.205, 'y': 0.525},
+  {'x': 0.01, 'y': 0.525},
 ];
 
 /// p07 quer: いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！
-const List<Map<String, double>> f01HitQuerP07B2 = [
-  {'x': 0.38, 'y': 0.64},
-  {'x': 0.7, 'y': 0.64},
-  {'x': 0.7, 'y': 0.81},
-  {'x': 0.38, 'y': 0.81},
+const List<Map<String, double>> f01HitQuerP07B1 = [
+  {'x': 0.005, 'y': 0.54},
+  {'x': 0.405, 'y': 0.54},
+  {'x': 0.405, 'y': 0.73},
+  {'x': 0.005, 'y': 0.73},
 ];
 
 /// p07 quer: ほんとう、ほんとう。だいじょうぶ、だいじょうぶ
-const List<Map<String, double>> f01HitQuerP07B3 = [
-  {'x': 0.01, 'y': 0.76},
-  {'x': 0.39, 'y': 0.76},
-  {'x': 0.39, 'y': 0.9},
-  {'x': 0.01, 'y': 0.9},
+const List<Map<String, double>> f01HitQuerP07B2 = [
+  {'x': 0.005, 'y': 0.745},
+  {'x': 0.405, 'y': 0.745},
+  {'x': 0.405, 'y': 0.895},
+  {'x': 0.005, 'y': 0.895},
 ];
 
 /// p07 hoch: はい。かさ。どうぞ
@@ -233,16 +193,8 @@ const List<Map<String, double>> f01HitHochP07B0 = [
   {'x': 0.1, 'y': 0.4},
 ];
 
-/// p07 hoch: …
-const List<Map<String, double>> f01HitHochP07B1 = [
-  {'x': 0.66, 'y': 0.41},
-  {'x': 0.885, 'y': 0.41},
-  {'x': 0.885, 'y': 0.48},
-  {'x': 0.66, 'y': 0.48},
-];
-
 /// p07 hoch: いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！
-const List<Map<String, double>> f01HitHochP07B2 = [
+const List<Map<String, double>> f01HitHochP07B1 = [
   {'x': 0.1, 'y': 0.5},
   {'x': 0.68, 'y': 0.5},
   {'x': 0.68, 'y': 0.6},
@@ -250,7 +202,7 @@ const List<Map<String, double>> f01HitHochP07B2 = [
 ];
 
 /// p07 hoch: ほんとう、ほんとう。だいじょうぶ、だいじょうぶ
-const List<Map<String, double>> f01HitHochP07B3 = [
+const List<Map<String, double>> f01HitHochP07B2 = [
   {'x': 0.1, 'y': 0.835},
   {'x': 0.76, 'y': 0.835},
   {'x': 0.76, 'y': 0.935},
@@ -267,10 +219,10 @@ const List<Map<String, double>> f01HitQuerP08B0 = [
 
 /// p08 hoch: はいはい
 const List<Map<String, double>> f01HitHochP08B0 = [
-  {'x': 0.165, 'y': 0.3},
-  {'x': 0.34, 'y': 0.3},
-  {'x': 0.34, 'y': 0.37},
-  {'x': 0.165, 'y': 0.37},
+  {'x': 0.1, 'y': 0.47},
+  {'x': 0.29, 'y': 0.47},
+  {'x': 0.29, 'y': 0.535},
+  {'x': 0.1, 'y': 0.535},
 ];
 
 /// p09 quer: あめやどり
@@ -283,24 +235,8 @@ const List<Map<String, double>> f01HitQuerP09B0 = [
 
 /// p09 hoch: あめやどり
 const List<Map<String, double>> f01HitHochP09B0 = [
-  {'x': 0.55, 'y': 0.225},
-  {'x': 0.88, 'y': 0.225},
-  {'x': 0.88, 'y': 0.295},
-  {'x': 0.55, 'y': 0.295},
-];
-
-/// p10 quer: …
-const List<Map<String, double>> f01HitQuerP10B0 = [
-  {'x': 0.1715, 'y': 0.3},
-  {'x': 0.2885, 'y': 0.3},
-  {'x': 0.2885, 'y': 0.42},
-  {'x': 0.1715, 'y': 0.42},
-];
-
-/// p10 hoch: …
-const List<Map<String, double>> f01HitHochP10B0 = [
-  {'x': 0.1729, 'y': 0.25},
-  {'x': 0.2922, 'y': 0.25},
-  {'x': 0.2922, 'y': 0.32},
-  {'x': 0.1729, 'y': 0.32},
+  {'x': 0.56, 'y': 0.26},
+  {'x': 0.89, 'y': 0.26},
+  {'x': 0.89, 'y': 0.325},
+  {'x': 0.56, 'y': 0.325},
 ];

@@ -6,6 +6,7 @@ import 'package:nihongo_app/features/story/episode_validator.dart';
 Map<String, dynamic> _episode({
   List<Map<String, dynamic>> extraBubbles = const [],
   List<Map<String, dynamic>> interactions = const [],
+  List<Map<String, dynamic>> thoughts = const [],
 }) =>
     {
       'id': 'ep_test',
@@ -42,7 +43,7 @@ Map<String, dynamic> _episode({
                 },
                 ...extraBubbles,
               ],
-              'thoughts': [],
+              'thoughts': thoughts,
               'interactions': interactions,
               'notes': '',
             },
@@ -166,7 +167,11 @@ void main() {
     expect(b('みなみまち駅', []).isSilence, isFalse);
   });
 
-  group('stumme Momente (Spec §4.2)', () {
+  group('stumme Momente (Spec §4.2, Änderung 5.10.: Schweigen im Erzähltext)',
+      () {
+    const narration = [
+      {'text': 'Mira möchte etwas sagen. Ihr fehlt das Wort.'},
+    ];
     Map<String, dynamic> silence() => {
           'speakerId': 'protagonist',
           'text': '…',
@@ -181,53 +186,80 @@ void main() {
           'promptText': 'Was hättest du sagen können?',
         };
 
-    test('gültig: eine „…“-Blase, ein Ziel aus dem Budget, irgendwo gehört', () {
+    test('gültig: keine Mira-Blase, Erzähltext, ein Ziel aus dem Budget', () {
       final ep = Episode.fromJson(_episode(
-          extraBubbles: [silence()], interactions: [silent('あ', 'lex_a')]));
+          thoughts: narration, interactions: [silent('あ', 'lex_a')]));
       expect(() => validateEpisode(ep), returnsNormally);
     });
 
-    test('silent ohne „…“-Blase ist ein Verstoß', () {
+    test('silent ohne Erzähltext ist ein Verstoß', () {
       final ep =
           Episode.fromJson(_episode(interactions: [silent('あ', 'lex_a')]));
-      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+      expect(() => validateEpisode(ep), _violation('ohne Erzähltext'));
     });
 
-    test('zwei „…“-Blasen in einem Panel sind ein Verstoß', () {
+    test('„…“-Blase von Mira im stummen Moment ist ein Verstoß', () {
       final ep = Episode.fromJson(_episode(
-          extraBubbles: [silence(), silence()],
+          extraBubbles: [silence()],
+          thoughts: narration,
           interactions: [silent('あ', 'lex_a')]));
-      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+      expect(() => validateEpisode(ep),
+          _violation('Miras Schweigen steht im Erzähltext'));
+      expect(() => validateEpisode(ep), _violation('sie schweigt hier'));
     });
+
+    test('Mira-Blase mit Wort im stummen Moment ist ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(extraBubbles: [
+        {
+          'speakerId': 'protagonist',
+          'text': 'う',
+          'hitArea': [],
+          'tokens': [
+            {'surface': 'う', 'itemId': 'lex_alt'},
+          ],
+        },
+      ], thoughts: narration, interactions: [
+        silent('あ', 'lex_a')
+      ]));
+      expect(() => validateEpisode(ep, priorItemIds: {'lex_alt'}),
+          _violation('sie schweigt hier'));
+    });
+
+    for (final text in ['…', '...', '……', '…?', ' ']) {
+      test('tokenlose Mira-Blase „$text" ist überall ein Verstoß', () {
+        final ep = Episode.fromJson(
+            _episode(extraBubbles: [{...silence(), 'text': text}]));
+        expect(() => validateEpisode(ep),
+            _violation('Miras Schweigen steht im Erzähltext'));
+      });
+    }
 
     test('zwei silent in einem Panel sind ein Verstoß', () {
       final ep = Episode.fromJson(_episode(
-          extraBubbles: [silence()],
+          thoughts: narration,
           interactions: [silent('あ', 'lex_a'), silent('い', 'lex_b')]));
       expect(() => validateEpisode(ep), _violation('stummer Moment'));
     });
 
     test('Ziel außerhalb des Budgets ist ein Verstoß', () {
       final ep = Episode.fromJson(_episode(
-          extraBubbles: [silence()], interactions: [silent('う', 'lex_x')]));
-      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+          thoughts: narration, interactions: [silent('う', 'lex_x')]));
+      expect(() => validateEpisode(ep), _violation('weder im Budget'));
     });
 
     test('Ziel, das niemand in der Folge sagt, ist ein Verstoß', () {
       final json = _episode(
-          extraBubbles: [silence()], interactions: [silent('う', 'lex_c')]);
+          thoughts: narration, interactions: [silent('う', 'lex_c')]);
       (json['budget'] as Map)['items'] = [
         ...((json['budget'] as Map)['items'] as List),
         {'id': 'lex_c', 'refType': 'lexeme', 'singleton': true},
       ];
       expect(() => validateEpisode(Episode.fromJson(json)),
-          _violation('stummer Moment'));
+          _violation('sagt in dieser Folge niemand'));
     });
 
     test('mehr als ein Ziel ist ein Verstoß', () {
-      final ep = Episode.fromJson(_episode(extraBubbles: [
-        silence()
-      ], interactions: [
+      final ep = Episode.fromJson(_episode(thoughts: narration, interactions: [
         {
           'type': 'silent',
           'diegetic': true,
@@ -235,7 +267,7 @@ void main() {
           'targetItemIds': ['lex_a', 'lex_b'],
         },
       ]));
-      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+      expect(() => validateEpisode(ep), _violation('genau ein Ziel'));
     });
 
     test('gültig: Ziel aus einer früheren Folge (priorItemIds)', () {
@@ -248,48 +280,20 @@ void main() {
             {'surface': 'う', 'itemId': 'lex_alt'},
           ],
         },
-        silence(),
-      ], interactions: [
+      ], thoughts: narration, interactions: [
         silent('う', 'lex_alt')
       ]));
       expect(() => validateEpisode(ep, priorItemIds: {'lex_alt'}),
           returnsNormally);
     });
 
-    test('„…“-Blase einer anderen Figur erfüllt den stummen Moment nicht', () {
+    test('„…“ einer anderen Figur ist kein Mira-Verstoß', () {
       final ep = Episode.fromJson(_episode(extraBubbles: [
         {...silence(), 'speakerId': 'passant'},
-      ], interactions: [
+      ], thoughts: narration, interactions: [
         silent('あ', 'lex_a')
       ]));
-      expect(() => validateEpisode(ep), _violation('0 „…"-Blasen'));
-      expect(() => validateEpisode(ep), _violation('schweigen kann nur Mira'));
-    });
-
-    test('Mira-„…“ plus fremde „…“-Blase ist ein Verstoß', () {
-      final ep = Episode.fromJson(_episode(extraBubbles: [
-        silence(),
-        {...silence(), 'speakerId': 'passant'},
-      ], interactions: [
-        silent('あ', 'lex_a')
-      ]));
-      expect(() => validateEpisode(ep), _violation('schweigen kann nur Mira'));
-    });
-
-    for (final variant in ['...', '……', '…?']) {
-      test('tokenlose Mira-Blase „$variant" ist ein Verstoß', () {
-        final ep = Episode.fromJson(_episode(extraBubbles: [
-          {...silence(), 'text': variant},
-        ], interactions: [
-          silent('あ', 'lex_a')
-        ]));
-        expect(() => validateEpisode(ep), _violation('nicht genau „…"'));
-      });
-    }
-
-    test('„…“-Blase ohne silent ist ein Verstoß', () {
-      final ep = Episode.fromJson(_episode(extraBubbles: [silence()]));
-      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+      expect(() => validateEpisode(ep), returnsNormally);
     });
   });
 }
