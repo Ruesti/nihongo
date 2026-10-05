@@ -2,7 +2,7 @@
 """Erzeugt lib/features/story/episodes/folge_01_layout.g.dart aus folge01_layout.json (INV-14).
 Formatiert die Ausgabe am Ende selbst mit `dart format` (bricht ab, wenn dart fehlt), damit die
 eingecheckte Datei byteweise dem Generator-Lauf entspricht.
-Tippflaeche = Oval-Rechteck "rect"; ein Off-Zeiger ("off") gehoert nicht zur Tippflaeche und wird ignoriert.
+Tippflaeche = Blasen-Rechteck "rect" (Oval wie Schild, "form" aendert sie nicht).
 Aufruf im Repo-Wurzelverzeichnis: python3 tool/comic/gen_layout_dart.py"""
 import json
 import os
