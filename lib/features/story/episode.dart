@@ -126,6 +126,10 @@ class StoryBubble {
   StoryPolygon hitAreaFor(PanelFormat format) =>
       format == PanelFormat.portrait ? (hitAreaPortrait ?? hitArea) : hitArea;
 
+  /// Die stumme Blase eines stummen Moments: „…“, keine Tokens (Spec §4.2).
+  /// Inert im Reader; das Café zeichnet später das Wort hinein.
+  bool get isSilence => tokens.isEmpty && text.trim() == '…';
+
   factory StoryBubble.fromJson(Map<String, dynamic> j) => StoryBubble(
         speakerId: j['speakerId'] as String,
         text: j['text'] as String,
@@ -149,7 +153,11 @@ class StoryThought {
       StoryThought(j['text'] as String);
 }
 
-enum InteractionType { reveal, listen, speak, trace, dictionary }
+/// Sprecher-Id der Protagonistin Mira (Spec Mira schweigt §3.1).
+const String kProtagonist = 'protagonist';
+
+enum InteractionType { reveal, listen, speak, trace, dictionary, silent }
+
 
 class StoryInteraction {
   final InteractionType type;

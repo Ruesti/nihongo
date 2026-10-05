@@ -22,7 +22,11 @@ class StoryValidationException implements Exception {
 /// diegetic speak/trace `target` can be the sole carrier of a word's
 /// repetition (the Dichte-Test in folge_01_dichte_test.dart uses the same
 /// occurrence-based math).
-void validateEpisode(Episode episode) {
+///
+/// INV-18/INV-19 (Spec Mira schweigt §3.1): `priorItemIds` sind die Budget-Ids
+/// aller früheren Folgen. Ein Token mit einer dieser Ids ist auch für INV-3
+/// erlaubt (wiederverwendete Wörter stehen nicht im Budget der neuen Folge).
+void validateEpisode(Episode episode, {Set<String> priorItemIds = const {}}) {
   final violations = <String>[];
   final budgetIds = {for (final item in episode.budget.items) item.id};
   final occurrencesByItem = <String, int>{};
@@ -46,13 +50,14 @@ void validateEpisode(Episode episode) {
       for (final token in bubble.tokens) {
         final itemId = token.itemId;
         if (itemId == null) continue;
-        if (!budgetIds.contains(itemId)) {
+        if (!budgetIds.contains(itemId) && !priorItemIds.contains(itemId)) {
           violations.add(
             'Panel ${panel.index}: token "${token.surface}" references item '
             '"$itemId", which is not in the episode budget (INV-3).',
           );
           continue;
         }
+        if (!budgetIds.contains(itemId)) continue; // früheres Wort: erlaubt, nicht gezählt
         budgetSurfaces.add(token.surface);
         occurrencesByItem[itemId] = (occurrencesByItem[itemId] ?? 0) + 1;
       }
@@ -112,6 +117,55 @@ void validateEpisode(Episode episode) {
           'dieser Folge — dann gehört sie ins Budget, nicht in „man kann auch '
           'sagen".',
         );
+      }
+    }
+  }
+
+  // INV-18 (Spec Mira schweigt §3.1): Mira spricht nur Wörter früherer Folgen.
+  final cjk = RegExp(r'[぀-ヿ一-鿿]');
+  for (final panel in episode.allPanels) {
+    for (final bubble in panel.bubbles) {
+      if (bubble.speakerId != kProtagonist) continue;
+      var rest = bubble.text;
+      for (final token in bubble.tokens) {
+        final id = token.itemId;
+        if (id == null || !priorItemIds.contains(id)) {
+          violations.add(
+            'Panel ${panel.index}: Mira sagt „${token.surface}" — das Wort '
+            'stammt nicht aus einer früheren Folge (INV-18).',
+          );
+        }
+        rest = rest.replaceFirst(token.surface, '');
+      }
+      if (cjk.hasMatch(rest)) {
+        violations.add(
+          'Panel ${panel.index}: Miras Blase „${bubble.text}" enthält '
+          'Japanisch außerhalb ihrer Wörter (INV-18).',
+        );
+      }
+    }
+  }
+
+  // INV-19: Ein Sprechziel muss vorher von jemand anderem gesagt worden
+  // sein — in einer früheren Folge, einem früheren Panel oder einer Blase
+  // desselben Panels (Blasen werden vor der Interaktion gelesen).
+  final heardSoFar = <String>{...priorItemIds};
+  for (final panel in episode.allPanels) {
+    for (final bubble in panel.bubbles) {
+      if (bubble.speakerId == kProtagonist) continue;
+      for (final t in bubble.tokens) {
+        if (t.itemId != null) heardSoFar.add(t.itemId!);
+      }
+    }
+    for (final it in panel.interactions) {
+      if (it.type != InteractionType.speak) continue;
+      for (final id in it.targetItemIds ?? const <String>[]) {
+        if (!heardSoFar.contains(id)) {
+          violations.add(
+            'Panel ${panel.index}: Sprechmoment „${it.target}" — Mira hat das '
+            'Wort vorher von niemandem gehört (INV-19).',
+          );
+        }
       }
     }
   }
