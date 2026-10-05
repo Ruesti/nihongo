@@ -10,11 +10,13 @@ Die Staffel spielt in Miras ersten zwei Wochen, Oktober 1996, Taifun-Zeit. Sie w
 
 **Was jede Folge mitbringt.** Eine Frage, eine Antwort, eine neue Frage. 15 bis 20 neue Wörter aus dem Vorrat, 2 bis 3 Kanji mit Trägerwort und Ort, ein Grammatik-Punkt, ein Sprechmoment, ein Nachzeichnen-Moment. Die Wortlisten unten sind Themen mit Beispielen, keine vollständigen Budgets. Die vollständigen Budgets entstehen in Arbeitspaket 3 aus dem Wortvorrat.
 
+**Mira-Regel (INV-18/19, ab 2.10.):** Mira spricht in Folge N nur Wörter aus Folgen vor N; wo sie etwas sagen will und nicht kann, steht ein stummer Moment („…“), den das Café nachbereitet.
+
 ---
 
 ## Folge 01 — Regen
 
-Liegt vor, Drehbuch V2. Mira kommt im Regen an, der Zettel verläuft, nur ein め bleibt. Der Schirmmann schenkt ihr einen Schirm, nachdem sie seinen repariert hat. Sie steht vor der Tür des Cafés. Frage der Folge: Wo bin ich hier? Neue Frage: Was ist hinter der Tür?
+Liegt vor, Drehbuch V3 (Mira schweigt; V2 als Protokoll). Mira kommt im Regen an, der Zettel verläuft, nur ein め bleibt. Der Schirmmann schenkt ihr einen Schirm, nachdem sie seinen repariert hat. Sie steht vor der Tür des Cafés. Frage der Folge: Wo bin ich hier? Neue Frage: Was ist hinter der Tür?
 Lernstoff wie ausgeliefert: 18 Wörter, Zeichen あ め か 駅 傘, Sprechmomente すみません und ありがとう, Nachzeichnen め auf dem Handrücken.
 
 ## Folge 02 — Die Tür
