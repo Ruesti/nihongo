@@ -238,6 +238,55 @@ void main() {
       expect(() => validateEpisode(ep), _violation('stummer Moment'));
     });
 
+    test('gültig: Ziel aus einer früheren Folge (priorItemIds)', () {
+      final ep = Episode.fromJson(_episode(extraBubbles: [
+        {
+          'speakerId': 'passant',
+          'text': 'う',
+          'hitArea': [],
+          'tokens': [
+            {'surface': 'う', 'itemId': 'lex_alt'},
+          ],
+        },
+        silence(),
+      ], interactions: [
+        silent('う', 'lex_alt')
+      ]));
+      expect(() => validateEpisode(ep, priorItemIds: {'lex_alt'}),
+          returnsNormally);
+    });
+
+    test('„…“-Blase einer anderen Figur erfüllt den stummen Moment nicht', () {
+      final ep = Episode.fromJson(_episode(extraBubbles: [
+        {...silence(), 'speakerId': 'passant'},
+      ], interactions: [
+        silent('あ', 'lex_a')
+      ]));
+      expect(() => validateEpisode(ep), _violation('0 „…"-Blasen'));
+      expect(() => validateEpisode(ep), _violation('schweigen kann nur Mira'));
+    });
+
+    test('Mira-„…“ plus fremde „…“-Blase ist ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(extraBubbles: [
+        silence(),
+        {...silence(), 'speakerId': 'passant'},
+      ], interactions: [
+        silent('あ', 'lex_a')
+      ]));
+      expect(() => validateEpisode(ep), _violation('schweigen kann nur Mira'));
+    });
+
+    for (final variant in ['...', '……', '…?']) {
+      test('tokenlose Mira-Blase „$variant" ist ein Verstoß', () {
+        final ep = Episode.fromJson(_episode(extraBubbles: [
+          {...silence(), 'text': variant},
+        ], interactions: [
+          silent('あ', 'lex_a')
+        ]));
+        expect(() => validateEpisode(ep), _violation('nicht genau „…"'));
+      });
+    }
+
     test('„…“-Blase ohne silent ist ein Verstoß', () {
       final ep = Episode.fromJson(_episode(extraBubbles: [silence()]));
       expect(() => validateEpisode(ep), _violation('stummer Moment'));
