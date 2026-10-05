@@ -170,6 +170,55 @@ void validateEpisode(Episode episode, {Set<String> priorItemIds = const {}}) {
     }
   }
 
+  // Stumme Momente (Spec Mira schweigt §4.2): Mira wollte etwas sagen und
+  // konnte nicht. Ein Panel mit `silent` hat genau eine „…“-Blase und genau
+  // ein Ziel; das Ziel liegt im Budget dieser oder einer früheren Folge und
+  // wird in der Folge von jemand anderem gesagt (auch nach dem Moment).
+  final heardInEpisode = <String>{
+    for (final p in episode.allPanels)
+      for (final b in p.bubbles)
+        if (b.speakerId != kProtagonist)
+          for (final t in b.tokens)
+            if (t.itemId != null) t.itemId!,
+  };
+  for (final panel in episode.allPanels) {
+    final silents =
+        panel.interactions.where((i) => i.type == InteractionType.silent).toList();
+    final silences = panel.bubbles.where((b) => b.isSilence).length;
+    if (silents.isEmpty) {
+      if (silences > 0) {
+        violations.add('Panel ${panel.index}: „…"-Blase ohne Interaktion '
+            'silent (stummer Moment).');
+      }
+      continue;
+    }
+    if (silents.length > 1) {
+      violations.add('Panel ${panel.index}: ${silents.length} stumme Momente; '
+          'erlaubt ist einer je Panel (stummer Moment).');
+    }
+    if (silences != 1) {
+      violations.add('Panel ${panel.index}: $silences „…"-Blasen; ein stummer '
+          'Moment braucht genau eine (stummer Moment).');
+    }
+    for (final it in silents) {
+      final ids = it.targetItemIds ?? const <String>[];
+      if (ids.length != 1) {
+        violations.add('Panel ${panel.index}: stummer Moment braucht genau ein '
+            'Ziel, hat ${ids.length} (stummer Moment).');
+        continue;
+      }
+      final id = ids.single;
+      if (!budgetIds.contains(id) && !priorItemIds.contains(id)) {
+        violations.add('Panel ${panel.index}: Ziel „$id" ist weder im Budget '
+            'noch aus einer früheren Folge (stummer Moment).');
+      }
+      if (!heardInEpisode.contains(id)) {
+        violations.add('Panel ${panel.index}: Ziel „$id" sagt in dieser Folge '
+            'niemand (stummer Moment).');
+      }
+    }
+  }
+
   if (violations.isNotEmpty) {
     throw StoryValidationException(violations);
   }

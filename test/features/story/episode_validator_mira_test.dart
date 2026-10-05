@@ -165,4 +165,82 @@ void main() {
     expect(b('…あ', [{'surface': 'あ', 'itemId': 'lex_a'}]).isSilence, isFalse);
     expect(b('みなみまち駅', []).isSilence, isFalse);
   });
+
+  group('stumme Momente (Spec §4.2)', () {
+    Map<String, dynamic> silence() => {
+          'speakerId': 'protagonist',
+          'text': '…',
+          'hitArea': [],
+          'tokens': [],
+        };
+    Map<String, dynamic> silent(String target, String id) => {
+          'type': 'silent',
+          'diegetic': true,
+          'target': target,
+          'targetItemIds': [id],
+          'promptText': 'Was hättest du sagen können?',
+        };
+
+    test('gültig: eine „…“-Blase, ein Ziel aus dem Budget, irgendwo gehört', () {
+      final ep = Episode.fromJson(_episode(
+          extraBubbles: [silence()], interactions: [silent('あ', 'lex_a')]));
+      expect(() => validateEpisode(ep), returnsNormally);
+    });
+
+    test('silent ohne „…“-Blase ist ein Verstoß', () {
+      final ep =
+          Episode.fromJson(_episode(interactions: [silent('あ', 'lex_a')]));
+      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+    });
+
+    test('zwei „…“-Blasen in einem Panel sind ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(
+          extraBubbles: [silence(), silence()],
+          interactions: [silent('あ', 'lex_a')]));
+      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+    });
+
+    test('zwei silent in einem Panel sind ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(
+          extraBubbles: [silence()],
+          interactions: [silent('あ', 'lex_a'), silent('い', 'lex_b')]));
+      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+    });
+
+    test('Ziel außerhalb des Budgets ist ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(
+          extraBubbles: [silence()], interactions: [silent('う', 'lex_x')]));
+      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+    });
+
+    test('Ziel, das niemand in der Folge sagt, ist ein Verstoß', () {
+      final json = _episode(
+          extraBubbles: [silence()], interactions: [silent('う', 'lex_c')]);
+      (json['budget'] as Map)['items'] = [
+        ...((json['budget'] as Map)['items'] as List),
+        {'id': 'lex_c', 'refType': 'lexeme', 'singleton': true},
+      ];
+      expect(() => validateEpisode(Episode.fromJson(json)),
+          _violation('stummer Moment'));
+    });
+
+    test('mehr als ein Ziel ist ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(extraBubbles: [
+        silence()
+      ], interactions: [
+        {
+          'type': 'silent',
+          'diegetic': true,
+          'target': 'あ',
+          'targetItemIds': ['lex_a', 'lex_b'],
+        },
+      ]));
+      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+    });
+
+    test('„…“-Blase ohne silent ist ein Verstoß', () {
+      final ep = Episode.fromJson(_episode(extraBubbles: [silence()]));
+      expect(() => validateEpisode(ep), _violation('stummer Moment'));
+    });
+  });
 }
