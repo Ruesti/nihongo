@@ -19,6 +19,17 @@ Endkarte: „ein Zeichen und acht Wörter“, passend zu P8. Spec: `docs/superpo
 (`docs/story/DREHBUCH_FOLGE_01_V2.md`). Die Bilder sind dieselben; nur das
 Lettering ist neu.
 
+**Änderung 6.10. — Wörter über Szenen gestreut statt in der Blase verdoppelt**
+(Ulis Frage: „warum werden so viele Wörter doppelt gesprochen?"). Seit Mira
+schweigt, erreichten die Nebenfiguren das Soll „jedes Wort ≥ 2" durch
+Verdoppeln in derselben Blase (「ここ、ここ」「みせ！みせ！」「だめ、だめ」…). Jetzt
+steht jedes Wort höchstens einmal je Blase; das zweite Vorkommen sagt eine
+andere Figur oder dieselbe Figur in einer anderen Szene. Ausnahmen sind nur
+zwei echte Doppel-Floskeln: 「どうぞ、どうぞ」 (P7) und 「はいはい」 (P8).
+P8 bekommt eine kurze zweite Blase (der Ladenbesitzer ruft ihr nach).
+Dichte bleibt 44 gehört + 6 Ziele = 50. Geprüft von
+`test/features/story/folge_01_dichte_test.dart` (Floskel-Liste dort).
+
 **Warum V2 (Protokoll):** V1 war ein Stimmungs-Storyboard: 24 Panels, 11 Äußerungen, keine
 Erzählstimme, Lernmechaniken unmotiviert angehängt. V2 erzählt dieselbe
 Grundgeschichte (Ankunft im Regen, der Zettel, der geschenkte Schirm) als
@@ -54,12 +65,12 @@ der Situation, nie umgekehrt.
   Japanisch = Welt (Blasen, Schilder, der Zettel).
 - Jede Interaktion (Antippen, Sprechen, Nachzeichnen) hat einen Grund in
   der Geschichte.
-- **Wiederholungs-Regel (bewusster Trade-off):** Gezählt werden
-  Gesamt-Vorkommen (Blasen + Sprech-/Zeichenziele), nicht mehr „in wie
-  vielen Panels". Natürliche Sprache wiederholt in Clustern
-  (「どうぞ、どうぞ！」) — das ist gewollt. ABER: Der Drehbuch-Autor bleibt
-  dafür verantwortlich, Wörter AUCH über Szenen zu streuen (wie あめ in
-  dieser Folge); der Validator erzwingt das nicht mehr.
+- **Wiederholungs-Regel:** Gezählt werden Gesamt-Vorkommen (Blasen +
+  Sprech-/Zeichenziele), nicht mehr „in wie vielen Panels". Die
+  Wiederholung entsteht **über Szenen und Sprecher**: jedes Wort höchstens
+  einmal je Blase (6.10.). Erlaubt sind nur wenige echte Doppel-Floskeln
+  (Folge 01: 「どうぞ、どうぞ」, 「はいはい」), ausdrücklich gelistet im
+  Dichte-Test, der jede andere Doppelung in einer Blase ablehnt.
 
 ---
 
@@ -111,8 +122,8 @@ holt."* (Graue Vorlage in der Zeichenfläche.)
 ### P3 — Ame
 **Bild:** Leere Straße, sie geht; zwei Passanten flüchten unter ein
 Vordach.
-**Welt:** Passant A drängelt vorbei: 「すみません！あめ！あめ！」
-Passantin B, unterm Vordach, lachend: 「ありがとう！あめ、あめ… さむい、さむい」
+**Welt:** Passant A drängelt vorbei: 「すみません！あめ！さむい！」
+Passantin B, unterm Vordach, lachend: 「ありがとう！あめ… ほんとう、さむい」
 **Erzählkasten:** *„Passanten drängeln sich unters Vordach. Ein Wort fliegt
 an ihr vorbei. Alle sagen es heute."*
 **Gedanke:** *„Ame. …Der Regen?"*
@@ -140,9 +151,9 @@ du leise sagen können?"*
 **Bild:** Miras eigener Schirm — aufgespannt ein Gerippe, zwei Streben
 gebrochen. Der alte Ladenbesitzer tritt heraus, sieht den Schirm, lacht
 nicht unfreundlich.
-**Welt:** Ladenbesitzer winkt sie unters Vordach: 「ここ、ここ！」 — dann
-「あめ、あめ！」 (deutet zum Himmel) — auf ihren Schirm und seinen Laden:
-「これ？かさ？みせ！みせ！」 — sie musternd: 「えき？ひとり？ひとり…」
+**Welt:** Ladenbesitzer winkt sie unters Vordach: 「ここ！だいじょうぶ？」 —
+dann 「あめ、さむい」 (deutet zum Himmel) — auf ihren Schirm und seinen Laden:
+「これ、かさ？みせ！」 — sie musternd: 「えき？ひとり？ほんとう？」
 Mira nickt (keine Blase).
 **Erzählkasten:** *„Sie versteht kein Wort. Aber sie versteht alles."*
 **Gedanke:** *„Sag irgendwas. Das Wort, das der Mann eben im Regen gesagt
@@ -155,21 +166,21 @@ und es funktioniert."*
 
 ### P6 — Die Diagnose
 **Bild:** Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn fachmännisch.
-**Welt:** Er: 「これ、こわれた」 (zeigt auf die Streben) — 「はい、こわれた、
-こわれた。だめ、だめ」 (kopfschüttelnd, fast zärtlich).
+**Welt:** Er: 「これ… ここ、こわれた」 (zeigt auf die Streben) — 「いいえ、だめ。
+はい、こわれた」 (kopfschüttelnd, fast zärtlich).
 **Erzählkasten:** *„Mira will etwas sagen. Sie bringt es nicht heraus."*
 **Gedanke:** *„Kowareta. Kaputt. Wie ich das erste Wort meiner Großmutter
 lerne: über einen kaputten Schirm."*
 **STUMMER MOMENT (Ziel こわれた):** Wirtin-Frage im Café: *„Er hat dir den
-Schirm gezeigt und es dreimal gesagt. Was hättest du nachsprechen
+Schirm gezeigt und es zweimal gesagt. Was hättest du nachsprechen
 können?"*
 
 ### P7 — Das Geschenk
 **Bild:** Er greift in den Korb, hält ihr einen Schirm hin — den
 schlichtesten, aber heilen.
 **Welt:** Er: 「はい。かさ。どうぞ」 — Mira greift zum Geldbeutel, stumm —
-Er sieht es: 「いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！」 — Dann:
-「ほんとう、ほんとう。だいじょうぶ、だいじょうぶ」
+Er sieht es: 「いくら？いいえ、だめ！どうぞ、どうぞ。かさ！」 — Dann:
+「ほんとう。だいじょうぶ」
 **Gedanke:** *„Was kostet der? Wie fragt man das?"*
 **Erzählkasten:** *„Sie bleibt stumm."*
 **Erzählkasten:** *„Sie hat nichts bestellt. Sie hat nichts bezahlt. Er
@@ -177,7 +188,8 @@ gibt ihr den Schirm einfach so."*
 **STUMMER MOMENT (Ziel いくら):** Wirtin-Frage im Café: *„Als du zum
 Geldbeutel gegriffen hast. Was hättest du fragen können?"* (Miras zweite
 Blase aus V2, 「…ほんとう？」, fällt ersatzlos — höchstens ein stummer
-Moment je Panel; der Ladenbesitzer sagt ほんとう dafür zweimal.)
+Moment je Panel; ほんとう sagen dafür Passantin B in P3, der Ladenbesitzer in
+P5 als Frage und hier als Beteuerung.)
 
 ### P8 — Danke
 **Bild:** Mira mit dem neuen Schirm, halb verlegen, halb gerührt.
@@ -189,8 +201,9 @@ jedem Film. Jetzt zählt es zum ersten Mal."*
 *„Ihr zweites Wort. Es wird nicht das letzte sein."*
 **Erzählkasten (statt des V2-Murmelns):** *„Acht Wörter heute. Sie zählt
 sie an den Fingern ab, auf dem Weg die Straße hinunter. Hinter ihr ruft der
-Ladenbesitzer."* (Der Ladenbesitzer ist nicht im Bild; seine Blase 「はいはい」
-steht am linken Bildrand.)
+Ladenbesitzer."* (Der Ladenbesitzer ist nicht im Bild; seine Blasen
+「はいはい」 und, ihr nachgerufen, 「ひとり、だいじょうぶ？みせ、ここ！」 — „Allein,
+alles gut? Der Laden ist hier!" — stehen am linken Bildrand.)
 
 ### P9 — Das Zeichen
 **Bild:** Weiter hinten in der Shotengai: ein kleines Café. Auf dem
@@ -226,12 +239,13 @@ Gehört = Tokens anderer Figuren und Schilder; Ziele = 2 Sprechmomente
 
 | Wort | gehört | Ziele | gesamt |
 |---|---|---|---|
-| あめ | 7 | 1 | 8 |
+| あめ | 4 | 1 | 5 |
 | かさ, はい | 4 | | 4 |
-| こわれた | 3 | 1 | 4 |
+| さむい, ほんとう, ここ, だいじょうぶ | 3 | | 3 |
 | どうぞ | 3 | | 3 |
+| こわれた | 2 | 1 | 3 |
 | すみません | 1 | 2 | 3 |
-| えき, ここ, これ, さむい, だめ, ひとり, ほんとう, いいえ, だいじょうぶ, みせ | 2 | | 2 |
+| えき, これ, だめ, ひとり, いいえ, みせ | 2 | | 2 |
 | いくら, ありがとう | 1 | 1 | 2 |
 | **Zeichen め** | 3 Momente (Trace, Handrücken, Caféschild) | | |
 | **Summe** | **44** | **6** | **50** |
@@ -239,7 +253,8 @@ Gehört = Tokens anderer Figuren und Schilder; Ziele = 2 Sprechmomente
 Vorher (V2): 55 Blasen-Vorkommen + 2 Sprechziele = 57. Der Rückgang ist der
 Preis der Mira-Regel; er wird in späteren Folgen aufgeholt, weil Mira dann
 Gelerntes sagen darf. Geprüft von `test/features/story/folge_01_dichte_test.dart`
-(gehört ≥ 44, gesamt ≥ 50, jedes Wort ≥ 2, Bilanz Wort für Wort) und
+(gehört ≥ 44, gesamt ≥ 50, jedes Wort ≥ 2, Bilanz Wort für Wort, kein
+Wort doppelt in einer Blase außer 「どうぞ、どうぞ」 und 「はいはい」) und
 `test/features/story/folge_01_mira_test.dart`.
 
 **Gesamt V3: 44 gehört + 6 Ziele = 50 in 10 Panels, 18 Wörter + 2 Kanji** (V1: ~12 Vorkommen, 8 Wörter, 24 Panels) —

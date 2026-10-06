@@ -226,6 +226,17 @@ Sprechmomente + 4 stumme Momente):
 | いくら, ありがとう | 1 | 1 | 2 |
 | **Summe** | **44** | **6** | **50** |
 
+**Nachtrag 6.10.:** Wörter über Szenen gestreut statt in der Blase verdoppelt (Uli:
+„warum werden so viele Wörter doppelt gesprochen?"). Jedes Wort steht höchstens einmal
+je Blase; Ausnahme nur 「どうぞ、どうぞ」 und 「はいはい」. Neue Zeilen: P3 「すみません！あめ！
+さむい！」 / 「ありがとう！あめ… ほんとう、さむい」; P5 「ここ！だいじょうぶ？」「あめ、さむい」
+「これ、かさ？みせ！」「えき？ひとり？ほんとう？」; P6 「これ… ここ、こわれた」「いいえ、だめ。
+はい、こわれた」; P7 「いくら？いいえ、だめ！どうぞ、どうぞ。かさ！」「ほんとう。だいじょうぶ」;
+P8 neu zweite Blase 「ひとり、だいじょうぶ？みせ、ここ！」. Summe unverändert 44 + 6 = 50;
+neue Bilanz: あめ 5 · かさ, はい 4 · さむい, ほんとう, ここ, だいじょうぶ, どうぞ, こわれた,
+すみません 3 · alle übrigen 2. Maßgeblich: `docs/story/DREHBUCH_FOLGE_01_V3.md`, geprüft
+von `folge_01_dichte_test.dart` (auch die Floskel-Liste).
+
 Vorher: 55 gehört + 2 Ziele = 57. Der Rückgang ist der Preis der Regel; er wird in
 späteren Folgen aufgeholt, weil Mira dann Gelerntes sagen darf. Die Dichte-Prüfung
 (`folge_01_dichte_test.dart`) bekommt die neuen Schwellen: gehörte Tokens ≥ 44,

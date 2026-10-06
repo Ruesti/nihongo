@@ -15,17 +15,16 @@ with open("tool/comic/folge01_layout.json", encoding="utf-8") as f:
 print(letter_folge01.check_layout(layout))
 
 # Drehbuch V3 (Mira schweigt, docs/story/DREHBUCH_FOLGE_01_V3.md): Mira hat keine Blase, ihr Schweigen
-# steht im Erzaehltext (Aenderung 5.10.).
+# steht im Erzaehltext (Aenderung 5.10.). Woerter ueber Szenen gestreut statt in der Blase verdoppelt (6.10.).
 EXPECTED = {
     "p01": ["みなみまち駅"],
     "p02": [],
-    "p03": ["すみません！あめ！あめ！", "ありがとう！あめ、あめ… さむい、さむい"],
+    "p03": ["すみません！あめ！さむい！", "ありがとう！あめ… ほんとう、さむい"],
     "p04": ["傘"],
-    "p05": ["ここ、ここ！", "あめ、あめ！", "これ？かさ？みせ！みせ！", "えき？ひとり？ひとり…"],
-    "p06": ["これ、こわれた", "はい、こわれた、こわれた。だめ、だめ"],
-    "p07": ["はい。かさ。どうぞ", "いくら？いいえ、いいえ。どうぞ、どうぞ。かさ！",
-            "ほんとう、ほんとう。だいじょうぶ、だいじょうぶ"],
-    "p08": ["はいはい"],
+    "p05": ["ここ！だいじょうぶ？", "あめ、さむい", "これ、かさ？みせ！", "えき？ひとり？ほんとう？"],
+    "p06": ["これ… ここ、こわれた", "いいえ、だめ。はい、こわれた"],
+    "p07": ["はい。かさ。どうぞ", "いくら？いいえ、だめ！どうぞ、どうぞ。かさ！", "ほんとう。だいじょうぶ"],
+    "p08": ["はいはい", "ひとり、 だいじょうぶ？ みせ、ここ！"],
     "p09": ["あめやどり"],
     "p10": [],
 }
