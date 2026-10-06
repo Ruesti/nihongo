@@ -14,20 +14,25 @@ with open("tool/comic/folge01_layout.json", encoding="utf-8") as f:
 
 print(letter_folge01.check_layout(layout))
 
+# Drehbuch V3 (Mira schweigt, docs/story/DREHBUCH_FOLGE_01_V3.md): Mira hat keine Blase, ihr Schweigen
+# steht im Erzaehltext (Aenderung 5.10.). Woerter ueber Szenen gestreut statt in der Blase verdoppelt (6.10.).
 EXPECTED = {
     "p01": ["みなみまち駅"],
     "p02": [],
-    "p03": ["あめ！あめ！", "あめ、あめ… さむい、さむい"],
-    "p04": ["傘", "…あめ"],
-    "p05": ["あめ、あめ！", "これ？かさ？みせ！", "ひとり？", "…はい。ひとり"],
-    "p06": ["これ、こわれた", "はい、こわれた、こわれた。だめ、だめ", "…こわれた…？"],
-    "p07": ["はい。かさ。どうぞ", "え？いくら？いくら？", "いいえ、いいえ。どうぞ、どうぞ。かさ！",
-            "…ほんとう？", "ほんとう。だいじょうぶ、だいじょうぶ"],
-    "p08": ["はいはい", "ありがとう… すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…"],
-    "p09": ["あめやどり", "ここ…？あめ…やどり？"],
-    "p10": ["ここ…"],
+    "p03": ["すみません！あめ！さむい！", "ありがとう！あめ… ほんとう、さむい"],
+    "p04": ["傘"],
+    "p05": ["ここ！だいじょうぶ？", "あめ、さむい", "これ、かさ？みせ！", "えき？ひとり？ほんとう？"],
+    "p06": ["これ… ここ、こわれた", "いいえ、だめ。はい、こわれた"],
+    "p07": ["はい。かさ。どうぞ", "いくら？いいえ、だめ！どうぞ、どうぞ。かさ！", "ほんとう。だいじょうぶ"],
+    "p08": ["はいはい", "ひとり、 だいじょうぶ？ みせ、ここ！"],
+    "p09": ["あめやどり"],
+    "p10": [],
 }
-FURI = {"p01": [["駅", "えき"]], "p04": [["傘", "かさ"], None]}
+# Panels, deren Texte seit V2 unveraendert sind — nur die werden noch gegen die Git-Quelle geprueft.
+UNCHANGED_SINCE_V2 = ["p01", "p02"]
+FURI = {"p01": [["駅", "えき"]], "p04": [["傘", "かさ"]]}
+# Schilder (Spec Mira schweigt §4, Aenderung 5.10.): als Kasten gelettert.
+SCHILD = {"p01": ["みなみまち駅"], "p04": ["傘"], "p09": ["あめやどり"]}
 
 # Gegenprobe gegen die Git-Quelle (BUBBLES im alten Lettering-Skript).
 src = subprocess.run(["git", "show", "f49e164:tool/letter_folge01.py"],
@@ -38,7 +43,7 @@ for node in tree.body:
     if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", "") == "BUBBLES":
         for k, v in zip(node.value.keys, node.value.values):
             git_texts["p%02d" % k.value] = [e.elts[0].value for e in v.elts]
-for pid in EXPECTED:
+for pid in UNCHANGED_SINCE_V2:
     assert git_texts.get(pid, []) == EXPECTED[pid], ("Git-Abweichung", pid, git_texts.get(pid))
 
 assert layout["reactions"] == ["p02", "p05", "p08"], layout["reactions"]
@@ -61,6 +66,9 @@ for pid, texts in EXPECTED.items():
             assert [b.get("furigana") for b in spec["bubbles"]] == FURI[pid], (pid, fmt)
         else:
             assert all("furigana" not in b for b in spec["bubbles"]), (pid, fmt)
+        schilder = [b["text"] for b in spec["bubbles"] if b.get("form") == "schild"]
+        assert schilder == SCHILD.get(pid, []), (pid, fmt, "schild", schilder)
+        assert all("off" not in b for b in spec["bubbles"]), (pid, fmt, "keine Zeiger mehr")
         for face in spec["faces"]:
             assert len(face) == 4, (pid, fmt, face)
-print("OK: 10 Panels x 2 Formate, Texte = Git-Quelle, reactions ok, kern 11/11")
+print("OK: 10 Panels x 2 Formate, Texte = Drehbuch V3 (p01/p02 = Git-Quelle), reactions ok, kern 11/11, Schilder 3")

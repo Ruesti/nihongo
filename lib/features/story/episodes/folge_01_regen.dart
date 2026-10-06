@@ -14,9 +14,9 @@ Episode loadFolge01() {
   return episode;
 }
 
-/// Folge 01 — "Regen", V2 nach docs/story/DREHBUCH_FOLGE_01_V2.md (BINDENDE
-/// Textquelle für alle deutschen Kästen/Gedanken und japanischen Dialoge)
-/// und dem Panel-Bauplan in
+/// Folge 01 — "Regen", V3 nach docs/story/DREHBUCH_FOLGE_01_V3.md (Mira
+/// schweigt) (BINDENDE Textquelle für alle deutschen Kästen/Gedanken und
+/// japanischen Dialoge) und dem Panel-Bauplan in
 /// docs/superpowers/plans/2026-09-13-folge01-v2.md. 10 dichte Panels statt
 /// V1s 24 — jedes Panel trägt Sprache oder treibt die Handlung. Mira, die
 /// Protagonistin, sucht anhand eines vom Regen fast unleserlich gemachten
@@ -37,7 +37,7 @@ const Map<String, dynamic> pilot01RegenJson = {
       'In ihrer Hand: ein Zettel, dessen Tinte verläuft.',
   'outro':
       'Auf dem Zettel standen einmal drei Zeilen. Mira kennt jetzt: ein '
-      'Zeichen und vier Wörter. Hinter dieser Tür fängt der Rest an.',
+      'Zeichen und acht Wörter. Hinter dieser Tür fängt der Rest an.',
   'budget': {
     'items': [
       {'id': 'lex_ja_sumimasen', 'refType': 'lexeme'},
@@ -236,7 +236,10 @@ const Map<String, dynamic> pilot01RegenJson = {
       ],
     },
     'lex_ja_hontou': {
-      'usage': '„wirklich?" — als Frage, wenn man etwas kaum glauben kann.',
+      'usage':
+          '„wirklich" — als Frage ほんとう？ heißt es „wirklich?", als '
+          'Antwort beteuert es: „wirklich, ganz ehrlich". Vor einem Wort '
+          'verstärkt es: ほんとう、さむい — wirklich kalt.',
       'variants': [
         {
           'form': 'ほんとうに',
@@ -388,36 +391,42 @@ const Map<String, dynamic> pilot01RegenJson = {
           'bubbles': [
             {
               'speakerId': 'passant_a',
-              'text': 'あめ！あめ！',
+              'text': 'すみません！あめ！さむい！',
               'hitArea': f01HitQuerP03B0,
               'hitAreaPortrait': f01HitHochP03B0,
               'tokens': [
+                {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'さむい', 'itemId': 'lex_ja_samui'},
               ],
             },
             {
               'speakerId': 'passant_b',
-              'text': 'あめ、あめ… さむい、さむい',
+              'text': 'ありがとう！あめ… ほんとう、さむい',
               'hitArea': f01HitQuerP03B1,
               'hitAreaPortrait': f01HitHochP03B1,
               'tokens': [
+                {'surface': 'ありがとう', 'itemId': 'lex_ja_arigatou'},
                 {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-                {'surface': 'さむい', 'itemId': 'lex_ja_samui'},
+                {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
                 {'surface': 'さむい', 'itemId': 'lex_ja_samui'},
               ],
             },
           ],
           'thoughts': [
-            {'text': 'Ein Wort fliegt an ihr vorbei. Alle sagen es heute.'},
+            {
+              'text':
+                  'Passanten drängeln sich unters Vordach. Ein Wort fliegt an '
+                  'ihr vorbei. Alle sagen es heute.',
+            },
             {'text': '„Ame. …Der Regen?"'},
           ],
           'interactions': [],
           'notes':
               'Leere Straße, sie geht; zwei Passanten flüchten unter ein '
-              'Vordach. Passant A: 「あめ！」 Passantin B: 「あめ、あめ…」 '
-              '(lachend, schulterzuckend).',
+              'Vordach. Passant A drängelt vorbei: 「すみません！あめ！'
+              'さむい！」 Passantin B, unterm Vordach, lachend: 「ありがとう！'
+              'あめ… ほんとう、さむい」.',
         },
         {
           'index': 3,
@@ -433,15 +442,6 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'surface': '傘', 'reading': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
             },
-            {
-              'speakerId': 'protagonist',
-              'text': '…あめ',
-              'hitArea': f01HitQuerP04B1,
-              'hitAreaPortrait': f01HitHochP04B1,
-              'tokens': [
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-              ],
-            },
           ],
           'thoughts': [
             {
@@ -450,8 +450,24 @@ const Map<String, dynamic> pilot01RegenJson = {
                   'sich selbst erklärt.',
             },
             {'text': '„Kasa. Schirme. Das ist ja fast fair."'},
+            {
+              'text':
+                  'Das Wort von der Straße liegt ihr auf der Zunge. Es bleibt '
+                  'dort.',
+            },
           ],
-          'interactions': [],
+          'interactions': [
+            {
+              'type': 'silent',
+              'diegetic': true,
+              'target': 'あめ',
+              'targetItemIds': ['lex_ja_ame'],
+              'promptText':
+                  'Unter dem Dach, als du das Schild gesehen hast und das Wort '
+                  'von der Straße noch im Ohr hattest. Was hättest du leise '
+                  'sagen können?',
+            },
+          ],
           'notes':
               'Eingang der Shotengai (Einkaufsstraße), innen warm und '
               'trocken, halb tot: drei von zehn Läden offen. Vor einem '
@@ -470,19 +486,29 @@ const Map<String, dynamic> pilot01RegenJson = {
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'あめ、あめ！',
+              'text': 'ここ！だいじょうぶ？',
               'hitArea': f01HitQuerP05B0,
               'hitAreaPortrait': f01HitHochP05B0,
               'tokens': [
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
+                {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
               ],
             },
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'これ？かさ？みせ！',
+              'text': 'あめ、さむい',
               'hitArea': f01HitQuerP05B1,
               'hitAreaPortrait': f01HitHochP05B1,
+              'tokens': [
+                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
+                {'surface': 'さむい', 'itemId': 'lex_ja_samui'},
+              ],
+            },
+            {
+              'speakerId': 'ladenbesitzer',
+              'text': 'これ、かさ？みせ！',
+              'hitArea': f01HitQuerP05B2,
+              'hitAreaPortrait': f01HitHochP05B2,
               'tokens': [
                 {'surface': 'これ', 'itemId': 'lex_ja_kore'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
@@ -491,21 +517,13 @@ const Map<String, dynamic> pilot01RegenJson = {
             },
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'ひとり？',
-              'hitArea': f01HitQuerP05B2,
-              'hitAreaPortrait': f01HitHochP05B2,
-              'tokens': [
-                {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
-              ],
-            },
-            {
-              'speakerId': 'protagonist',
-              'text': '…はい。ひとり',
+              'text': 'えき？ひとり？ほんとう？',
               'hitArea': f01HitQuerP05B3,
               'hitAreaPortrait': f01HitHochP05B3,
               'tokens': [
-                {'surface': 'はい', 'itemId': 'lex_ja_hai'},
+                {'surface': 'えき', 'itemId': 'lex_ja_eki'},
                 {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
+                {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
               ],
             },
           ],
@@ -513,8 +531,8 @@ const Map<String, dynamic> pilot01RegenJson = {
             {'text': 'Sie versteht kein Wort. Aber sie versteht alles.'},
             {
               'text':
-                  '„Sag irgendwas. Das eine Wort, das die Frau im Zug zum '
-                  'Schaffner gesagt hat — sag es."',
+                  '„Sag irgendwas. Das Wort, das der Mann eben im Regen '
+                  'gesagt hat — sag es."',
             },
           ],
           'interactions': [
@@ -536,8 +554,11 @@ const Map<String, dynamic> pilot01RegenJson = {
           'notes':
               'Miras eigener Schirm — aufgespannt ein Gerippe, zwei Streben '
               'gebrochen. Der alte Ladenbesitzer tritt heraus, sieht den '
-              'Schirm, lacht nicht unfreundlich. Er: 「あめ、あめ！」 '
-              '(deutet zum Himmel) — dann auf ihren Schirm: 「これ？」',
+              'Schirm, lacht nicht unfreundlich. Er winkt sie unters '
+              'Vordach: 「ここ！だいじょうぶ？」 — 「あめ、さむい」 (deutet '
+              'zum Himmel) — auf ihren Schirm und seinen Laden: 「これ、かさ？'
+              'みせ！」 — sie musternd: 「えき？ひとり？ほんとう？」 Mira '
+              'nickt (keine Blase).',
         },
         {
           'index': 5,
@@ -546,50 +567,53 @@ const Map<String, dynamic> pilot01RegenJson = {
           'bubbles': [
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'これ、こわれた',
+              'text': 'これ… ここ、こわれた',
               'hitArea': f01HitQuerP06B0,
               'hitAreaPortrait': f01HitHochP06B0,
               'tokens': [
                 {'surface': 'これ', 'itemId': 'lex_ja_kore'},
+                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
               ],
             },
             {
               'speakerId': 'ladenbesitzer',
-              'text': 'はい、こわれた、こわれた。だめ、だめ',
+              'text': 'いいえ、だめ。はい、こわれた',
               'hitArea': f01HitQuerP06B1,
               'hitAreaPortrait': f01HitHochP06B1,
               'tokens': [
+                {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
+                {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
                 {'surface': 'はい', 'itemId': 'lex_ja_hai'},
-                {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
-                {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
-                {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
-                {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
-              ],
-            },
-            {
-              'speakerId': 'protagonist',
-              'text': '…こわれた…？',
-              'hitArea': f01HitQuerP06B2,
-              'hitAreaPortrait': f01HitHochP06B2,
-              'tokens': [
                 {'surface': 'こわれた', 'itemId': 'lex_ja_kowareta'},
               ],
             },
           ],
           'thoughts': [
+            {'text': 'Mira will etwas sagen. Sie bringt es nicht heraus.'},
             {
               'text':
                   '„Kowareta. Kaputt. Wie ich das erste Wort meiner '
                   'Großmutter lerne: über einen kaputten Schirm."',
             },
           ],
-          'interactions': [],
+          'interactions': [
+            {
+              'type': 'silent',
+              'diegetic': true,
+              'target': 'こわれた',
+              'targetItemIds': ['lex_ja_kowareta'],
+              'promptText':
+                  'Er hat dir den Schirm gezeigt und es zweimal gesagt. Was '
+                  'hättest du nachsprechen können?',
+            },
+          ],
           'notes':
               'Der Ladenbesitzer nimmt ihren Schirm, begutachtet ihn '
-              'fachmännisch. Er: 「これ、こわれた」 (zeigt auf die Streben) '
-              '— 「こわれた、こわれた」 (kopfschüttelnd, fast zärtlich). '
-              'Mira (leise): 「…こわれた…？」',
+              'fachmännisch. Er: 「これ… ここ、こわれた」 (zeigt auf die '
+              'Streben) — 「いいえ、だめ。はい、こわれた」 (kopfschüttelnd, '
+              'fast zärtlich). '
+              'Mira will etwas sagen und bleibt stumm (keine Blase).',
         },
         {
           'index': 6,
@@ -608,63 +632,57 @@ const Map<String, dynamic> pilot01RegenJson = {
               ],
             },
             {
-              'speakerId': 'protagonist',
-              'text': 'え？いくら？いくら？',
+              'speakerId': 'ladenbesitzer',
+              'text': 'いくら？いいえ、だめ！どうぞ、どうぞ。かさ！',
               'hitArea': f01HitQuerP07B1,
               'hitAreaPortrait': f01HitHochP07B1,
               'tokens': [
-                {'surface': 'え', 'itemId': null},
                 {'surface': 'いくら', 'itemId': 'lex_ja_ikura'},
-                {'surface': 'いくら', 'itemId': 'lex_ja_ikura'},
-              ],
-            },
-            {
-              'speakerId': 'ladenbesitzer',
-              'text': 'いいえ、いいえ。どうぞ、どうぞ。かさ！',
-              'hitArea': f01HitQuerP07B2,
-              'hitAreaPortrait': f01HitHochP07B2,
-              'tokens': [
                 {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
-                {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
+                {'surface': 'だめ', 'itemId': 'lex_ja_dame'},
                 {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
                 {'surface': 'どうぞ', 'itemId': 'lex_ja_douzo'},
                 {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
               ],
             },
             {
-              'speakerId': 'protagonist',
-              'text': '…ほんとう？',
-              'hitArea': f01HitQuerP07B3,
-              'hitAreaPortrait': f01HitHochP07B3,
-              'tokens': [
-                {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
-              ],
-            },
-            {
               'speakerId': 'ladenbesitzer',
-              'text': 'ほんとう。だいじょうぶ、だいじょうぶ',
-              'hitArea': f01HitQuerP07B4,
-              'hitAreaPortrait': f01HitHochP07B4,
+              'text': 'ほんとう。だいじょうぶ',
+              'hitArea': f01HitQuerP07B2,
+              'hitAreaPortrait': f01HitHochP07B2,
               'tokens': [
                 {'surface': 'ほんとう', 'itemId': 'lex_ja_hontou'},
-                {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
                 {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
               ],
             },
           ],
           'thoughts': [
+            {'text': '„Was kostet der? Wie fragt man das?"'},
+            {'text': 'Sie bleibt stumm.'},
             {
               'text':
                   'Sie hat nichts bestellt. Sie hat nichts bezahlt. Er gibt '
                   'ihr den Schirm einfach so.',
             },
           ],
-          'interactions': [],
+          'interactions': [
+            {
+              'type': 'silent',
+              'diegetic': true,
+              'target': 'いくら',
+              'targetItemIds': ['lex_ja_ikura'],
+              'promptText':
+                  'Als du zum Geldbeutel gegriffen hast. Was hättest du '
+                  'fragen können?',
+            },
+          ],
           'notes':
               'Er greift in den Korb, hält ihr einen Schirm hin — den '
               'schlichtesten, aber heilen. Er: 「はい。かさ。どうぞ」 — '
-              'Mira: 「え？」 — Er (nachdrücklich, lächelnd): 「どうぞ、'
-              'どうぞ！」',
+              'Mira greift zum Geldbeutel, stumm (keine Blase). Er sieht '
+              'es: 「いくら？'
+              'いいえ、だめ！どうぞ、どうぞ。かさ！」 Dann: 「ほんとう。'
+              'だいじょうぶ」',
         },
         {
           'index': 7,
@@ -682,19 +700,15 @@ const Map<String, dynamic> pilot01RegenJson = {
               ],
             },
             {
-              'speakerId': 'protagonist',
-              'text': 'ありがとう… すみません… あめ… かさ… いいえ… だいじょうぶ… えき… みせ…',
+              'speakerId': 'ladenbesitzer',
+              'text': 'ひとり、 だいじょうぶ？ みせ、ここ！',
               'hitArea': f01HitQuerP08B1,
               'hitAreaPortrait': f01HitHochP08B1,
               'tokens': [
-                {'surface': 'ありがとう', 'itemId': 'lex_ja_arigatou'},
-                {'surface': 'すみません', 'itemId': 'lex_ja_sumimasen'},
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-                {'surface': 'かさ', 'itemId': 'lex_ja_kasa'},
-                {'surface': 'いいえ', 'itemId': 'lex_ja_iie'},
+                {'surface': 'ひとり', 'itemId': 'lex_ja_hitori'},
                 {'surface': 'だいじょうぶ', 'itemId': 'lex_ja_daijoubu'},
-                {'surface': 'えき', 'itemId': 'lex_ja_eki'},
                 {'surface': 'みせ', 'itemId': 'lex_ja_mise'},
+                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
               ],
             },
           ],
@@ -703,6 +717,12 @@ const Map<String, dynamic> pilot01RegenJson = {
               'text':
                   'Es gibt genau ein Wort, das jetzt reicht. Sie kennt es '
                   'aus jedem Film. Jetzt zählt es zum ersten Mal.',
+            },
+            {
+              'text':
+                  'Acht Wörter heute. Sie zählt sie an den Fingern ab, auf '
+                  'dem Weg die Straße hinunter. Hinter ihr ruft der '
+                  'Ladenbesitzer.',
             },
           ],
           'interactions': [
@@ -720,8 +740,8 @@ const Map<String, dynamic> pilot01RegenJson = {
           ],
           'notes':
               'Mira mit dem neuen Schirm, halb verlegen, halb gerührt. Er '
-              'winkt ab, lacht: 「はいはい」. Mira (im Gehen, leise '
-              'übend): 「ありがとう… すみません… あめ… かさ…」',
+              'winkt ab, lacht: 「はいはい」 — und ruft ihr nach: 「ひとり、'
+              'だいじょうぶ？みせ、ここ！」 (der Laden ist hier, falls was ist).',
         },
       ],
     },
@@ -744,19 +764,9 @@ const Map<String, dynamic> pilot01RegenJson = {
                 {'surface': 'やどり', 'itemId': null},
               ],
             },
-            {
-              'speakerId': 'protagonist',
-              'text': 'ここ…？あめ…やどり？',
-              'hitArea': f01HitQuerP09B1,
-              'hitAreaPortrait': f01HitHochP09B1,
-              'tokens': [
-                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
-                {'surface': 'あめ', 'itemId': 'lex_ja_ame'},
-                {'surface': 'やどり', 'itemId': null},
-              ],
-            },
           ],
           'thoughts': [
+            {'text': 'Sie liest, Zeichen für Zeichen. Das zweite kennt sie.'},
             {
               'text':
                   'Das Zeichen vom Zettel. Hier, auf einem Caféschild, in '
@@ -777,26 +787,28 @@ const Map<String, dynamic> pilot01RegenJson = {
           'index': 9,
           'asset': 'assets/story/folge01/p10.jpg',
           'assetPortrait': 'assets/story/folge01/p10_hoch.jpg',
-          'bubbles': [
-            {
-              'speakerId': 'protagonist',
-              'text': 'ここ…',
-              'hitArea': f01HitQuerP10B0,
-              'hitAreaPortrait': f01HitHochP10B0,
-              'tokens': [
-                {'surface': 'ここ', 'itemId': 'lex_ja_koko'},
-              ],
-            },
-          ],
+          'bubbles': [],
           'thoughts': [
+            {'text': '„Was sagt man, wenn man irgendwo hereinkommt?"'},
+            {'text': 'Sie bleibt stumm vor der Tür.'},
             {
               'text':
                   'Auf dem Zettel standen einmal drei Zeilen. Mira kennt '
-                  'jetzt: ein Zeichen und vier Wörter. Hinter dieser Tür '
+                  'jetzt: ein Zeichen und acht Wörter. Hinter dieser Tür '
                   'fängt der Rest an.',
             },
           ],
-          'interactions': [],
+          'interactions': [
+            {
+              'type': 'silent',
+              'diegetic': true,
+              'target': 'すみません',
+              'targetItemIds': ['lex_ja_sumimasen'],
+              'promptText':
+                  'Und dann standest du vor meiner Tür, die Hand am Griff. Was '
+                  'sagt man, wenn man irgendwo hereinkommt?',
+            },
+          ],
           'notes':
               'Mira vor der Cafétür, die Hand am Griff, drinnen warmes '
               'Licht, eine Silhouette hinter dem Tresen.',

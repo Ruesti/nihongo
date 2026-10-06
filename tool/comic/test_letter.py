@@ -70,6 +70,53 @@ class CheckLayout(unittest.TestCase):
         self.assertEqual(lf.out_name("p02", "hoch", reaction=True), "p02_reaction_hoch.jpg")
 
 
+class Schild(unittest.TestCase):
+    """Schilder ("form": "schild"): rechteckiges Etikett, Pruefung gegen das volle Rechteck."""
+
+    def schild_layout(self, rect, face=None, fmt="quer", form="schild"):
+        lay = layout(rect, face=face, fmt=fmt)
+        lay["panels"]["p01"][fmt]["bubbles"][0]["form"] = form
+        return lay
+
+    def test_schild_clear_is_ok(self):
+        self.assertEqual(lf.check_layout(self.schild_layout([0.2, 0.2, 0.3, 0.1])), [])
+
+    def test_corner_hit_counts_for_schild_not_for_oval(self):
+        # Gesicht nur in der Rechteck-Ecke: das Oval laesst es frei, das Schild verdeckt es
+        rect, face = [0.2, 0.2, 0.3, 0.1], [0.48, 0.28, 0.05, 0.05]
+        self.assertEqual(lf.check_layout(layout(rect, face=face)), [])
+        msgs = lf.check_layout(self.schild_layout(rect, face=face))
+        self.assertEqual(len(msgs), 1, msgs)
+        self.assertTrue(msgs[0].startswith("GESICHT VERDECKT p01 quer"), msgs)
+
+    def test_corner_hit_on_nogo(self):
+        lay = self.schild_layout([0.2, 0.3, 0.3, 0.1])
+        lay["panels"]["p01"]["quer"]["nogo"] = [[0.0, 0.0, 0.21, 0.305]]
+        self.assertTrue(any(m.startswith("ÜBERLAGERUNG") for m in lf.check_layout(lay)))
+        lay["panels"]["p01"]["quer"]["bubbles"][0].pop("form")
+        self.assertEqual(lf.check_layout(lay), [])
+
+    def test_bad_form(self):
+        msgs = lf.check_layout(self.schild_layout([0.2, 0.2, 0.3, 0.1], form="wolke"))
+        self.assertTrue(msgs and msgs[0].startswith("FORM p01 quer"), msgs)
+
+    def test_schild_drawn_as_rectangle(self):
+        from PIL import Image
+        rect = [0.2, 0.3, 0.3, 0.2]   # x 320–800, y 240–400
+        oval = lf.letter(Image.new("RGB", (1600, 800), (90, 90, 90)), [{"text": "あ", "rect": rect}])
+        schild = lf.letter(Image.new("RGB", (1600, 800), (90, 90, 90)),
+                           [{"text": "あ", "rect": rect, "form": "schild"}])
+        # nahe der Ecke: Oval laesst den Hintergrund, das Schild ist gefuellt
+        self.assertEqual(oval.getpixel((340, 260)), (90, 90, 90))
+        self.assertEqual(schild.getpixel((340, 260)), lf.SCHILD_FILL)
+        # gerade Kontur an der Oberkante
+        self.assertEqual(schild.getpixel((560, 241)), lf.SCHILD_LINE)
+
+    def test_no_off_tails_anymore(self):
+        self.assertFalse(hasattr(lf, "tail_points"))
+        self.assertFalse(hasattr(lf, "OFF_DIRS"))
+
+
 class Wrap(unittest.TestCase):
     def test_short_stays_one_line(self):
         self.assertEqual(lf.wrap("みなみまち駅"), "みなみまち駅")

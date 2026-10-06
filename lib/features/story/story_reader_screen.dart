@@ -582,7 +582,7 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
           final asset = _effectiveAssetFor(panel, format);
           final footerBubbles = [
             for (final b in panel.bubbles)
-              if (b.hitAreaFor(shown).points.isEmpty) b,
+              if (!b.isSilence && b.hitAreaFor(shown).points.isEmpty) b,
           ];
           return Stack(
             clipBehavior: Clip.hardEdge,
@@ -617,8 +617,13 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                 ),
               ),
               // Tippflächen der gelettertern Blasen, relativ zum Bildrechteck.
+              // Eine tokenlose „…“-Blase bleibt inert (Schutz; seit 5.10.
+              // steht Miras Schweigen im Erzähltext, Spec Mira schweigt §4):
+              // kein Vorlesen, keine Karte — der Tipp fällt zum Weiterblättern
+              // durch.
               for (var i = 0; i < panel.bubbles.length; i++)
-                if (panel.bubbles[i].hitAreaFor(shown).points.isNotEmpty)
+                if (!panel.bubbles[i].isSilence &&
+                    panel.bubbles[i].hitAreaFor(shown).points.isNotEmpty)
                   Positioned.fromRect(
                     rect: mapToScreen(
                         _bboxOf(panel.bubbles[i].hitAreaFor(shown)),

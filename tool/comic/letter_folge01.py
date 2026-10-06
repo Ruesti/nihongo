@@ -10,6 +10,12 @@ ueber das Bild legt (Erzaehlkasten oben, Mitmach-/Reaktionszeile unten). Eine Bl
 eine davon schneidet → ÜBERLAGERUNG (gleiche Ellipsen-Rechteck-Mathematik wie bei Gesichtern).
 Mindest-Schrift: faellt fit_font unter MIN_FONT (quer 34 px auf 1920 breit, hoch 30 px auf 1080
 breit) → KLEINSCHRIFT; Abhilfe ist immer eine groessere Blase im Layout, nie kleinere Schrift.
+Schilder: eine Blase mit "form": "schild" (Stations-, Laden-, Caféschild) wird als rechteckiges
+Schild-Etikett gezeichnet (gerade Kanten, duenne dunkle Kontur, helle Fuellung, kleiner Eckradius) statt
+als Oval — gleiche Schrift, Einpassung und Furigana. Gesichter und Nogo-Zonen werden dann gegen das
+volle Rechteck geprueft (Rechteck-Rechteck statt Ellipse-Rechteck). Ohne "form" bleibt es das Oval.
+Es gibt keine Zeiger: Spricht jemand von ausserhalb des Bildes, steht die Blase am Bildrand auf seiner
+Seite, und der Erzaehltext nennt ihn.
 Die Reihenfolge der Blasen je Panel und Format in folge01_layout.json ist verbindlich und muss der
 Reihenfolge in lib/features/story/episodes/folge_01_regen.dart entsprechen (geprueft von
 test/features/story/folge_01_layout_test.dart).
@@ -32,9 +38,15 @@ def out_name(pid, fmt, reaction=False):
     return pid + ("_reaction" if reaction else "") + ("_hoch" if fmt == "hoch" else "") + ".jpg"
 
 
-def _overlaps(slot, face):
+FORMS = ("oval", "schild")
+
+
+def _overlaps(slot, face, form="oval"):
+    """Schneidet die Blase (Ellipse im Rechteck slot, bei "schild" das volle Rechteck) das Rechteck face?"""
     sx, sy, sw, sh = slot
     fx, fy, fw, fh = face
+    if form == "schild":
+        return sx < fx + fw and fx < sx + sw and sy < fy + fh and fy < sy + sh
     cx, cy, rx, ry = sx + sw / 2, sy + sh / 2, sw / 2, sh / 2
     px = min(max(cx, fx), fx + fw)
     py = min(max(cy, fy), fy + fh)
@@ -64,11 +76,14 @@ def check_layout(layout):
         for fmt, spec in formats.items():
             W, H = FORMAT_SIZE[fmt]
             for b in spec.get("bubbles", []):
+                form = b.get("form", "oval")
+                if form not in FORMS:
+                    msgs.append("FORM %s %s %r form=%r (erlaubt: %s)" % (pid, fmt, b["text"], form, "/".join(FORMS)))
                 for face in spec.get("faces", []):
-                    if _overlaps(b["rect"], face):
+                    if _overlaps(b["rect"], face, form):
                         msgs.append("GESICHT VERDECKT %s %s %r rect=%s face=%s" % (pid, fmt, b["text"], b["rect"], face))
                 for zone in spec.get("nogo", []):
-                    if _overlaps(b["rect"], zone):
+                    if _overlaps(b["rect"], zone, form):
                         msgs.append("ÜBERLAGERUNG %s %s %r rect=%s nogo=%s" % (pid, fmt, b["text"], b["rect"], zone))
                 if not _in_safe_zone(b["rect"], fmt, safe):
                     msgs.append("SICHERE ZONE %s %s %r rect=%s" % (pid, fmt, b["text"], b["rect"]))
@@ -130,13 +145,22 @@ def bubble_font(draw, b, W, H):
     return box, font, reserve, shown
 
 
+SCHILD_FILL = (246, 242, 230)   # helles, leicht warmes Schildweiss
+SCHILD_LINE = (40, 40, 40)
+SCHILD_RADIUS = 6               # Pixel — hoechstens ein angedeuteter Eckradius
+
+
 def letter(img, bubbles):
     draw = ImageDraw.Draw(img)
     W, H = img.size
     for b in bubbles:
         furi = b.get("furigana")
         box, font, reserve, shown = bubble_font(draw, b, W, H)
-        draw.ellipse(box, fill="white", outline="black", width=4)
+        if b.get("form") == "schild":
+            # Schild-Etikett: Rechteck mit duenner dunkler Kontur, heller Fuellung, kleinem Eckradius.
+            draw.rounded_rectangle(box, radius=SCHILD_RADIUS, fill=SCHILD_FILL, outline=SCHILD_LINE, width=3)
+        else:
+            draw.ellipse(box, fill="white", outline="black", width=4)
         l, t, r, bb = draw.multiline_textbbox((0, 0), shown, font=font)
         cx = (box[0] + box[2]) / 2 - (r - l) / 2 - l
         cy = (box[1] + box[3]) / 2 - (bb - t) / 2 - t + reserve / 2
