@@ -256,4 +256,111 @@ void main() {
     expect(await store.cafeVisitPosition('free'), isNull);
     expect(await store.cafeVisitPosition('ep_t'), (station: 1, item: 0));
   });
+
+  testWidgets('Weg 1: wackelige Wirtin-Wörter werden gespeichert; Fortsetzen '
+      'nach der Wirtin ordnet das Schulmädchen genauso (wackelige zuerst)',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final spoken = <String>[];
+    Widget screen() => MaterialApp(
+          home: CafeVisitScreen.afterEpisode(
+            db: db, languageId: 'lang_ja', episode: _episode(), store: store,
+            speak: (t) async => spoken.add(t), speakSlow: (_) async {},
+            evaluator: _Always(0.0), light: CafeLight.tag,
+          ),
+        );
+    await tester.pumpWidget(screen());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-visit-start')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next'))); // あめ
+    await tester.pumpAndSettle();
+    // かさ: einmal nachgesprochen, nicht geschafft → wackelig
+    await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    expect(find.text('Das Schulmädchen'), findsOneWidget);
+    expect(await store.cafeVisitWobbly('ep_t'), {'lex_ja_kasa'});
+    expect(spoken.last, 'かさ'); // wackeliges Wort zuerst
+    await tester.tap(find.byKey(const ValueKey('cafe-station-later')));
+    await tester.pumpAndSettle();
+    expect(await store.cafeVisitPosition('ep_t'), (station: 1, item: 0));
+
+    spoken.clear();
+    await tester.pumpWidget(const SizedBox()); // frischer Einstieg
+    await tester.pumpWidget(screen());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-visit-resume')));
+    await tester.pumpAndSettle();
+    expect(find.text('Das Schulmädchen'), findsOneWidget);
+    expect(spoken, ['かさ']); // nicht あめ: die Ordnung ist erhalten
+  });
+
+  testWidgets('Weg 1 ohne übbare Wörter: leerer Raum, Besuch sofort erledigt',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final empty = Episode.fromJson({
+      'id': 'ep_leer', 'seasonId': 's', 'orderIndex': 2, 'title': 'L',
+      'locale': 'ja', 'era': 'e',
+      'budget': {'items': [], 'glyphs': []},
+      'pages': [
+        {
+          'index': 0,
+          'panels': [
+            {
+              'index': 0, 'asset': 'x.jpg', 'bubbles': [],
+              'thoughts': [], 'interactions': [],
+            },
+          ],
+        },
+      ],
+    });
+    await store.markCompleted('ep_leer');
+    expect(await store.isCafeVisitPending('ep_leer'), isTrue);
+    await tester.pumpWidget(MaterialApp(
+      home: CafeVisitScreen.afterEpisode(
+        db: db, languageId: 'lang_ja', episode: empty, store: store,
+        speak: (_) async {}, speakSlow: (_) async {},
+        evaluator: _Always(1.0), light: CafeLight.tag,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-empty')), findsOneWidget);
+    expect(find.text('Die Wirtin wischt den Tresen und nickt dir zu.'), findsOneWidget);
+    expect(await store.isCafeVisitPending('ep_leer'), isFalse);
+  });
+
+  testWidgets('Doppeltipp auf „Setz dich" startet den Besuch nur einmal',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final obs = _PushCounter();
+    await tester.pumpWidget(MaterialApp(
+      navigatorObservers: [obs],
+      home: CafeVisitScreen.afterEpisode(
+        db: db, languageId: 'lang_ja', episode: _episode(), store: store,
+        speak: (_) async {}, speakSlow: (_) async {},
+        evaluator: _Always(1.0), light: CafeLight.tag,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final pushesBefore = obs.pushes;
+    final start = find.byKey(const ValueKey('cafe-visit-start'));
+    await tester.tap(start);
+    await tester.tap(start, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(obs.pushes - pushesBefore, 1);
+  });
+}
+
+class _PushCounter extends NavigatorObserver {
+  int pushes = 0;
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) => pushes++;
 }

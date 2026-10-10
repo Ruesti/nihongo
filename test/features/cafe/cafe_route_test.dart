@@ -47,4 +47,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('cafe-visit-empty')), findsOneWidget);
   });
+
+  testWidgets('ohne Folge, aber Weg 1 mit „Später weiter" unterbrochen: '
+      'der Café-Tab setzt diesen Besuch fort', (tester) async {
+    final store = StoryProgressStore(await SharedPreferences.getInstance());
+    final episode = ProviderContainer().read(storyEpisodesProvider).first;
+    await store.markCompleted(episode.id);
+    await store.saveCafeVisitPosition(episode.id, 0, 1);
+    await tester.pumpWidget(app(const CafeRoute()));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-room')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-visit-resume')), findsOneWidget);
+  });
+
+  testWidgets('ohne Folge, Folge beendet, aber keine gespeicherte Position: '
+      'freier Besuch', (tester) async {
+    final store = StoryProgressStore(await SharedPreferences.getInstance());
+    final episode = ProviderContainer().read(storyEpisodesProvider).first;
+    await store.markCompleted(episode.id);
+    await tester.pumpWidget(app(const CafeRoute()));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-empty')), findsOneWidget);
+  });
 }

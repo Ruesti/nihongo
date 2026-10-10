@@ -16,8 +16,18 @@ final cafeVisitProvider = FutureProvider.autoDispose
     .family<({StoryProgressStore store, Episode? pending}), String?>(
         (ref, episodeId) async {
   final store = StoryProgressStore(await SharedPreferences.getInstance());
-  if (episodeId == null) return (store: store, pending: null);
   final episodes = ref.watch(storyEpisodesProvider);
+  if (episodeId == null) {
+    // Café-Tab: ein mit „Später weiter" unterbrochener Weg-1-Besuch geht
+    // vor; ohne gespeicherte Position bleibt es beim freien Besuch.
+    for (final e in episodes) {
+      if (await store.isCafeVisitPending(e.id) &&
+          await store.cafeVisitPosition(e.id) != null) {
+        return (store: store, pending: e);
+      }
+    }
+    return (store: store, pending: null);
+  }
   for (final e in episodes) {
     if (e.id == episodeId && await store.isCafeVisitPending(e.id)) {
       return (store: store, pending: e);
@@ -27,7 +37,8 @@ final cafeVisitProvider = FutureProvider.autoDispose
 });
 
 /// Einstieg ins Café: mit [episodeId] (Endkarte „Ins Café") Weg 1, wenn der
-/// Besuch dieser Folge noch offen ist; sonst Weg 2 (Café-Tab, freier
+/// Besuch dieser Folge noch offen ist; ohne [episodeId] (Café-Tab) Weg 1 für
+/// die erste offene Folge mit „Später weiter"-Position, sonst Weg 2 (freier
 /// Besuch). Dienste: TTS, Spracherkennung — die Stationen laufen ohne sie
 /// weiter, nur ohne Ton bzw. ohne Erkennung.
 class CafeRoute extends ConsumerWidget {

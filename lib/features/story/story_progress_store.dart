@@ -44,6 +44,20 @@ class StoryProgressStore {
 
   Future<void> clearCafeVisitPosition(String visitId) async {
     await _prefs.remove('$_cafePosPrefix$visitId');
+    await _prefs.remove('$_cafeWobblyPrefix$visitId');
+  }
+
+  static const _cafeWobblyPrefix = 'cafe_visit_wobbly_';
+
+  /// Weg 1: die bei der Wirtin wackeligen Wörter, damit ein Fortsetzen die
+  /// Schulmädchen-Liste genauso ordnet (wackelige zuerst).
+  Future<void> saveCafeVisitWobbly(String episodeId, Set<String> ids) =>
+      _prefs.setString('$_cafeWobblyPrefix$episodeId', ids.join(','));
+
+  Future<Set<String>> cafeVisitWobbly(String episodeId) async {
+    final raw = _prefs.getString('$_cafeWobblyPrefix$episodeId');
+    if (raw == null || raw.isEmpty) return const {};
+    return raw.split(',').where((s) => s.isNotEmpty).toSet();
   }
 
   /// Weg 1 ist für diese Folge einmal zu Ende gegangen. Kein Fortschritt im

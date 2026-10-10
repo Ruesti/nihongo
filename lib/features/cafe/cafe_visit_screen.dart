@@ -5,7 +5,6 @@ import '../../core/pipeline/knowledge_bridge.dart';
 import '../story/episode.dart';
 import '../story/speak_evaluator.dart';
 import '../story/story_progress_store.dart';
-import 'cafe_debrief.dart';
 import 'cafe_scenes.dart';
 import 'cafe_summary.dart';
 import 'cafe_visit.dart';
@@ -86,7 +85,14 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     CafeVisitPlan plan;
     CafeVisitPlan? practice;
     if (ep != null) {
+      // Fortsetzen nach der Wirtin: ihre wackeligen Wörter wieder zuerst.
+      _wobbly = await widget.store.cafeVisitWobbly(ep.id);
       plan = planAfterEpisode(ep, wobbly: _wobbly);
+      if (plan.stations.isEmpty) {
+        // Nichts zu üben: der Besuch ist erledigt, die Endkarte lädt nicht
+        // erneut ein (sonst bliebe er ewig offen).
+        await widget.store.markCafeVisitDone(ep.id);
+      }
     } else {
       final due = (await widget.db.getDueItems(widget.languageId, limit: 500))
           .where((i) => i.refType == 'lexeme')
@@ -113,10 +119,6 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     });
   }
 
-  /// Die Folge, aus der ein Wort stammt (Weg 2) — für Panel und Erklärung.
-  Episode? _episodeFor(String itemId) =>
-      widget.episode ?? episodeIntroducing(widget.episodes, itemId);
-
   /// Nur Weg 1 merkt sich die Position. Der freie Besuch wird aus der
   /// Fälligkeitsliste neu gebaut — die ändert sich beim Bewerten, ein
   /// gespeicherter Index würde auf andere Wörter zeigen.
@@ -125,7 +127,19 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     await widget.store.saveCafeVisitPosition(widget.visitId, station, item);
   }
 
+  bool _running = false; // Doppeltipp auf Start/Weitermachen/Von vorn
+
   Future<void> _run({required int fromStation, required int fromItem}) async {
+    if (_running) return;
+    _running = true;
+    try {
+      await _runInner(fromStation: fromStation, fromItem: fromItem);
+    } finally {
+      _running = false;
+    }
+  }
+
+  Future<void> _runInner({required int fromStation, required int fromItem}) async {
     var plan = _plan!;
     var left = false;
     for (var s = fromStation; s < plan.stations.length && !left; s++) {
@@ -137,16 +151,16 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
         continue;
       }
       final start = s == fromStation ? fromItem : 0;
-      // Plan A: Wörter einer Station kommen aus einer Folge (Weg 1) oder
-      // je Wort aus seiner Folge (Weg 2, erste Folge des ersten Worts).
-      final episode = widget.episode ??
-          (sp.itemIds.isEmpty ? null : _episodeFor(sp.itemIds.first));
+      // Weg 1: eine Folge; Weg 2: die Stationen suchen je Wort die Folge,
+      // die es eingeführt hat (episodes).
+      final episode = widget.episode;
       if (!mounted) return;
       final done = await Navigator.of(context).push<bool>(MaterialPageRoute(
         builder: (_) => switch (sp.station) {
           CafeStation.wirtin => WirtinStation(
               db: widget.db,
               episode: episode,
+              episodes: widget.episodes,
               itemIds: sp.itemIds,
               startIndex: start,
               speak: widget.speak,
@@ -166,6 +180,7 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
               bridge: widget.bridge,
               languageId: widget.languageId,
               episode: episode,
+              episodes: widget.episodes,
               itemIds: sp.itemIds,
               startIndex: start,
               speak: widget.speak,
@@ -190,7 +205,9 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
         await _persist(s + 1, 0);
       }
       // Weg 1: nach der Wirtin die Schulmädchen-Liste neu nach „wackelig" ordnen.
+      // Die Menge wird gespeichert, damit ein Fortsetzen genauso ordnet.
       if (widget.episode != null && sp.station == CafeStation.wirtin) {
+        await widget.store.saveCafeVisitWobbly(widget.episode!.id, _wobbly);
         _plan = planAfterEpisode(widget.episode!, wobbly: _wobbly);
         plan = _plan!;
       }
