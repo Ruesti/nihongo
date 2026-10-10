@@ -103,7 +103,8 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
         if (p.stations.isNotEmpty) practice = p;
       }
     }
-    final resume = await widget.store.cafeVisitPosition(widget.visitId);
+    final resume =
+        ep == null ? null : await widget.store.cafeVisitPosition(widget.visitId);
     if (!mounted) return;
     setState(() {
       _plan = plan;
@@ -115,6 +116,14 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
   /// Die Folge, aus der ein Wort stammt (Weg 2) — für Panel und Erklärung.
   Episode? _episodeFor(String itemId) =>
       widget.episode ?? episodeIntroducing(widget.episodes, itemId);
+
+  /// Nur Weg 1 merkt sich die Position. Der freie Besuch wird aus der
+  /// Fälligkeitsliste neu gebaut — die ändert sich beim Bewerten, ein
+  /// gespeicherter Index würde auf andere Wörter zeigen.
+  Future<void> _persist(int station, int item) async {
+    if (widget.episode == null) return;
+    await widget.store.saveCafeVisitPosition(widget.visitId, station, item);
+  }
 
   Future<void> _run({required int fromStation, required int fromItem}) async {
     var plan = _plan!;
@@ -145,7 +154,7 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
               evaluator: widget.evaluator,
               grammarNotes: widget.grammarNotes,
               light: _light,
-              onPosition: (i) => widget.store.saveCafeVisitPosition(widget.visitId, s, i),
+              onPosition: (i) => _persist(s, i),
               onDone: (w) {
                 _wobbly = w;
                 Navigator.of(context).pop(true);
@@ -162,7 +171,7 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
               speak: widget.speak,
               evaluator: widget.evaluator,
               light: _light,
-              onPosition: (i) => widget.store.saveCafeVisitPosition(widget.visitId, s, i),
+              onPosition: (i) => _persist(s, i),
               onDone: (r) {
                 _records.addAll(r);
                 Navigator.of(context).pop(true);
@@ -178,7 +187,7 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
         break;
       }
       if (s + 1 < plan.stations.length) {
-        await widget.store.saveCafeVisitPosition(widget.visitId, s + 1, 0);
+        await _persist(s + 1, 0);
       }
       // Weg 1: nach der Wirtin die Schulmädchen-Liste neu nach „wackelig" ordnen.
       if (widget.episode != null && sp.station == CafeStation.wirtin) {
@@ -193,8 +202,10 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
       await Navigator.of(context).maybePop();
       return;
     }
-    await widget.store.clearCafeVisitPosition(widget.visitId);
-    if (widget.episode != null) await widget.store.markCafeVisitDone(widget.episode!.id);
+    if (widget.episode != null) {
+      await widget.store.clearCafeVisitPosition(widget.visitId);
+      await widget.store.markCafeVisitDone(widget.episode!.id);
+    }
     if (!mounted) return;
     setState(() => _summary = summaryLines(_records, now: DateTime.now()));
   }

@@ -207,4 +207,53 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Das Schulmädchen'), findsOneWidget);
   });
+
+  Widget freeVisit() => MaterialApp(
+        home: CafeVisitScreen.free(
+          db: db, languageId: 'lang_ja', episodes: [_episode()], store: store,
+          speak: (_) async {}, speakSlow: (_) async {},
+          evaluator: _Always(1.0), light: CafeLight.tag,
+        ),
+      );
+
+  testWidgets('freier Besuch: Später weiter speichert nichts, kein Fortsetzen',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(freeVisit());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-visit-start')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-later')));
+    await tester.pumpAndSettle();
+    expect(await store.cafeVisitPosition('free'), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(freeVisit());
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-start')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-visit-resume')), findsNothing);
+  });
+
+  testWidgets('freiwillige Runde: Später weiter lässt Weg-1-Position unberührt',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    for (final id in ['lex_ja_ame', 'lex_ja_kasa']) {
+      final item = (await db.getLearnItem('lang_ja:lexeme:$id'))!;
+      await db.update(db.learnItems).replace(item.copyWith(
+          masteryRung: 2, dueAt: DateTime.now().add(const Duration(days: 1))));
+    }
+    await store.saveCafeVisitPosition('ep_t', 1, 0);
+    await tester.pumpWidget(freeVisit());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-visit-practice-anyway')));
+    await tester.pumpAndSettle();
+    expect(find.text('Das Schulmädchen'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('cafe-station-later')));
+    await tester.pumpAndSettle();
+    expect(await store.cafeVisitPosition('free'), isNull);
+    expect(await store.cafeVisitPosition('ep_t'), (station: 1, item: 0));
+  });
 }
