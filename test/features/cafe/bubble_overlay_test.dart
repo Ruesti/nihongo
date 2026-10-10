@@ -51,6 +51,32 @@ void main() {
     expect(_plain(spans), 'すみません！___！さむい！');
   });
 
+  test('blank: Zielwort nicht im Text → nur ___, das Wort sickert nie durch',
+      () {
+    final spans = bubbleSpans('駅まえ！', 'えき', BubbleOverlayMode.blank, base);
+    expect(_plain(spans), '___');
+    expect(_plain(bubbleSpans('あめ', '', BubbleOverlayMode.blank, base)), '___');
+    // highlight bleibt unverändert: der ganze Text, nichts hervorgehoben
+    expect(_plain(bubbleSpans('駅まえ！', 'えき', BubbleOverlayMode.highlight, base)),
+        '駅まえ！');
+  });
+
+  testWidgets('Überlagerung mit kleinem Eckenradius (deckt auch Schilder-Kästen)',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: PanelWithBubble(
+        panel: _panel(),
+        bubble: _panel().bubbles.first,
+        targetSurface: 'あめ',
+        mode: BubbleOverlayMode.blank,
+        format: PanelFormat.landscape,
+      ),
+    ));
+    final box = tester.widget<Container>(find.byKey(const ValueKey('bubble-overlay')));
+    expect((box.decoration! as BoxDecoration).borderRadius,
+        BorderRadius.circular(14));
+  });
+
   testWidgets('die Überlagerung sitzt auf dem Rechteck der Hochformat-Blase',
       (tester) async {
     await tester.pumpWidget(MaterialApp(

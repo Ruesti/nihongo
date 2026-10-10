@@ -8,8 +8,14 @@ import '../story/panel_geometry.dart';
 enum BubbleOverlayMode { highlight, blank }
 
 /// Der Blasentext als Spans: [target] farbig/fett oder durch „___" ersetzt.
+/// Kommt [target] im Text nicht vor, zeigt `blank` nur „___" — das Wort darf
+/// nie durchsickern.
 List<InlineSpan> bubbleSpans(
     String text, String target, BubbleOverlayMode mode, TextStyle base) {
+  if (mode == BubbleOverlayMode.blank &&
+      (target.isEmpty || !text.contains(target))) {
+    return [TextSpan(text: '___', style: base)];
+  }
   final spans = <InlineSpan>[];
   var rest = text;
   while (rest.isNotEmpty) {
@@ -93,7 +99,8 @@ class PanelWithBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.black, width: 1.5),
-                  borderRadius: BorderRadius.circular(999),
+                  // 14 statt Pille: deckt auch eckige Schilder-Kästen ab.
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,

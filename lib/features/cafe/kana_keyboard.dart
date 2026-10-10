@@ -47,14 +47,26 @@ class KanaKeyboard extends StatelessWidget {
 
   const KanaKeyboard({super.key, required this.value, required this.onChanged});
 
-  Widget _key(String label, String keyName, VoidCallback onTap) => SizedBox(
-        width: 44,
-        height: 44,
+  /// Tastengröße 38×38 (Schrift 18); die Rasterhöhe folgt (5 Reihen × 38 =
+  /// 190). Ist die Fläche schmaler als 10 × 38, schrumpfen die Tasten, bis
+  /// alle zehn Spalten nebeneinander passen (360-dp-Gerät abzüglich Rand).
+  static const keyExtent = 38.0;
+  static const _columns = 10; // あ行 … わ行
+
+  Widget _key(String label, String keyName, VoidCallback onTap,
+          {double extent = keyExtent}) =>
+      SizedBox(
+        width: extent,
+        height: extent,
         child: OutlinedButton(
           key: ValueKey('kana-key-$keyName'),
-          style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
+          style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
           onPressed: onTap,
-          child: Text(label, style: const TextStyle(fontSize: 20)),
+          child: Text(label, style: const TextStyle(fontSize: 18)),
         ),
       );
 
@@ -73,25 +85,31 @@ class KanaKeyboard extends StatelessWidget {
             style: const TextStyle(fontSize: 28),
           ),
         ),
-        SizedBox(
-          height: 220,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            reverse: true, // あ行 rechts wie in der 50-Laute-Tafel
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final group in hiraganaGroups.reversed)
-                  Column(
-                    children: [
-                      for (final kana in group.characters)
-                        _key(kana, kana, () => onChanged(value + kana)),
-                    ],
-                  ),
-              ],
+        LayoutBuilder(builder: (context, c) {
+          final extent = c.maxWidth.isFinite
+              ? (c.maxWidth / _columns).clamp(24.0, keyExtent)
+              : keyExtent;
+          return SizedBox(
+            height: 5 * extent,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true, // あ行 rechts wie in der 50-Laute-Tafel
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final group in hiraganaGroups.reversed)
+                    Column(
+                      children: [
+                        for (final kana in group.characters)
+                          _key(kana, kana, () => onChanged(value + kana),
+                              extent: extent),
+                      ],
+                    ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

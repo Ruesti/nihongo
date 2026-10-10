@@ -59,4 +59,35 @@ void main() {
     await tap('backspace');
     expect(value, 'だいじょう');
   });
+
+  testWidgets('auf einem 360-dp-Gerät passen alle zehn Spalten nebeneinander',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: KanaKeyboard(value: '', onChanged: (_) {}),
+        ),
+      ),
+    ));
+    final a = tester.getRect(find.byKey(const ValueKey('kana-key-あ')));
+    final wa = tester.getRect(find.byKey(const ValueKey('kana-key-わ')));
+    expect(wa.left, greaterThanOrEqualTo(0));
+    expect(a.right, lessThanOrEqualTo(360));
+    expect(a.width, lessThanOrEqualTo(KanaKeyboard.keyExtent));
+  });
+
+  testWidgets('breit genug: Tasten 38×38, Raster 5 × 38 hoch', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: KanaKeyboard(value: '', onChanged: (_) {})),
+    ));
+    final a = tester.getSize(find.byKey(const ValueKey('kana-key-あ')));
+    expect(a, const Size(38, 38));
+    final o = tester.getRect(find.byKey(const ValueKey('kana-key-お')));
+    final top = tester.getRect(find.byKey(const ValueKey('kana-key-あ')));
+    expect(o.bottom - top.top, 5 * 38);
+  });
 }
