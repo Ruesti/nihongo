@@ -19,7 +19,7 @@ class DiegeticEncounter {
   final String languageId;
 
   /// BCP-47-Code für die Bridge-Projektion ('ja'), analog zum Café
-  /// (cafe_turn_screen.dart): ohne ihn fiele die Projektion auf die
+  /// (stations/schulmaedchen_station.dart): ohne ihn fiele die Projektion auf die
   /// Pack-ID ('lang_ja') zurück und landete im falschen Mining-Bucket.
   final String? languageCode;
 

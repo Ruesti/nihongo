@@ -177,7 +177,8 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     _attempts++;
     if (correct) {
       final result = _attempts == 1 ? ReviewResult.good : ReviewResult.hard;
-      final res = await _ladder.submit(w.learn, result);
+      final res = await _ladder.submit(w.learn, result,
+          languageCode: widget.languageId.replaceFirst('lang_', ''));
       _records.add(VisitRecord(
           itemId: w.itemId, writtenForm: w.writtenForm,
           outcome: CafeOutcome.correct, firstTry: _attempts == 1,
@@ -199,7 +200,8 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       await _say(w.reading);
       return;
     }
-    final res = await _ladder.submit(w.learn, ReviewResult.again);
+    final res = await _ladder.submit(w.learn, ReviewResult.again,
+        languageCode: widget.languageId.replaceFirst('lang_', ''));
     _records.add(VisitRecord(
         itemId: w.itemId, writtenForm: w.writtenForm,
         outcome: CafeOutcome.wrong, firstTry: false,
