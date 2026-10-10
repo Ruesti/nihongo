@@ -113,9 +113,23 @@ class _WirtinStationState extends State<WirtinStation> {
     );
   }
 
+  Future<void> _say(Speak fn, String text) async {
+    try {
+      await fn(text);
+    } catch (e) {
+      debugPrint('wirtin: Vorlesen fehlgeschlagen: $e');
+    }
+  }
+
   Future<void> _loadCurrent() async {
     while (_index < widget.itemIds.length) {
-      final w = await _load(widget.itemIds[_index]);
+      _WirtinWord? w;
+      try {
+        w = await _load(widget.itemIds[_index]);
+      } catch (e) {
+        debugPrint('wirtin: Laden fehlgeschlagen: $e');
+        w = null; // wie ein Item ohne Lexem: überspringen
+      }
       if (w != null) {
         if (!mounted) return;
         setState(() {
@@ -124,8 +138,8 @@ class _WirtinStationState extends State<WirtinStation> {
           _feedback = null;
           _succeeded = false;
         });
-        await widget.speak(w.reading);
-        await widget.speakSlow(w.reading);
+        await _say(widget.speak, w.reading);
+        await _say(widget.speakSlow, w.reading);
         return;
       }
       _index++; // Item ohne Lexem: überspringen (Review Focus 4)
@@ -147,7 +161,7 @@ class _WirtinStationState extends State<WirtinStation> {
     }
     if (_attempts == 1) {
       setState(() => _feedback = 'Fast. Hör noch einmal, ich sage es langsam.');
-      await widget.speakSlow(w.reading);
+      await _say(widget.speakSlow, w.reading);
     } else {
       setState(() => _feedback = 'Das nehmen wir später noch einmal.');
     }
@@ -201,7 +215,7 @@ class _WirtinStationState extends State<WirtinStation> {
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 56)),
             GestureDetector(
-              onTap: () => widget.speak(w.reading),
+              onTap: () => _say(widget.speak, w.reading),
               child: Text(w.reading,
                   key: const ValueKey('wirtin-word'),
                   textAlign: TextAlign.center,
@@ -215,7 +229,7 @@ class _WirtinStationState extends State<WirtinStation> {
                 for (var i = 0; i < w.units.length; i++)
                   OutlinedButton(
                     key: ValueKey('wirtin-tile-$i'),
-                    onPressed: () => widget.speak(w.units[i].text),
+                    onPressed: () => _say(widget.speak, w.units[i].text),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

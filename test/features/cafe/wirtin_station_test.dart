@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
@@ -169,6 +169,38 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
     await settleLoad(tester);
     expect(r.wobbly, {'lex_ja_ame'});
+  });
+
+  testWidgets('Vorlesen schlägt fehl (kein TTS): Station läuft trotzdem weiter',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    Set<String>? done;
+    await tester.pumpWidget(MaterialApp(
+      home: WirtinStation(
+        db: db,
+        episode: _episode(),
+        itemIds: const ['lex_ja_ame'],
+        startIndex: 0,
+        speak: (t) async => throw StateError('kein TTS'),
+        speakSlow: (t) async => throw StateError('kein TTS'),
+        evaluator: _FakeEvaluator([1.0]),
+        grammarNotes: const {},
+        light: CafeLight.tag,
+        onPosition: (_) {},
+        onDone: (w) => done = w,
+        onLater: () {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('wirtin-word')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('wirtin-tile-0')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await settleLoad(tester);
+    expect(tester.takeException(), isNull);
+    expect(done, isEmpty);
   });
 
   testWidgets('Item ohne Lexem wird übersprungen, Position wird gemeldet',
