@@ -158,29 +158,4 @@ void main() {
     await db.addLearnItemAtRung('lang_ja', RefType.character, 'char_ja_a', rung: 0);
     expect(await debriefItemsFor(db, ep, 'lang_ja'), isEmpty);
   });
-
-  test('loadDebriefCard: Begegnung + Stelle in der Folge + Erklärungsblock',
-      () async {
-    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ame', rung: 0);
-    final item = (await db.getLearnItem('lang_ja:lexeme:lex_ja_ame'))!;
-    final card = (await loadDebriefCard(db, item, episode: episode))!;
-    expect(card.encounter.writtenForm, 'あめ');
-    expect(card.encounter.meaning, 'Regen'); // deutsch via meaningForConcept
-    expect(card.firstPanel!.index, 1);
-    expect(card.note!.usage, 'Regen. Das Wort vom Zettel.');
-    expect(card.note!.variants.single.form, 'おおあめ');
-  });
-
-  test('loadDebriefCard ohne Folge: nur die Begegnung; unbekanntes Lexem → null',
-      () async {
-    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_kasa', rung: 1);
-    await db.addLearnItemAtRung('lang_ja', RefType.lexeme, 'lex_ja_ghost', rung: 1);
-    final kasa = (await db.getLearnItem('lang_ja:lexeme:lex_ja_kasa'))!;
-    final card = (await loadDebriefCard(db, kasa))!;
-    expect(card.firstPanel, isNull);
-    expect(card.note, isNull);
-    expect(card.encounter.meaning, 'Schirm');
-    final ghost = (await db.getLearnItem('lang_ja:lexeme:lex_ja_ghost'))!;
-    expect(await loadDebriefCard(db, ghost), isNull);
-  });
 }

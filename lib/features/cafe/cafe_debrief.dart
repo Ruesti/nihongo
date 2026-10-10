@@ -1,7 +1,4 @@
 import '../../core/db/learning_db.dart';
-import '../../core/db/lexeme_lookup.dart';
-import '../../core/i18n/concept_meaning.dart';
-import '../../core/ladder/encounter.dart';
 import '../../core/ladder/rung_defs.dart';
 import '../story/episode.dart';
 
@@ -68,50 +65,4 @@ Future<List<LearnItem>> debriefItemsFor(
     if (row != null) items.add(row);
   }
   return items;
-}
-
-/// Inhalt einer Erklärungskarte (Spec §5.4): die Begegnung wie in der
-/// Lektion plus das, was nur das Café weiß — die Stelle in der Folge und der
-/// Erklärungsblock der Wirtin. Beides optional mit Fallback.
-class DebriefCardContent {
-  final LexemeEncounter encounter;
-  final StoryPanel? firstPanel;
-  final DebriefNote? note;
-
-  const DebriefCardContent({
-    required this.encounter,
-    this.firstPanel,
-    this.note,
-  });
-}
-
-/// Baut die Karte aus Lexemes + Concepts (+ Assets) über
-/// [loadLexemeWithConcept] — dieselbe Abfrage wie `CafeTurnContent.forItem`.
-/// Null, wenn das Lexem oder sein Konzept fehlt (der Aufrufer überspringt das
-/// Item, kein Absturz).
-/// [episode] optional: liefert Stelle-in-der-Folge und Erklärungsblock; im
-/// normalen Besuch ohne Folgen-Kontext zeigt die Karte, was sie hat (§3.5).
-Future<DebriefCardContent?> loadDebriefCard(
-  LearningDb db,
-  LearnItem item, {
-  Episode? episode,
-}) async {
-  if (item.refType != RefType.lexeme.name) return null;
-  final found =
-      await loadLexemeWithConcept(db, item.refId, withImageAsset: true);
-  if (found == null) return null;
-  final lex = found.lexeme;
-  return DebriefCardContent(
-    encounter: LexemeEncounter(
-      writtenForm: lex.writtenForm,
-      reading: lex.reading,
-      audioText: lex.writtenForm,
-      meaning: meaningForConcept(found.concept.id,
-          fallback: found.concept.glossKey),
-      conceptImagePath: found.imageAsset?.path,
-    ),
-    firstPanel:
-        episode == null ? null : firstAppearancePanel(episode, item.refId),
-    note: episode?.debrief[item.refId],
-  );
 }

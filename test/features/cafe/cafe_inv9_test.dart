@@ -5,9 +5,11 @@ import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/features/cafe/cafe_debrief.dart';
 import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
-import 'package:nihongo_app/features/cafe/cafe_screen.dart';
-import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
+import 'package:nihongo_app/features/cafe/cafe_visit_screen.dart';
 import 'package:nihongo_app/features/story/episode.dart';
+import 'package:nihongo_app/features/story/speak_evaluator.dart';
+import 'package:nihongo_app/features/story/story_progress_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   late LearningDb db;
@@ -35,22 +37,20 @@ void main() {
   });
 
   testWidgets('with only an un-introduced item in the pack, the café is empty '
-      'and no guest turn can reach it (INV-9)', (tester) async {
-    await tester.pumpWidget(MaterialApp(home: CafeScreen(db: db)));
+      'and no station can reach it (INV-9)', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final store = StoryProgressStore(await SharedPreferences.getInstance());
+    await tester.pumpWidget(MaterialApp(
+      home: CafeVisitScreen.free(
+        db: db, languageId: 'lang_ja', episodes: const [], store: store,
+        speak: (_) async {}, speakSlow: (_) async {},
+        evaluator: const _NeverHeard(),
+      ),
+    ));
     await tester.pumpAndSettle();
-    // No guest tiles at all — the un-introduced word never becomes a guest.
-    expect(find.byKey(const ValueKey('cafe-empty')), findsOneWidget);
-
-    // And even opening any guest's turn directly surfaces nothing to review.
-    for (final guest in CafeGuest.values) {
-      await tester.pumpWidget(MaterialApp(
-        home: CafeTurnScreen(db: db, guest: guest),
-      ));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('cafe-turn-done')), findsOneWidget,
-          reason: '$guest surfaced a turn for an un-introduced item');
-      expect(find.text('ひみつ'), findsNothing);
-    }
+    expect(find.byKey(const ValueKey('cafe-visit-empty')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-visit-start')), findsNothing);
+    expect(find.text('ひみつ'), findsNothing);
   });
 
   test('once introduced (a learn_item exists), the SAME word becomes due — '
@@ -87,4 +87,10 @@ void main() {
     expect((await debriefItemsFor(db, episode, 'lang_ja')).single.refId,
         'lex_ja_himitsu');
   });
+}
+
+class _NeverHeard implements SpeakEvaluator {
+  const _NeverHeard();
+  @override
+  Future<double> evaluate(String target) async => 0;
 }
