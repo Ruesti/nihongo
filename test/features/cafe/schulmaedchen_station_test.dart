@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,7 +76,7 @@ void main() {
       (await db.select(db.reviewLog).get()).map((r) => r.result).toList();
 
   Future<({List<String> spoken})> pump(
-      WidgetTester tester, _FakeEvaluator ev, List<String> ids) async {
+      WidgetTester tester, SpeakEvaluator ev, List<String> ids) async {
     final spoken = <String>[];
     records = null;
     await tester.pumpWidget(MaterialApp(
@@ -179,4 +180,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(await results(), ['good', 'good']);
   });
+
+  testWidgets('Doppeltipp aufs Mikro während der Erkennung verbraucht nur '
+      'einen Versuch', (tester) async {
+    final ev = _GatedEvaluator();
+    await pump(tester, ev, ['lex_ja_kasa', 'lex_ja_ame']);
+    await typeKana(tester, 'かさ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('schul-see-speak')), findsOneWidget);
+    final mic = find.byKey(const ValueKey('schul-mic'));
+    await tester.tap(mic);
+    await tester.pump();
+    await tester.tap(mic, warnIfMissed: false);
+    await tester.pump();
+    expect(ev.calls, 1); // zweite Erkennung nie gestartet
+    ev.release(0.1);
+    await tester.pumpAndSettle();
+    expect(await results(), ['good']); // erst ein Versuch, noch nicht bewertet
+    expect(tester.widget<FilledButton>(mic).onPressed != null, isTrue);
+    await tester.tap(mic);
+    await tester.pump();
+    ev.release(0.1);
+    await tester.pumpAndSettle();
+    expect(await results(), ['good', 'again']);
+  });
+}
+
+class _GatedEvaluator implements SpeakEvaluator {
+  int calls = 0;
+  Completer<double>? _c;
+  @override
+  Future<double> evaluate(String target) {
+    calls++;
+    _c = Completer<double>();
+    return _c!.future;
+  }
+
+  void release(double score) => _c!.complete(score);
 }

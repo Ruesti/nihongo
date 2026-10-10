@@ -158,6 +158,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
 
   bool _busy = false;
   bool _finished = false;
+  bool _listening = false; // Erkennung läuft: Mikro gesperrt
 
   Future<void> _grade(bool correct) async {
     if (_busy || _graded) return;
@@ -216,7 +217,8 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
   }
 
   Future<void> _attemptSpeak() async {
-    if (_busy || _graded) return;
+    if (_busy || _listening || _graded) return;
+    setState(() => _listening = true);
     double score;
     try {
       score = await widget.evaluator.evaluate(_word!.reading);
@@ -224,10 +226,14 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       debugPrint('schulmaedchen: Erkennung fehlgeschlagen: $e');
       if (!mounted) return;
       // Kein Fehlschlag werten: zum Schreiben ausweichen (Spec §8).
-      setState(() => _writeInstead = true);
+      setState(() {
+        _listening = false;
+        _writeInstead = true;
+      });
       return;
     }
     if (!mounted) return;
+    setState(() => _listening = false);
     await _grade(score >= widget.threshold);
   }
 
@@ -296,7 +302,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                     key: const ValueKey('schul-mic'),
                     icon: const Icon(Icons.mic),
                     label: const Text('sagen'),
-                    onPressed: _graded || _writeInstead ? null : _attemptSpeak,
+                    onPressed: _graded || _writeInstead || _listening ? null : _attemptSpeak,
                   ),
                   const SizedBox(width: 8),
                   if (!_graded && !_writeInstead)
