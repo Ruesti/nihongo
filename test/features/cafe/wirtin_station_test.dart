@@ -162,6 +162,15 @@ void main() {
     expect(r.wobbly, {'lex_ja_ame'});
   });
 
+  testWidgets('ein Fehlversuch, dann Weiter → wackelig', (tester) async {
+    final r = await pump(tester, _FakeEvaluator([0.2]), ['lex_ja_ame']);
+    await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await settleLoad(tester);
+    expect(r.wobbly, {'lex_ja_ame'});
+  });
+
   testWidgets('Item ohne Lexem wird übersprungen, Position wird gemeldet',
       (tester) async {
     final r = await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_ghost', 'lex_ja_ame']);

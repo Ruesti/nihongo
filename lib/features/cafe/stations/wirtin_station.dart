@@ -155,7 +155,7 @@ class _WirtinStationState extends State<WirtinStation> {
 
   void _next() {
     final w = _word!;
-    if (!_succeeded && _attempts >= 2) _wobbly.add(w.itemId); // nur nach zwei Fehlversuchen
+    if (_attempts >= 1 && !_succeeded) _wobbly.add(w.itemId); // versucht, nicht geschafft
     _index++;
     widget.onPosition(_index);
     setState(() => _word = null);
