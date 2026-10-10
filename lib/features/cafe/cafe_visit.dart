@@ -54,6 +54,8 @@ CafeVisitPlan planAfterEpisode(
 
 /// Weg 2 (Spec §2.2): nach Sprosse. Sprosse ≤2 mit letztem Ergebnis
 /// again/hard → Wirtin, sonst Schulmädchen; Sprosse 3 → Schulmädchen.
+/// Wie Weg 1 fragt das Schulmädchen auch die Wirtin-Wörter ab — wackelige
+/// zuerst —, sonst würden sie nie bewertet und blieben ewig fällig.
 /// Plan A: Sprosse 4/5 ebenfalls Schulmädchen (Stationen 3/4 kommen in
 /// Plan B und übernehmen dann). Höchstens [maxItems], die am längsten
 /// fälligen zuerst. [lastResultById] ist `LearnItem.id → review_log.result`.
@@ -75,9 +77,10 @@ CafeVisitPlan planFreeVisit(
       schul.add(item.refId);
     }
   }
+  final graded = [...wirtin, ...schul];
   return CafeVisitPlan([
     if (wirtin.isNotEmpty) CafeStationPlan(CafeStation.wirtin, wirtin),
-    if (schul.isNotEmpty) CafeStationPlan(CafeStation.schulmaedchen, schul),
+    if (graded.isNotEmpty) CafeStationPlan(CafeStation.schulmaedchen, graded),
   ]);
 }
 

@@ -68,19 +68,32 @@ void main() {
 
   group('planFreeVisit', () {
     test('Sprosse ≤2 mit letztem again/hard → Wirtin, sonst Schulmädchen; '
-        'Sprosse 4/5 in Plan A ebenfalls Schulmädchen', () {
+        'Sprosse 4/5 in Plan A ebenfalls Schulmädchen; Wirtin-Wörter fragt '
+        'das Schulmädchen zuerst ab', () {
       final plan = planFreeVisit(
         [_item('a', 1), _item('b', 2), _item('c', 3), _item('d', 5)],
         {'lang_ja:lexeme:a': 'again', 'lang_ja:lexeme:b': 'good'},
       );
       expect(plan.stationFor(CafeStation.wirtin)?.itemIds, ['a']);
-      expect(plan.stationFor(CafeStation.schulmaedchen)?.itemIds, ['b', 'c', 'd']);
+      expect(plan.stationFor(CafeStation.schulmaedchen)?.itemIds,
+          ['a', 'b', 'c', 'd']);
+    });
+
+    test('jedes Wirtin-Wort wird auch beim Schulmädchen bewertet', () {
+      final plan = planFreeVisit(
+        [_item('a', 1), _item('b', 2), _item('c', 3)],
+        {'lang_ja:lexeme:b': 'hard', 'lang_ja:lexeme:a': 'good'},
+      );
+      expect(plan.stationFor(CafeStation.wirtin)?.itemIds, ['b']);
+      expect(plan.stationFor(CafeStation.schulmaedchen)?.itemIds.first, 'b');
+      expect(plan.stationFor(CafeStation.schulmaedchen)?.itemIds,
+          containsAll(['a', 'b', 'c']));
     });
 
     test('höchstens maxItems, die am längsten fälligen zuerst', () {
       final due = [for (var i = 0; i < 15; i++) _item('w$i', 3, dueDaysAgo: i)];
       final plan = planFreeVisit(due, const {}, maxItems: 12);
-      final ids = plan.stations.expand((s) => s.itemIds).toList();
+      final ids = plan.stations.expand((s) => s.itemIds).toSet().toList();
       expect(ids.length, 12);
       expect(ids.first, 'w14');
       expect(ids, isNot(contains('w0')));
