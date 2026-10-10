@@ -67,6 +67,14 @@ Fällige Items nach Sprosse (`guestForRung` in `cafe_occupancy.dart` bleibt die 
 
 Höchstens 12 Items pro Besuch, zuerst die am längsten fälligen. Stationen ohne Items werden übersprungen.
 
+**Änderungen beim Bau von Plan A (10.10.):**
+- Weg 2 und die freiwillige Runde speichern keine Position und bieten kein Fortsetzen — die Fälligkeit ist der Zustand (bewertete Wörter sind weg, offene kommen wieder). Fortsetzen gibt es nur in Weg 1; die „wackelig"-Menge wird mit der Position gespeichert. Der Café-Tab setzt einen Weg-1-Besuch fort, wenn dafür eine Position gespeichert ist („Später weiter"); ohne gespeicherte Position bleibt er der freie Besuch.
+- Weg 2: Wörter, die zur Wirtin gehen, gehen zusätzlich zum Schulmädchen (wackelig zuerst) — sonst würden sie nie bewertet und blieben fällig.
+- Spracherkennung ohne Ergebnis (nicht verfügbar, nichts gehört) zählt nicht als Versuch: das Schulmädchen schaltet auf „lieber schreiben", die Wirtin sagt „Ich habe nichts gehört". Der Sprech-Vergleich nimmt Lesung, Schreibung und Blasentext (die Erkennung liefert oft Kanji).
+- Die Stationen zeigen das Panel im Querformat in voller Breite (ganzes Panel sichtbar, Überlagerung deckt die gelesene Blase).
+- Kana-Tastatur: Tasten 38 dp, auf schmalen Schirmen schmaler, damit alle zehn Spalten sichtbar sind.
+- Grammatiknotizen und Stationen 3/4 kommen mit Plan B.
+
 ## 3. Die vier Stationen
 
 Gemeinsam für alle: Kopf = Gäste-Bild der Station (`CafeMotif`), eine Zeile Text der Figur in ihrer Stimme (`cafe_guest_script.dart`, Steckbriefe bleiben), darunter die Übung. Alle Texte deutsch; kein „Got it“. Keine Antwort steht je zur Auswahl (I1). Keine Selbsteinschätzung.
@@ -226,7 +234,7 @@ Die Zuordnung Sprosse ↔ Gast (`guestForRung`) bleibt; nach einer Folge laufen 
 
 ## 10. Pläne
 
-- **Plan A — Gerüst, Wirtin, Schulmädchen:** Planer, Raum, Fortsetzen, Zerlegung, Kana-Tastatur, Blasen-Überlagerung, Stationen 1–2, Abschluss, Einstiege, Abriss der alten Nachbesprechung. Danach ist das Café benutzbar und Uli kann begutachten.
+- **Plan A — Gerüst, Wirtin, Schulmädchen** (GEBAUT 10.10., PR auf `design/cafe-uebungsraum`)**:** Planer, Raum, Fortsetzen, Zerlegung, Kana-Tastatur, Blasen-Überlagerung, Stationen 1–2, Abschluss, Einstiege, Abriss der alten Nachbesprechung. Danach ist das Café benutzbar und Uli kann begutachten.
 - **Plan B — Alter Mann, Gleichaltrige, Folge-01-Inhalte:** `CafeContent` Folge 01 (Monolog, Fragen, Situationen, Grammatiknotizen), Validator INV-20–23, Stationen 3–4, freier Besuch nach Sprosse.
 
 ## 11. Offene Punkte
