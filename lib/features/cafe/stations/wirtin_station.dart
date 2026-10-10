@@ -21,14 +21,16 @@ class _WirtinWord {
   final List<SoundUnit> units;
   final StoryPanel? panel;
   final StoryBubble? bubble;
+  final String surface; // Form in der Blase (z. B. 駅), sonst writtenForm
   final String? usage;
   final String? grammar;
   const _WirtinWord({
     required this.itemId, required this.writtenForm, required this.reading,
     required this.meaning, required this.units, this.panel, this.bubble,
-    this.usage, this.grammar,
+    required this.surface, this.usage, this.grammar,
   });
-  bool get hasKanji => writtenForm != reading;
+  // Die DB-Schriftform ist oft Kana; Kanji stehen in der Blase (Token).
+  bool get hasKanji => surface != reading;
 }
 
 /// Station 1 „Auflösen" (Spec §3.1). Pro Wort: Panel mit hervorgehobener
@@ -38,6 +40,7 @@ class _WirtinWord {
 class WirtinStation extends StatefulWidget {
   final LearningDb db;
   final Episode? episode;
+  final List<Episode> episodes; // freier Besuch: Folge je Wort
   final List<String> itemIds;
   final int startIndex;
   final Speak speak;
@@ -54,6 +57,7 @@ class WirtinStation extends StatefulWidget {
     super.key,
     required this.db,
     required this.episode,
+    this.episodes = const [],
     required this.itemIds,
     required this.startIndex,
     required this.speak,
@@ -77,6 +81,7 @@ class _WirtinStationState extends State<WirtinStation> {
   int _attempts = 0;
   String? _feedback;
   bool _succeeded = false;
+  bool _listening = false; // Erkennung läuft: Mikro gesperrt
   final _wobbly = <String>{};
 
   @override
@@ -89,15 +94,20 @@ class _WirtinStationState extends State<WirtinStation> {
   Future<_WirtinWord?> _load(String itemId) async {
     final found = await loadLexemeWithConcept(widget.db, itemId);
     if (found == null) return null;
-    final ep = widget.episode;
+    final ep = widget.episode ?? episodeIntroducing(widget.episodes, itemId);
     final panel = ep == null ? null : firstAppearancePanel(ep, itemId);
     StoryBubble? bubble;
+    var surface = found.lexeme.writtenForm;
     if (panel != null) {
       for (final b in panel.bubbles) {
-        if (b.tokens.any((t) => t.itemId == itemId)) {
-          bubble = b;
-          break;
+        for (final t in b.tokens) {
+          if (t.itemId == itemId) {
+            bubble = b;
+            surface = t.surface;
+            break;
+          }
         }
+        if (bubble != null) break;
       }
     }
     return _WirtinWord(
@@ -108,6 +118,7 @@ class _WirtinStationState extends State<WirtinStation> {
       units: decompose(found.lexeme.reading),
       panel: panel,
       bubble: bubble,
+      surface: surface,
       usage: ep?.debrief[itemId]?.usage,
       grammar: widget.grammarNotes[itemId],
     );
@@ -137,6 +148,7 @@ class _WirtinStationState extends State<WirtinStation> {
           _attempts = 0;
           _feedback = null;
           _succeeded = false;
+          _listening = false;
         });
         await _say(widget.speak, w.reading);
         await _say(widget.speakSlow, w.reading);
@@ -148,9 +160,24 @@ class _WirtinStationState extends State<WirtinStation> {
   }
 
   Future<void> _attempt() async {
+    if (_listening) return;
     final w = _word!;
-    final score = await widget.evaluator.evaluate(w.reading);
+    setState(() => _listening = true);
+    double score;
+    try {
+      score = await widget.evaluator.evaluate(
+          speakTarget(w.reading, w.writtenForm, w.surface));
+    } catch (e) {
+      debugPrint('wirtin: Erkennung fehlgeschlagen: $e');
+      score = -1;
+    }
     if (!mounted) return;
+    setState(() => _listening = false);
+    if (score < 0) {
+      // Nichts gehört (kein Mikro, Stille): kein Versuch (Spec §8).
+      setState(() => _feedback = 'Ich habe nichts gehört.');
+      return;
+    }
     _attempts++;
     if (score >= widget.threshold) {
       setState(() {
@@ -182,10 +209,6 @@ class _WirtinStationState extends State<WirtinStation> {
     if (w == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    final surface = w.bubble?.tokens
-            .firstWhere((t) => t.itemId == w.itemId)
-            .surface ??
-        w.writtenForm;
     return StationFrame(
       station: CafeStation.wirtin,
       light: widget.light,
@@ -198,19 +221,19 @@ class _WirtinStationState extends State<WirtinStation> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (w.panel != null && w.bubble != null)
-              SizedBox(
+              // Querformat in voller Breite: AspectRatio setzt die Höhe, das
+              // ganze Panel ist sichtbar und die Blase sitzt richtig.
+              PanelWithBubble(
                 key: const ValueKey('wirtin-panel'),
-                height: 260,
-                child: PanelWithBubble(
-                  panel: w.panel!,
-                  bubble: w.bubble!,
-                  targetSurface: surface,
-                  mode: BubbleOverlayMode.highlight,
-                ),
+                panel: w.panel!,
+                bubble: w.bubble!,
+                targetSurface: w.surface,
+                mode: BubbleOverlayMode.highlight,
+                format: PanelFormat.landscape,
               ),
             const SizedBox(height: 16),
             if (w.hasKanji)
-              Text(w.writtenForm,
+              Text(w.surface,
                   key: const ValueKey('wirtin-kanji'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 56)),
@@ -262,7 +285,8 @@ class _WirtinStationState extends State<WirtinStation> {
                   key: const ValueKey('wirtin-mic'),
                   icon: const Icon(Icons.mic),
                   label: const Text('nachsprechen'),
-                  onPressed: _succeeded || _attempts >= 2 ? null : _attempt,
+                  onPressed:
+                      _succeeded || _attempts >= 2 || _listening ? null : _attempt,
                 ),
                 const SizedBox(width: 12),
                 if (_feedback != null)

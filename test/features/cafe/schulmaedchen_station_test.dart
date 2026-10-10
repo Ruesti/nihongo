@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/features/cafe/cafe_scenes.dart';
+import 'package:nihongo_app/features/cafe/bubble_overlay.dart';
 import 'package:nihongo_app/features/cafe/cafe_summary.dart';
 import 'package:nihongo_app/features/cafe/cafe_turn.dart';
 import 'package:nihongo_app/features/cafe/stations/schulmaedchen_station.dart';
@@ -76,14 +77,20 @@ void main() {
       (await db.select(db.reviewLog).get()).map((r) => r.result).toList();
 
   Future<({List<String> spoken})> pump(
-      WidgetTester tester, SpeakEvaluator ev, List<String> ids) async {
+      WidgetTester tester, SpeakEvaluator ev, List<String> ids,
+      {bool withEpisode = true, List<Episode> episodes = const []}) async {
     final spoken = <String>[];
     records = null;
+    // Telefon-Hochformat: das Querformat-Panel in voller Breite plus Mikro.
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
       home: SchulmaedchenStation(
         db: db,
         languageId: 'lang_ja',
-        episode: _episode(),
+        episode: withEpisode ? _episode() : null,
+        episodes: episodes,
         itemIds: ids,
         startIndex: 0,
         speak: (t) async => spoken.add(t),
@@ -128,8 +135,11 @@ void main() {
     expect(r.spoken, ['あめ', 'あめ']);
     expect(find.byKey(const ValueKey('schul-tiles')), findsOneWidget);
     expect(await results(), isEmpty);
-    // Eingabe ist geleert; zweiter Versuch
-    await typeKana(tester, 'あめ');
+    // Eingabe ist geleert; zweiter Versuch. Die Kacheln verschwinden mit der
+    // ersten Taste — der zweite Versuch läuft ohne Krücke.
+    await typeKana(tester, 'あ');
+    expect(find.byKey(const ValueKey('schul-tiles')), findsNothing);
+    await typeKana(tester, 'め');
     await tester.tap(find.byKey(const ValueKey('schul-submit')));
     await tester.pumpAndSettle();
     expect(await results(), ['hard']);
@@ -142,7 +152,7 @@ void main() {
 
   testWidgets('Sehen→Sprechen: zweimal nicht erkannt → again, es geht weiter; '
       'onDone liefert Records', (tester) async {
-    final r = await pump(tester, _FakeEvaluator([0.1, 0.1]), ['lex_ja_kasa', 'lex_ja_ame']);
+    await pump(tester, _FakeEvaluator([0.1, 0.1]), ['lex_ja_kasa', 'lex_ja_ame']);
     // Position 0 ist Hören→Schreiben (かさ): richtig
     await typeKana(tester, 'かさ');
     await tester.tap(find.byKey(const ValueKey('schul-submit')));
@@ -206,6 +216,95 @@ void main() {
     ev.release(0.1);
     await tester.pumpAndSettle();
     expect(await results(), ['good', 'again']);
+  });
+
+  Future<void> toSeeSpeak(WidgetTester tester) async {
+    await typeKana(tester, 'かさ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('schul-see-speak')), findsOneWidget);
+  }
+
+  testWidgets('Sehen→Sprechen: Panel im Querformat in voller Breite',
+      (tester) async {
+    await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_kasa', 'lex_ja_ame']);
+    await toSeeSpeak(tester);
+    final panel = find.byKey(const ValueKey('schul-panel'));
+    expect(tester.widget<PanelWithBubble>(panel).format, PanelFormat.landscape);
+    expect(tester.getSize(panel).width, closeTo(400 - 32, 1));
+  });
+
+  testWidgets('Sehen→Sprechen falsch: sie sagt es vor, aber keine Kacheln',
+      (tester) async {
+    await pump(tester, _FakeEvaluator([0.1]), ['lex_ja_kasa', 'lex_ja_ame']);
+    await toSeeSpeak(tester);
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pumpAndSettle();
+    expect(find.text('Nee. Nochmal — aber richtig diesmal.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('schul-tiles')), findsNothing);
+  });
+
+  testWidgets('Sehen→Sprechen: nichts gehört (-1) ist kein Versuch — '
+      'Tastatur statt Mikro, nichts bewertet', (tester) async {
+    await pump(tester, _FakeEvaluator([-1.0]), ['lex_ja_kasa', 'lex_ja_ame']);
+    await toSeeSpeak(tester);
+    final before = await results();
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pumpAndSettle();
+    expect(await results(), before); // kein neuer Log-Eintrag
+    expect(find.text('Ich hab nichts gehört. Schreib es lieber.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('schul-submit')), findsOneWidget);
+    expect(find.byKey(const ValueKey('kana-keyboard-value')), findsOneWidget);
+    // Der erste getippte Versuch zählt noch als erster: richtig → good.
+    await typeKana(tester, 'あめ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    expect(await results(), [...before, 'good']);
+  });
+
+  testWidgets('nichts gehört gleich beim ersten Wort: review_log bleibt leer',
+      (tester) async {
+    await pump(tester, _FakeEvaluator([-1.0]), ['lex_ja_kasa', 'lex_ja_ame']);
+    // Direkt bei Position 1 (Sehen→Sprechen) einsteigen, ohne vorher etwas
+    // zu bewerten.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(MaterialApp(
+      home: SchulmaedchenStation(
+        db: db, languageId: 'lang_ja', episode: _episode(),
+        itemIds: const ['lex_ja_kasa', 'lex_ja_ame'], startIndex: 1,
+        speak: (_) async {}, evaluator: _FakeEvaluator([-1.0]),
+        light: CafeLight.tag, onPosition: (_) {}, onDone: (_) {},
+        onLater: () {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pumpAndSettle();
+    expect(await results(), isEmpty);
+    expect(find.byKey(const ValueKey('schul-submit')), findsOneWidget);
+  });
+
+  testWidgets('ungerade Position ohne Panel/Blase → Hören→Schreiben',
+      (tester) async {
+    await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_kasa', 'lex_ja_ame'],
+        withEpisode: false);
+    await typeKana(tester, 'かさ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('schul-see-speak')), findsNothing);
+    expect(find.byKey(const ValueKey('schul-hear-write')), findsOneWidget);
+  });
+
+  testWidgets('freier Besuch: Folge je Wort aus episodes → Sehen→Sprechen '
+      'mit Panel', (tester) async {
+    await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_kasa', 'lex_ja_ame'],
+        withEpisode: false, episodes: [_episode()]);
+    await toSeeSpeak(tester);
+    expect(find.byKey(const ValueKey('schul-panel')), findsOneWidget);
   });
 }
 

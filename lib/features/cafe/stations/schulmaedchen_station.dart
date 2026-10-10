@@ -33,7 +33,7 @@ class _Word {
 
 /// Station 2 „Abfrage" (Spec §3.2). Gerade Position: Hören→Schreiben auf der
 /// Kana-Tastatur; ungerade: Sehen→Sprechen mit ausgeblendetem Wort in der
-/// Blase. Zwei Versuche; Bewertung 1. Versuch richtig good, 2. hard, sonst
+/// Blase — ohne Panel/Blase für das Wort ebenfalls Hören→Schreiben. Zwei Versuche; Bewertung 1. Versuch richtig good, 2. hard, sonst
 /// again — genau ein `LadderReview.submit` je Wort (Spec §7). Keine Auswahl,
 /// kein Selbsteinschätzen (I1).
 class SchulmaedchenStation extends StatefulWidget {
@@ -41,6 +41,7 @@ class SchulmaedchenStation extends StatefulWidget {
   final KnowledgeBridge? bridge;
   final String languageId;
   final Episode? episode;
+  final List<Episode> episodes; // freier Besuch: Folge je Wort
   final List<String> itemIds;
   final int startIndex;
   final Speak speak;
@@ -57,6 +58,7 @@ class SchulmaedchenStation extends StatefulWidget {
     this.bridge,
     required this.languageId,
     required this.episode,
+    this.episodes = const [],
     required this.itemIds,
     required this.startIndex,
     required this.speak,
@@ -85,7 +87,13 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
   bool _writeInstead = false; // Sehen→Sprechen ohne Mikro: Tastatur statt Mikro
   final _records = <VisitRecord>[];
 
-  _Kind get _kind => _index.isEven ? _Kind.hearWrite : _Kind.seeSpeak;
+  _Kind _kind = _Kind.hearWrite;
+
+  /// Je Wort entschieden: ungerade Position mit Panel und Blase →
+  /// Sehen→Sprechen, sonst Hören→Schreiben.
+  _Kind _kindFor(_Word w) => _index.isOdd && w.panel != null && w.bubble != null
+      ? _Kind.seeSpeak
+      : _Kind.hearWrite;
 
   @override
   void initState() {
@@ -98,7 +106,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     final found = await loadLexemeWithConcept(widget.db, id);
     final learn = await widget.db.getLearnItem('${widget.languageId}:lexeme:$id');
     if (found == null || learn == null) return null;
-    final ep = widget.episode;
+    final ep = widget.episode ?? episodeIntroducing(widget.episodes, id);
     final panel = ep == null ? null : firstAppearancePanel(ep, id);
     StoryBubble? bubble;
     var surface = found.lexeme.writtenForm;
@@ -145,6 +153,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
           _feedback = null;
           _showTiles = false;
           _writeInstead = false;
+          _kind = _kindFor(w!);
         });
         if (_kind == _Kind.hearWrite) await _say(w.reading);
         return;
@@ -194,7 +203,8 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       if (!mounted) return;
       setState(() {
         _feedback = 'Nee. Nochmal — aber richtig diesmal.';
-        _showTiles = true;
+        // Zerlegung nur beim Hören→Schreiben; Sehen→Sprechen: nur vorsagen.
+        _showTiles = _kind == _Kind.hearWrite;
         _typed = '';
       });
       await _say(w.reading);
@@ -213,6 +223,11 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     });
   }
 
+  void _onTyped(String v) => setState(() {
+        _typed = v;
+        if (v.isNotEmpty) _showTiles = false; // zweiter Versuch ohne Krücke
+      });
+
   void _submitTyped() {
     final w = _word!;
     _grade(normalizeKana(_typed) == normalizeKana(w.reading));
@@ -223,7 +238,9 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     setState(() => _listening = true);
     double score;
     try {
-      score = await widget.evaluator.evaluate(_word!.reading);
+      final w = _word!;
+      score = await widget.evaluator
+          .evaluate(speakTarget(w.reading, w.writtenForm, w.surface));
     } catch (e) {
       debugPrint('schulmaedchen: Erkennung fehlgeschlagen: $e');
       if (!mounted) return;
@@ -235,6 +252,15 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       return;
     }
     if (!mounted) return;
+    if (score < 0) {
+      // Nichts gehört: kein Versuch, nicht bewerten — schreiben (Spec §8).
+      setState(() {
+        _listening = false;
+        _writeInstead = true;
+        _feedback = 'Ich hab nichts gehört. Schreib es lieber.';
+      });
+      return;
+    }
     setState(() => _listening = false);
     await _grade(score >= widget.threshold);
   }
@@ -278,7 +304,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                 ],
               ),
               if (!_graded) ...[
-                KanaKeyboard(value: _typed, onChanged: (v) => setState(() => _typed = v)),
+                KanaKeyboard(value: _typed, onChanged: _onTyped),
                 FilledButton(
                   key: const ValueKey('schul-submit'),
                   onPressed: _typed.isEmpty ? null : _submitTyped,
@@ -287,18 +313,23 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
               ],
             ] else ...[
               if (w.panel != null && w.bubble != null)
-                SizedBox(
+                // Querformat in voller Breite: das ganze Panel, Blase passgenau.
+                PanelWithBubble(
                   key: const ValueKey('schul-panel'),
-                  height: 260,
-                  child: PanelWithBubble(
-                    panel: w.panel!,
-                    bubble: w.bubble!,
-                    targetSurface: w.surface,
-                    mode: BubbleOverlayMode.blank,
-                  ),
+                  panel: w.panel!,
+                  bubble: w.bubble!,
+                  targetSurface: w.surface,
+                  mode: BubbleOverlayMode.blank,
+                  format: PanelFormat.landscape,
                 ),
-              Row(
+              const SizedBox(height: 8),
+              // Wrap statt Row: auf schmalen Geräten rutscht „lieber
+              // schreiben" in die nächste Zeile statt überzulaufen.
+              Wrap(
                 key: const ValueKey('schul-see-speak'),
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   FilledButton.tonalIcon(
                     key: const ValueKey('schul-mic'),
@@ -306,7 +337,6 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                     label: const Text('sagen'),
                     onPressed: _graded || _writeInstead || _listening ? null : _attemptSpeak,
                   ),
-                  const SizedBox(width: 8),
                   if (!_graded && !_writeInstead)
                     TextButton(
                       key: const ValueKey('schul-write-instead'),
@@ -316,7 +346,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                 ],
               ),
               if (_writeInstead && !_graded) ...[
-                KanaKeyboard(value: _typed, onChanged: (v) => setState(() => _typed = v)),
+                KanaKeyboard(value: _typed, onChanged: _onTyped),
                 FilledButton(
                   key: const ValueKey('schul-submit'),
                   onPressed: _typed.isEmpty ? null : _submitTyped,
