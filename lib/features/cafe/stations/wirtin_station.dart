@@ -1,0 +1,266 @@
+import 'package:flutter/material.dart';
+
+import '../../../core/db/learning_db.dart';
+import '../../../core/db/lexeme_lookup.dart';
+import '../../../core/i18n/concept_meaning.dart';
+import '../../story/episode.dart';
+import '../../story/speak_evaluator.dart';
+import '../bubble_overlay.dart';
+import '../cafe_debrief.dart';
+import '../cafe_scenes.dart';
+import '../cafe_visit.dart';
+import '../word_decomposition.dart';
+import 'station_frame.dart';
+
+/// Ein geladenes Wort der Wirtin-Station.
+class _WirtinWord {
+  final String itemId;
+  final String writtenForm;
+  final String reading;
+  final String meaning;
+  final List<SoundUnit> units;
+  final StoryPanel? panel;
+  final StoryBubble? bubble;
+  final String? usage;
+  final String? grammar;
+  const _WirtinWord({
+    required this.itemId, required this.writtenForm, required this.reading,
+    required this.meaning, required this.units, this.panel, this.bubble,
+    this.usage, this.grammar,
+  });
+  bool get hasKanji => writtenForm != reading;
+}
+
+/// Station 1 „Auflösen" (Spec §3.1). Pro Wort: Panel mit hervorgehobener
+/// Blase, Wort groß (Kanji + Kana), Laut-Kacheln mit Vorlesen, Bedeutung,
+/// „warum sagt man das", Grammatiknotiz, Nachsprechen (2 Versuche, danach
+/// immer weiter). Bewertet nichts; meldet am Ende die wackeligen Wörter.
+class WirtinStation extends StatefulWidget {
+  final LearningDb db;
+  final Episode? episode;
+  final List<String> itemIds;
+  final int startIndex;
+  final Speak speak;
+  final Speak speakSlow;
+  final SpeakEvaluator evaluator;
+  final Map<String, String> grammarNotes;
+  final CafeLight light;
+  final void Function(int nextIndex) onPosition;
+  final void Function(Set<String> wobbly) onDone;
+  final VoidCallback onLater;
+  final double threshold;
+
+  const WirtinStation({
+    super.key,
+    required this.db,
+    required this.episode,
+    required this.itemIds,
+    required this.startIndex,
+    required this.speak,
+    required this.speakSlow,
+    required this.evaluator,
+    required this.grammarNotes,
+    required this.light,
+    required this.onPosition,
+    required this.onDone,
+    required this.onLater,
+    this.threshold = 0.6,
+  });
+
+  @override
+  State<WirtinStation> createState() => _WirtinStationState();
+}
+
+class _WirtinStationState extends State<WirtinStation> {
+  int _index = 0;
+  _WirtinWord? _word;
+  int _attempts = 0;
+  String? _feedback;
+  bool _succeeded = false;
+  final _wobbly = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.startIndex;
+    _loadCurrent();
+  }
+
+  Future<_WirtinWord?> _load(String itemId) async {
+    final found = await loadLexemeWithConcept(widget.db, itemId);
+    if (found == null) return null;
+    final ep = widget.episode;
+    final panel = ep == null ? null : firstAppearancePanel(ep, itemId);
+    StoryBubble? bubble;
+    if (panel != null) {
+      for (final b in panel.bubbles) {
+        if (b.tokens.any((t) => t.itemId == itemId)) {
+          bubble = b;
+          break;
+        }
+      }
+    }
+    return _WirtinWord(
+      itemId: itemId,
+      writtenForm: found.lexeme.writtenForm,
+      reading: found.lexeme.reading,
+      meaning: meaningForConcept(found.concept.id, fallback: found.concept.glossKey),
+      units: decompose(found.lexeme.reading),
+      panel: panel,
+      bubble: bubble,
+      usage: ep?.debrief[itemId]?.usage,
+      grammar: widget.grammarNotes[itemId],
+    );
+  }
+
+  Future<void> _loadCurrent() async {
+    while (_index < widget.itemIds.length) {
+      final w = await _load(widget.itemIds[_index]);
+      if (w != null) {
+        if (!mounted) return;
+        setState(() {
+          _word = w;
+          _attempts = 0;
+          _feedback = null;
+          _succeeded = false;
+        });
+        await widget.speak(w.reading);
+        await widget.speakSlow(w.reading);
+        return;
+      }
+      _index++; // Item ohne Lexem: überspringen (Review Focus 4)
+    }
+    widget.onDone(_wobbly);
+  }
+
+  Future<void> _attempt() async {
+    final w = _word!;
+    final score = await widget.evaluator.evaluate(w.reading);
+    if (!mounted) return;
+    _attempts++;
+    if (score >= widget.threshold) {
+      setState(() {
+        _succeeded = true;
+        _feedback = 'Genau so.';
+      });
+      return;
+    }
+    if (_attempts == 1) {
+      setState(() => _feedback = 'Fast. Hör noch einmal, ich sage es langsam.');
+      await widget.speakSlow(w.reading);
+    } else {
+      setState(() => _feedback = 'Das nehmen wir später noch einmal.');
+    }
+  }
+
+  void _next() {
+    final w = _word!;
+    if (!_succeeded && _attempts >= 2) _wobbly.add(w.itemId); // nur nach zwei Fehlversuchen
+    _index++;
+    widget.onPosition(_index);
+    setState(() => _word = null);
+    _loadCurrent();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w = _word;
+    if (w == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final surface = w.bubble?.tokens
+            .firstWhere((t) => t.itemId == w.itemId)
+            .surface ??
+        w.writtenForm;
+    return StationFrame(
+      station: CafeStation.wirtin,
+      light: widget.light,
+      voiceLine: 'Setz dich. Das hier hattest du in der Folge:',
+      onNext: _next,
+      onLater: widget.onLater,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (w.panel != null && w.bubble != null)
+              SizedBox(
+                key: const ValueKey('wirtin-panel'),
+                height: 260,
+                child: PanelWithBubble(
+                  panel: w.panel!,
+                  bubble: w.bubble!,
+                  targetSurface: surface,
+                  mode: BubbleOverlayMode.highlight,
+                ),
+              ),
+            const SizedBox(height: 16),
+            if (w.hasKanji)
+              Text(w.writtenForm,
+                  key: const ValueKey('wirtin-kanji'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 56)),
+            GestureDetector(
+              onTap: () => widget.speak(w.reading),
+              child: Text(w.reading,
+                  key: const ValueKey('wirtin-word'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: w.hasKanji ? 28 : 44)),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              children: [
+                for (var i = 0; i < w.units.length; i++)
+                  OutlinedButton(
+                    key: ValueKey('wirtin-tile-$i'),
+                    onPressed: () => widget.speak(w.units[i].text),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(w.units[i].text, style: const TextStyle(fontSize: 28)),
+                        Text(w.units[i].romaji, style: const TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(w.meaning,
+                key: const ValueKey('wirtin-meaning'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 20)),
+            if (w.usage != null) ...[
+              const SizedBox(height: 12),
+              Text(w.usage!, key: const ValueKey('wirtin-usage')),
+            ],
+            if (w.grammar != null) ...[
+              const SizedBox(height: 8),
+              Text(w.grammar!,
+                  key: const ValueKey('wirtin-grammar'),
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
+            ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                FilledButton.tonalIcon(
+                  key: const ValueKey('wirtin-mic'),
+                  icon: const Icon(Icons.mic),
+                  label: const Text('nachsprechen'),
+                  onPressed: _succeeded || _attempts >= 2 ? null : _attempt,
+                ),
+                const SizedBox(width: 12),
+                if (_feedback != null)
+                  Expanded(
+                    child: Text(_feedback!,
+                        key: const ValueKey('wirtin-feedback')),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
