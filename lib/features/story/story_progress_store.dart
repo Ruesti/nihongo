@@ -51,4 +51,32 @@ class StoryProgressStore {
   /// (§3.6). Vor dem Folgen-Ende ist eine Nachbesprechung nie offen (INV-11).
   Future<bool> isDebriefPending(String episodeId) async =>
       await isCompleted(episodeId) && !await isDebriefDone(episodeId);
+
+  static const _cafePosPrefix = 'cafe_visit_pos_';
+  static const _cafeDonePrefix = 'cafe_visit_done_';
+
+  /// „Später weiter" (Spec §2): Station und Item, bei denen der Besuch
+  /// [visitId] (Folgen-ID oder `free`) abgebrochen wurde.
+  Future<({int station, int item})?> cafeVisitPosition(String visitId) async {
+    final raw = _prefs.getString('$_cafePosPrefix$visitId');
+    if (raw == null) return null;
+    final parts = raw.split(':');
+    return (station: int.parse(parts[0]), item: int.parse(parts[1]));
+  }
+
+  Future<void> saveCafeVisitPosition(String visitId, int station, int item) =>
+      _prefs.setString('$_cafePosPrefix$visitId', '$station:$item');
+
+  Future<void> clearCafeVisitPosition(String visitId) async {
+    await _prefs.remove('$_cafePosPrefix$visitId');
+  }
+
+  /// Weg 1 ist für diese Folge einmal zu Ende gegangen. Kein Fortschritt im
+  /// Sinne von INV-10 — die Endkarte lädt nur nicht zweimal ein.
+  Future<void> markCafeVisitDone(String episodeId) =>
+      _prefs.setBool('$_cafeDonePrefix$episodeId', true);
+
+  Future<bool> isCafeVisitPending(String episodeId) async =>
+      await isCompleted(episodeId) &&
+      !(_prefs.getBool('$_cafeDonePrefix$episodeId') ?? false);
 }
