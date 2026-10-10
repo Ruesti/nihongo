@@ -97,10 +97,10 @@ class PanelWithBubble extends StatelessWidget {
                 ),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: RichText(
+                  child: Text.rich(
                     key: const ValueKey('bubble-overlay-text'),
                     textAlign: TextAlign.center,
-                    text: TextSpan(
+                    TextSpan(
                       children: bubbleSpans(
                           bubble.text,
                           targetSurface,
