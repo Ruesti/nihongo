@@ -77,7 +77,7 @@ Höchstens 12 Items pro Besuch, zuerst die am längsten fälligen. Stationen ohn
 
 ## 3. Die vier Stationen
 
-Gemeinsam für alle: Kopf = Gäste-Bild der Station (`CafeMotif`), eine Zeile Text der Figur in ihrer Stimme (`cafe_guest_script.dart`, Steckbriefe bleiben), darunter die Übung. Alle Texte deutsch; kein „Got it“. Keine Antwort steht je zur Auswahl (I1). Keine Selbsteinschätzung.
+Gemeinsam für alle: Kopf = Gäste-Bild der Station (`CafeMotif`), eine Zeile Text der Figur in ihrer Stimme (`cafe_guest_script.dart`, Steckbriefe bleiben), darunter die Übung. **Änderung 15.10.:** Die Darstellung regelt die Spec „Das Café spricht dich an“ (`2026-10-15-cafe-ansprache-design.md`): Gast bildschirmfüllend mit Blick zum Lerner, Stimmung wechselt mit der Bewertung, Übung in einer Fläche darüber, Satz als Blase oben in der Fläche, hörbar über die Gästestimme. Alle Texte deutsch; kein „Got it“. Keine Antwort steht je zur Auswahl (I1). Keine Selbsteinschätzung.
 
 ### 3.1 Wirtin — „Auflösen“
 
@@ -99,7 +99,7 @@ Nach der Folge: alle Wörter (Folge 01: 18, ca. 4 Minuten). Frei: nur Wörter mi
 Frech, direkt, kein Keigo („はい、つぎ！“). Nur sie prüft wirklich. Zwei Übungsarten im Wechsel (gerade/ungerade Position in der Liste, deterministisch):
 
 - **Hören → Schreiben:** Sie spricht das Wort (TTS), es wird nicht gezeigt. Eingabe über die **eingebaute Kana-Tastatur** (§6.1). Richtig → kurze Bestätigung in ihrer Stimme. Falsch → sie spricht es noch einmal, blendet die Zerlegung der Wirtin (§3.1 Punkt 3) kurz ein, zweiter Versuch, dann weiter. Vergleich auf Kana-Ebene nach Normalisierung (kein Leerzeichen, kein Satzzeichen).
-- **Sehen → Sprechen:** Panel mit der Sprechblase, in der das Zielwort durch „___“ ersetzt ist (§6.3). Du sprichst das Wort; `SttSpeakEvaluator`. Falsch → sie sagt es einmal vor, zweiter Versuch, dann weiter.
+- **Sehen → Sprechen:** Panel mit der Sprechblase, in der das Zielwort durch „___“ ersetzt ist (§6.3). Du sprichst das Wort; `SttSpeakEvaluator`. Falsch → sie sagt es einmal vor, zweiter Versuch, dann weiter. **Änderung 15.10.: ersetzt durch „Bedeutung → Sprechen“** (Ansprache-Spec §4): die deutsche Bedeutung steht groß, das Panel nur klein als Erinnerung; nach einem Fehlversuch sagt sie das Wort vor und zeigt die Kana, der zweite Versuch ist Nachsprechen. Uli 15.10.: „Beim Sprechen weiß man gar nicht, was man sagen soll.“
 
 Ergebnis in die Wiederholungsplanung (`LadderReview.submit`): erster Versuch richtig → `good`; zweiter Versuch richtig → `hard`; beide falsch → `again`. Es gibt keine Wahl zwischen Antworten und kein „gewusst/nicht“.
 
@@ -235,9 +235,11 @@ Die Zuordnung Sprosse ↔ Gast (`guestForRung`) bleibt; nach einer Folge laufen 
 ## 10. Pläne
 
 - **Plan A — Gerüst, Wirtin, Schulmädchen** (GEBAUT 10.10., PR auf `design/cafe-uebungsraum`)**:** Planer, Raum, Fortsetzen, Zerlegung, Kana-Tastatur, Blasen-Überlagerung, Stationen 1–2, Abschluss, Einstiege, Abriss der alten Nachbesprechung. Danach ist das Café benutzbar und Uli kann begutachten.
+- **Plan A2 — Ansprache-Bilder** und **Plan A3 — Vollbild, Sprechen, Stimme** (Ansprache-Spec §9, 15.10.): nach Plan A, vor Plan B. Plan B baut auf dem neuen Rahmen.
 - **Plan B — Alter Mann, Gleichaltrige, Folge-01-Inhalte:** `CafeContent` Folge 01 (Monolog, Fragen, Situationen, Grammatiknotizen), Validator INV-20–23, Stationen 3–4, freier Besuch nach Sprosse.
 
 ## 11. Offene Punkte
 
 - Entwurfstexte (Monolog, Fragen, Situationen, Grammatiknotizen, Abschluss-Sätze) schreibt Claude in Plan B, Uli liest gegen.
-- Später: Katakana auf der Tastatur; Café-Bilder und Vollbild (Pläne 3/4); ab Folge 02 wachsen die Sätze des alten Mannes mit Miras Wortschatz.
+- Später: Katakana auf der Tastatur; Café-Bilder in den vier Lichtern (Runde 2); ab Folge 02 wachsen die Sätze des alten Mannes mit Miras Wortschatz. Vollbild kommt mit der Ansprache-Spec (15.10.), nicht mehr als Plan 4.
+- Uli 15.10.: Das Café soll alles aus der Folge wiederholen (Grammatik, was warum gesagt wurde, Zeichen-Erklärung mit Trübung/Halbtrübung/Dehnung, Nachzeichnen erst einfach, dann schwer). Eigene Spec „Nachbereitung der Folge“, in Arbeit.
