@@ -8,8 +8,10 @@ import 'package:nihongo_app/core/pipeline/fsrs_knowledge_source.dart';
 import 'package:nihongo_app/core/pipeline/knowledge_bridge.dart';
 import 'package:nihongo_app/core/pipeline/sentence_scoring.dart'
     show Knowledge;
-import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
-import 'package:nihongo_app/features/cafe/cafe_turn_screen.dart';
+import 'package:nihongo_app/features/cafe/cafe_scenes.dart';
+import 'package:nihongo_app/features/cafe/stations/schulmaedchen_station.dart';
+import 'package:nihongo_app/features/story/episode.dart';
+import 'package:nihongo_app/features/story/speak_evaluator.dart';
 
 /// Mirrors `ladder_review_test.dart`'s `_knows` exactly: reads through
 /// `FsrsKnowledgeSource.load`, the same canonical read path
@@ -22,8 +24,25 @@ Future<Knowledge> _knows(MiningDb db, String lemma,
     (await FsrsKnowledgeSource.load(db, languageCode: languageCode))
         .call(lemma);
 
+class _Always implements SpeakEvaluator {
+  @override
+  Future<double> evaluate(String target) async => 1.0;
+}
+
+Episode _episode() => Episode.fromJson({
+      'id': 'ep_t', 'seasonId': 's', 'orderIndex': 1, 'title': 'T',
+      'locale': 'ja', 'era': 'e',
+      'budget': {
+        'items': [
+          {'id': 'lex_ja_dog', 'refType': 'lexeme'},
+        ],
+        'glyphs': [],
+      },
+      'pages': [],
+    });
+
 void main() {
-  testWidgets('a café turn with a bridge projects the reviewed lexeme into '
+  testWidgets('a Schulmädchen-Station with a bridge projects the reviewed lexeme into '
       'the shared mining store', (tester) async {
     final learning = LearningDb.forTesting();
     final mining = MiningDb.forTesting();
@@ -48,19 +67,34 @@ void main() {
     // Before: mining knows nothing about 犬 under the canonical 'ja' bucket.
     expect(await _knows(mining, '犬', languageCode: 'ja'), Knowledge.unknown);
 
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
-      home: CafeTurnScreen(
+      home: SchulmaedchenStation(
         db: learning,
-        guest: CafeGuest.schulkind, // rung 3 → productionInput
+        languageId: 'lang_ja',
+        episode: _episode(),
+        itemIds: const ['lex_ja_dog'],
+        startIndex: 0, // Hören→Schreiben
         bridge: KnowledgeBridge(mining),
+        speak: (_) async {},
+        evaluator: _Always(),
+        light: CafeLight.tag,
+        onPosition: (_) {},
+        onDone: (_) {},
+        onLater: () {},
       ),
     ));
     await tester.pumpAndSettle();
 
-    // Produce the word (rung-3 prompt is the meaning; answer is the form).
-    await tester.enterText(
-        find.byKey(const ValueKey('cafe-turn-input')), '犬');
-    await tester.tap(find.byKey(const ValueKey('cafe-turn-submit')));
+    // Produce the word on the kana keyboard (い・ぬ), then submit.
+    for (final c in 'いぬ'.runes.map(String.fromCharCode)) {
+      await tester.ensureVisible(find.byKey(ValueKey('kana-key-$c')));
+      await tester.tap(find.byKey(ValueKey('kana-key-$c')));
+      await tester.pump();
+    }
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
     await tester.pumpAndSettle();
 
     // After: the graded review projected into mining under 'ja' — the same

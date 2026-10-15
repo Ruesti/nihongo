@@ -101,6 +101,20 @@ class LearningDb extends _$LearningDb {
   Future<LearnItem?> getLearnItem(String id) =>
       (select(learnItems)..where((t) => t.id.equals(id))).getSingleOrNull();
 
+  /// Letztes Ergebnis eines Items (`again|hard|good|easy`), null ohne Log.
+  Future<String?> lastReviewResult(String learnItemId) async {
+    final row = await (select(reviewLog)
+          ..where((t) => t.learnItemId.equals(learnItemId))
+          ..orderBy([(t) => OrderingTerm.desc(t.ts)])
+          ..limit(1))
+        .getSingleOrNull();
+    return row?.result;
+  }
+
+  /// Alle Items einer Sprache (freiwillige Runde im leeren Café, Spec §2).
+  Future<List<LearnItem>> learnItemsFor(String langId) =>
+      (select(learnItems)..where((t) => t.languageId.equals(langId))).get();
+
   /// Promote a just-encountered item from rung 0 to rung 1 and schedule
   /// its first real review. Ungraded: writes no review_log row.
   Future<void> markEncounteredRow(LearnItem item) async {

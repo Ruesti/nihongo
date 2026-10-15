@@ -27,28 +27,45 @@ class StoryProgressStore {
   Future<bool> isCompleted(String episodeId) async =>
       _prefs.getBool('$_completedPrefix$episodeId') ?? false;
 
-  static const _debriefIndexPrefix = 'story_debrief_index_';
-  static const _debriefDonePrefix = 'story_debrief_done_';
+  static const _cafePosPrefix = 'cafe_visit_pos_';
+  static const _cafeDonePrefix = 'cafe_visit_done_';
 
-  /// Nachbesprechung, Akt 1: Index der nächsten noch nicht erklärten Karte
-  /// (Spec Café-Nachbesprechung §3.6 — Abbruch setzt beim ersten offenen
-  /// Item fort). 0, wenn noch nichts erklärt wurde.
-  Future<int> debriefIndex(String episodeId) async =>
-      _prefs.getInt('$_debriefIndexPrefix$episodeId') ?? 0;
+  /// „Später weiter" (Spec §2): Station und Item, bei denen der Besuch
+  /// [visitId] (Folgen-ID oder `free`) abgebrochen wurde.
+  Future<({int station, int item})?> cafeVisitPosition(String visitId) async {
+    final raw = _prefs.getString('$_cafePosPrefix$visitId');
+    if (raw == null) return null;
+    final parts = raw.split(':');
+    return (station: int.parse(parts[0]), item: int.parse(parts[1]));
+  }
 
-  Future<void> saveDebriefIndex(String episodeId, int index) async =>
-      await _prefs.setInt('$_debriefIndexPrefix$episodeId', index);
+  Future<void> saveCafeVisitPosition(String visitId, int station, int item) =>
+      _prefs.setString('$_cafePosPrefix$visitId', '$station:$item');
 
-  /// Akt 1 vollständig gesehen. Kein Fortschritt im Sinne von INV-10: schaltet
-  /// nichts frei, wird nirgends gezählt — die Wirtin erklärt nur nicht zweimal.
-  Future<void> markDebriefDone(String episodeId) async =>
-      await _prefs.setBool('$_debriefDonePrefix$episodeId', true);
+  Future<void> clearCafeVisitPosition(String visitId) async {
+    await _prefs.remove('$_cafePosPrefix$visitId');
+    await _prefs.remove('$_cafeWobblyPrefix$visitId');
+  }
 
-  Future<bool> isDebriefDone(String episodeId) async =>
-      _prefs.getBool('$_debriefDonePrefix$episodeId') ?? false;
+  static const _cafeWobblyPrefix = 'cafe_visit_wobbly_';
 
-  /// Offen = Folge zu Ende gelesen UND Akt 1 noch nicht vollständig gesehen
-  /// (§3.6). Vor dem Folgen-Ende ist eine Nachbesprechung nie offen (INV-11).
-  Future<bool> isDebriefPending(String episodeId) async =>
-      await isCompleted(episodeId) && !await isDebriefDone(episodeId);
+  /// Weg 1: die bei der Wirtin wackeligen Wörter, damit ein Fortsetzen die
+  /// Schulmädchen-Liste genauso ordnet (wackelige zuerst).
+  Future<void> saveCafeVisitWobbly(String episodeId, Set<String> ids) =>
+      _prefs.setString('$_cafeWobblyPrefix$episodeId', ids.join(','));
+
+  Future<Set<String>> cafeVisitWobbly(String episodeId) async {
+    final raw = _prefs.getString('$_cafeWobblyPrefix$episodeId');
+    if (raw == null || raw.isEmpty) return const {};
+    return raw.split(',').where((s) => s.isNotEmpty).toSet();
+  }
+
+  /// Weg 1 ist für diese Folge einmal zu Ende gegangen. Kein Fortschritt im
+  /// Sinne von INV-10 — die Endkarte lädt nur nicht zweimal ein.
+  Future<void> markCafeVisitDone(String episodeId) =>
+      _prefs.setBool('$_cafeDonePrefix$episodeId', true);
+
+  Future<bool> isCafeVisitPending(String episodeId) async =>
+      await isCompleted(episodeId) &&
+      !(_prefs.getBool('$_cafeDonePrefix$episodeId') ?? false);
 }

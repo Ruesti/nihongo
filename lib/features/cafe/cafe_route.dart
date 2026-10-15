@@ -3,78 +3,83 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app/knowledge_providers.dart';
+import '../../core/tts_service.dart';
 import '../story/episode.dart';
 import '../story/episode_registry.dart';
+import '../story/speak_evaluator.dart';
 import '../story/story_progress_store.dart';
-import 'cafe_screen.dart';
+import 'cafe_visit_screen.dart';
 
-/// Was das Café über Folgen wissen muss: der Fortschritts-Store und *alle*
-/// Folgen mit offener Nachbesprechung, in Registry-Reihenfolge (Spec
-/// Café-Nachbesprechung §3.6). autoDispose: bei jedem Betreten frisch — nach
-/// einer erledigten Nachbesprechung ist die Einladung beim nächsten Besuch
-/// weg.
-final cafeDebriefProvider = FutureProvider.autoDispose<
-    ({StoryProgressStore store, List<Episode> pending})>((ref) async {
-  final episodes = ref.watch(storyEpisodesProvider);
+/// Was die Route wissen muss: der Fortschritts-Store und ob für
+/// [episodeId] ein Besuch nach der Folge offen ist (Spec §2, Weg 1).
+final cafeVisitProvider = FutureProvider.autoDispose
+    .family<({StoryProgressStore store, Episode? pending}), String?>(
+        (ref, episodeId) async {
   final store = StoryProgressStore(await SharedPreferences.getInstance());
-  final pending = <Episode>[];
-  for (final episode in episodes) {
-    if (await store.isDebriefPending(episode.id)) pending.add(episode);
+  final episodes = ref.watch(storyEpisodesProvider);
+  if (episodeId == null) {
+    // Café-Tab: ein mit „Später weiter" unterbrochener Weg-1-Besuch geht
+    // vor; ohne gespeicherte Position bleibt es beim freien Besuch.
+    for (final e in episodes) {
+      if (await store.isCafeVisitPending(e.id) &&
+          await store.cafeVisitPosition(e.id) != null) {
+        return (store: store, pending: e);
+      }
+    }
+    return (store: store, pending: null);
   }
-  return (store: store, pending: pending);
+  for (final e in episodes) {
+    if (e.id == episodeId && await store.isCafeVisitPending(e.id)) {
+      return (store: store, pending: e);
+    }
+  }
+  return (store: store, pending: null);
 });
 
-/// Welche offene Nachbesprechung das Café zeigt: die angefragte, wenn sie
-/// offen ist (Weg „Ins Café" von der Endkarte — sonst landete man in der
-/// Nachbesprechung einer ganz anderen Folge), sonst die erste offene, sonst
-/// keine.
-Episode? chooseDebriefEpisode(List<Episode> pending, String? requestedId) {
-  for (final episode in pending) {
-    if (episode.id == requestedId) return episode;
-  }
-  return pending.isEmpty ? null : pending.first;
-}
-
-/// Routes the café into the app in place of the bare SRS review feed
-/// (brief §4 — the café replaces the review screen entirely). Pulls the
-/// on-ramp [LearningDb] and the optional knowledge bridge from providers and
-/// hands them to [CafeScreen], so café reviews project into the shared mining
-/// store exactly as the old ReviewScreen did.
+/// Einstieg ins Café: mit [episodeId] (Endkarte „Ins Café") Weg 1, wenn der
+/// Besuch dieser Folge noch offen ist; ohne [episodeId] (Café-Tab) Weg 1 für
+/// die erste offene Folge mit „Später weiter"-Position, sonst Weg 2 (freier
+/// Besuch). Dienste: TTS, Spracherkennung — die Stationen laufen ohne sie
+/// weiter, nur ohne Ton bzw. ohne Erkennung.
 class CafeRoute extends ConsumerWidget {
-  /// Folge, deren Nachbesprechung beim Betreten von selbst aufgehen soll
-  /// (Weg „Ins Café" von der Endkarte). Ist sie nicht offen — nicht zu Ende
-  /// gelesen oder schon nachbesprochen —, ist es ein normaler Besuch.
-  final String? debriefEpisodeId;
-
-  const CafeRoute({super.key, this.debriefEpisodeId});
+  final String? episodeId;
+  const CafeRoute({super.key, this.episodeId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.watch(learningDbProvider);
     final bridge = ref.watch(knowledgeBridgeProvider);
     final episodes = ref.watch(storyEpisodesProvider);
-    final deps = ref.watch(cafeDebriefProvider);
+    final deps = ref.watch(cafeVisitProvider(episodeId));
     return deps.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      // Ohne Prefs (sollte nie passieren) bleibt das Café das Café — nur
-      // ohne Einladung. Stumm bleibt der Fehler trotzdem nicht.
-      error: (e, _) {
-        debugPrint('cafe: Nachbesprechungs-Stand nicht lesbar: $e');
-        return CafeScreen(
-            db: db, bridge: bridge, languageId: 'lang_ja', episodes: episodes);
-      },
+      error: (e, _) => Scaffold(
+        body: Center(child: Text('Café nicht verfügbar:\n$e', textAlign: TextAlign.center)),
+      ),
       data: (d) {
-        final chosen = chooseDebriefEpisode(d.pending, debriefEpisodeId);
-        return CafeScreen(
+        final pending = d.pending;
+        if (pending != null) {
+          return CafeVisitScreen.afterEpisode(
+            db: db,
+            bridge: bridge,
+            languageId: 'lang_ja',
+            episode: pending,
+            store: d.store,
+            speak: (t) => TtsService.instance.speak(t),
+            speakSlow: (t) => TtsService.instance.speakSlow(t),
+            evaluator: SttSpeakEvaluator(),
+          );
+        }
+        return CafeVisitScreen.free(
           db: db,
           bridge: bridge,
           languageId: 'lang_ja',
           episodes: episodes,
-          debriefEpisode: chosen,
-          progressStore: d.store,
-          openDebriefOnEntry:
-              debriefEpisodeId != null && chosen?.id == debriefEpisodeId,
+          store: d.store,
+          speak: (t) => TtsService.instance.speak(t),
+          speakSlow: (t) => TtsService.instance.speakSlow(t),
+          evaluator: SttSpeakEvaluator(),
         );
       },
     );

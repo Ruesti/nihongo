@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
-import 'package:nihongo_app/features/cafe/cafe_screen.dart';
+import 'package:nihongo_app/features/cafe/cafe_route.dart';
 import 'package:nihongo_app/features/mining_slice/reading_tab.dart';
 import 'package:nihongo_app/features/story/episodes/folge_01_regen.dart';
 import 'package:nihongo_app/features/story/story_route.dart';
@@ -39,7 +39,7 @@ Future<void> _readToEndCard(WidgetTester tester) async {
 void main() {
   testWidgets(
       'aus der Shell (Root-Navigator) geöffnet: „Ins Café" ersetzt den '
-      'Reader als Vollbild-Nachbesprechung, Zurück führt in die Shell',
+      'Reader als Vollbild-Besuch, Zurück führt in die Shell',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
     final learning = LearningDb.forTesting();
@@ -81,26 +81,20 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-end-cafe')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-visit-room')), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
 
-    // Das Café ersetzt den Reader: Zurück schließt erst die Nachbesprechung,
-    // dann das Café — und landet in der Shell, NICHT wieder im Reader.
+    // Das Café ersetzt den Reader: Zurück landet in der Shell, NICHT wieder
+    // im Reader.
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsNothing);
-    expect(find.byType(CafeScreen), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.byType(CafeScreen), findsNothing);
+    expect(find.byType(CafeRoute), findsNothing);
     expect(find.byKey(const ValueKey('story-reader-panel')), findsNothing);
     expect(find.byKey(const ValueKey('story-end-card')), findsNothing);
     expect(find.byType(NavigationBar), findsOneWidget);
   });
 
-  testWidgets('„Ins Café" von der Endkarte landet in der Nachbesprechung, '
+  testWidgets('„Ins Café" von der Endkarte landet im Besuch, '
       'und jedes Budget-Wort liegt vorher im Karteikasten', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final learning = LearningDb.forTesting();
@@ -147,8 +141,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('story-end-cafe')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('cafe-debrief-screen')), findsOneWidget);
-    expect(find.byKey(const ValueKey('cafe-debrief-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-visit-room')), findsOneWidget);
     final episode = loadFolge01();
     for (final ref in episode.budget.items) {
       final item = await learning
