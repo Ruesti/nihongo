@@ -339,7 +339,9 @@ wählt. Dann **Runde 1 = alle 13 Motive in Tag** (das reicht für Plan 4 und den
 Gerätetest), **Runde 2 = die 25 übrigen Lichter**.
 
 **Mira bleibt hinter der Kamera** (unverändert). Keine Nahaufnahmen, keine
-Mehr-Figuren-Szenen (Café-Szenen-Spec §7).
+Mehr-Figuren-Szenen (Café-Szenen-Spec §7). **Änderung 15.10.:** Für die Ansprache-Bilder
+der Stationen (Spec `2026-10-15-cafe-ansprache-design.md`) gilt das Nahaufnahme-Verbot
+nicht: der Gast sieht halbnah in die Kamera. Die Café-Szenen hier bleiben wie beschrieben.
 
 **Skripte** (`tool/comic/`): `cafe_motifs.py` bekommt Prompts im Panel-Format und die
 Hoch-Umgebungssätze; `cafe_library.py` wird auf Foto → `manga_graph` → Hochbild
