@@ -1,0 +1,2 @@
+# Picks für die Ansprache-Bilder (Runde 1): ein fragendes Foto je Zeile.
+# Format: {gast}_{fmt}_{n}=/pfad/zum/fragend_foto.png   (gast: wirtin, schulkind, vielredner, gleichaltrige; fmt: quer, hoch; n: 1-5)

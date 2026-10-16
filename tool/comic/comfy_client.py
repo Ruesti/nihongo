@@ -103,6 +103,31 @@ def relight_graph(input_name, prompt, seed, prefix):
     }
 
 
+def edit_graph(input_name, prompt, seed, prefix, negative=""):
+    """Bild-Edit (Mimik/Stimmung): Qwen-Image-Edit-2509 + Lightning-4step, OHNE Relight-LoRA.
+    Gleiche Verdrahtung wie relight_graph; `negative` geht in den negativen Textknoten,
+    Ausgabegröße = Eingabegröße (FluxKontextImageScale). input_name liegt in COMFY_INPUT."""
+    return {
+        "1": {"class_type": "UnetLoaderGGUF", "inputs": {"unet_name": "Qwen-Image-Edit-2509-Q4_K_M.gguf"}},
+        "2": {"class_type": "LoraLoaderModelOnly", "inputs": {"model": ["1", 0],
+              "lora_name": "Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors", "strength_model": 1.0}},
+        "4": {"class_type": "ModelSamplingAuraFlow", "inputs": {"model": ["2", 0], "shift": 3.0}},
+        "5": {"class_type": "CLIPLoader", "inputs": {"clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "type": "qwen_image"}},
+        "6": {"class_type": "VAELoader", "inputs": {"vae_name": "qwen_image_vae.safetensors"}},
+        "7": {"class_type": "LoadImage", "inputs": {"image": input_name}},
+        "8": {"class_type": "FluxKontextImageScale", "inputs": {"image": ["7", 0]}},
+        "9": {"class_type": "VAEEncode", "inputs": {"pixels": ["8", 0], "vae": ["6", 0]}},
+        "10": {"class_type": "TextEncodeQwenImageEditPlus", "inputs": {"clip": ["5", 0], "prompt": prompt,
+               "vae": ["6", 0], "image1": ["8", 0]}},
+        "11": {"class_type": "TextEncodeQwenImageEditPlus", "inputs": {"clip": ["5", 0], "prompt": negative, "vae": ["6", 0]}},
+        "12": {"class_type": "KSampler", "inputs": {"seed": seed, "steps": 4, "cfg": 1.0, "sampler_name": "euler",
+               "scheduler": "simple", "denoise": 1.0, "model": ["4", 0], "positive": ["10", 0],
+               "negative": ["11", 0], "latent_image": ["9", 0]}},
+        "13": {"class_type": "VAEDecode", "inputs": {"samples": ["12", 0], "vae": ["6", 0]}},
+        "14": {"class_type": "SaveImage", "inputs": {"filename_prefix": prefix, "images": ["13", 0]}},
+    }
+
+
 def manga_graph(input_name, prompt, negative, seed, prefix, control="depth", denoise=0.7,
                 strength=0.7, end_percent=0.8, lora_strength=1.5):
     """Manga-Durchgang (Spec Manga-Vollbild §2.2): img2img über dem Foto-Final mit
