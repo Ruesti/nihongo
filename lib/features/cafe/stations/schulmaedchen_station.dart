@@ -313,6 +313,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       setState(() {
         _listening = false;
         _writeInstead = true;
+        _feedback = 'Dann schreib es.';
       });
       return;
     }
@@ -402,7 +403,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              if (_showKana)
+              if (_showKana && !_writeInstead)
                 Text(
                   w.reading,
                   key: const ValueKey('schul-kana'),
@@ -444,7 +445,10 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                   if (!_graded && !_writeInstead)
                     TextButton(
                       key: const ValueKey('schul-write-instead'),
-                      onPressed: () => setState(() => _writeInstead = true),
+                      onPressed: () => setState(() {
+                        _writeInstead = true;
+                        _feedback = 'Dann schreib es.'; // Lesung nicht abschreiben (INV-9)
+                      }),
                       child: const Text('lieber schreiben'),
                     ),
                 ],

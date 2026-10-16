@@ -363,13 +363,38 @@ void main() {
     final ev = _GatedEvaluator();
     await pump(tester, ev, ['lex_ja_kasa', 'lex_ja_ame'], voice: voice);
     await toSeeSpeak(tester);
-    fake.log.clear();
+    await tester.pumpAndSettle();
+    expect(fake.log.sublist(fake.log.length - 2),
+        ['stop', 'speak:[Wie heißt ‚Regen‘? Sag\'s.|de] schulkind']);
+    final stopsBefore = fake.log.where((e) => e == 'stop').length;
     await tester.tap(find.byKey(const ValueKey('schul-mic')));
     await tester.pump();
-    expect(ev.calls, 1);
-    expect(fake.log, contains('stop')); // vor evaluate, das noch aussteht
+    expect(ev.calls, 1); // Erkennung steht aus: stop kam davor
+    expect(fake.log.last, 'stop');
+    expect(fake.log.where((e) => e == 'stop').length, stopsBefore + 1);
     ev.release(0.9);
     await tester.pumpAndSettle();
+    expect(fake.log.last, 'speak:[Ha, gewusst!|de] schulkind');
+  });
+
+  testWidgets('Wechsel zum Schreiben verbirgt die Lesung (INV-9)',
+      (tester) async {
+    await pump(tester, _FakeEvaluator([0.1]), ['lex_ja_kasa', 'lex_ja_ame']);
+    await toSeeSpeak(tester);
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('schul-kana')), findsOneWidget);
+    expect(bubble(tester), contains('あめ'));
+    await tester.ensureVisible(find.byKey(const ValueKey('schul-write-instead')));
+    await tester.tap(find.byKey(const ValueKey('schul-write-instead')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('schul-kana')), findsNothing);
+    expect(bubble(tester), 'Dann schreib es.');
+    expect(find.byKey(const ValueKey('kana-keyboard-value')), findsOneWidget);
+    await typeKana(tester, 'あめ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    expect(await results(), ['good', 'hard']);
   });
 
   testWidgets('freier Besuch: Folge je Wort aus episodes → Sehen→Sprechen '
