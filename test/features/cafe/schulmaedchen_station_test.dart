@@ -82,7 +82,7 @@ void main() {
     final spoken = <String>[];
     records = null;
     // Telefon-Hochformat: das Querformat-Panel in voller Breite plus Mikro.
-    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.physicalSize = const Size(400, 2800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(

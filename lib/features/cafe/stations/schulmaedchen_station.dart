@@ -12,6 +12,7 @@ import '../cafe_debrief.dart';
 import '../cafe_scenes.dart';
 import '../cafe_summary.dart';
 import '../cafe_turn.dart';
+import '../cafe_portraits.dart';
 import '../cafe_visit.dart';
 import '../kana_keyboard.dart';
 import '../word_decomposition.dart';
@@ -283,7 +284,9 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     return StationFrame(
       station: CafeStation.schulmaedchen,
       light: widget.light,
-      voiceLine: hearWrite ? 'Hör zu und schreib es. Schnell!' : 'Was steht da? Sag es. Los.',
+      mood: CafeMood.fragend,
+      variant: 1,
+      line: hearWrite ? 'Hör zu und schreib es. Schnell!' : 'Was steht da? Sag es. Los.',
       onNext: _graded ? _next : null,
       onLater: widget.onLater,
       child: Padding(

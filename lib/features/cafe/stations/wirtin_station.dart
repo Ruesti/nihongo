@@ -8,6 +8,7 @@ import '../../story/speak_evaluator.dart';
 import '../bubble_overlay.dart';
 import '../cafe_debrief.dart';
 import '../cafe_scenes.dart';
+import '../cafe_portraits.dart';
 import '../cafe_visit.dart';
 import '../word_decomposition.dart';
 import 'station_frame.dart';
@@ -212,7 +213,9 @@ class _WirtinStationState extends State<WirtinStation> {
     return StationFrame(
       station: CafeStation.wirtin,
       light: widget.light,
-      voiceLine: 'Setz dich. Das hier hattest du in der Folge:',
+      mood: CafeMood.fragend,
+      variant: 1,
+      line: 'Setz dich. Das hier hattest du in der Folge:',
       onNext: _next,
       onLater: widget.onLater,
       child: Padding(

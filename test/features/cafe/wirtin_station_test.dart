@@ -128,7 +128,7 @@ void main() {
   Future<_Result> pump(WidgetTester tester, SpeakEvaluator ev, List<String> ids) async {
     final spoken = <String>[], slow = <String>[], positions = <int>[];
     Set<String>? wobbly;
-    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.physicalSize = const Size(800, 3200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
@@ -279,7 +279,7 @@ void main() {
 
   testWidgets('Vorlesen schlägt fehl (kein TTS): Station läuft trotzdem weiter',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.physicalSize = const Size(800, 3200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     Set<String>? done;
