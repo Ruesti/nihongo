@@ -300,7 +300,7 @@ def make_sheet(name, items, cols, out=None):
     out.mkdir(parents=True, exist_ok=True)
     target = out / (name + ".png")
     subprocess.run([sys.executable, str(HERE / "sheet.py"), str(target), str(cols)]
-                   + ["%s=%s" % (label, path) for label, path in items], check=False)
+                   + ["%s=%s" % (label, path) for label, path in items], check=True)
     return target
 
 
@@ -310,15 +310,40 @@ def _newest(prefix, folder):
     return max(found, key=lambda f: (os.path.getmtime(f), f)) if found else None
 
 
-def _manga_sheet(name, labelled, manga_dir):
-    """Bogen mit 3 Spalten aus den Manga-Ausgaben; (Label, Name)-Paare, fehlende Bilder entfallen."""
+def _placeholder(folder):
+    """Kleines dunkles Ersatzbild `_placeholder.png`, einmal erzeugt; hält das Raster ausgerichtet."""
+    from PIL import Image
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "_placeholder.png"
+    if not path.exists():
+        Image.new("RGB", (256, 256), (30, 30, 30)).save(path)
+    return path
+
+
+def _cells(labelled, lookup, sheets_dir):
+    """(Label, Schlüssel) -> (Label, Pfad); fehlendes Bild = WARN + Platzhalter statt Lücke."""
+    items = []
+    for label, key in labelled:
+        path = lookup(key)
+        if not path:
+            print("WARN fehlt: %s" % label, flush=True)
+            path = _placeholder(sheets_dir)
+        items.append((label, path))
+    return items
+
+
+def _manga_sheet(name, labelled, manga_dir, sheets_dir):
+    """Bogen mit 3 Spalten aus den Manga-Ausgaben; (Label, Name)-Paare."""
     manga = edit_outputs(manga_dir)
-    return make_sheet(name, [(label, manga[n]) for label, n in labelled if n in manga], 3)
+    return make_sheet(name, _cells(labelled, manga.get, sheets_dir), 3, out=sheets_dir)
 
 
 def gate(seeds=(911, 912)):
-    """Gate: Wirtin quer/hoch, je Seed fragend -> Edits -> Manga; Bogen gate.png."""
-    foto, edit, manga = ROOT / "foto", ROOT / "edit", ROOT / "manga"
+    """Gate: Wirtin quer/hoch, je Seed fragend -> Edits -> Manga; Bogen gate/sheets/gate.png.
+    Eigener Unterbaum ROOT/gate, damit Runde 2 keine Gate-Bilder wiederverwendet."""
+    base = ROOT / "gate"
+    foto, edit, manga, sheets = (base / d for d in ("foto", "edit", "manga", "sheets"))
     render_fragend(["wirtin"], list(FORMATS), seeds, out=foto)
     picks = {}
     for fmt in FORMATS:
@@ -330,22 +355,19 @@ def gate(seeds=(911, 912)):
     render_manga({**fragend_sources(picks), **edit_outputs(edit)}, out=manga)
     labelled = [("%s s%d %s" % (fmt, seed, mood), name_for("wirtin", mood, i, fmt))
                 for fmt in FORMATS for i, seed in enumerate(seeds, 1) for mood in MOODS_ORDER]
-    return _manga_sheet("gate", labelled, manga)
+    return _manga_sheet("gate", labelled, manga, sheets)
 
 
 def runde1(seeds=tuple(range(921, 929))):
     """Runde 1: alle Gäste/Formate/Seeds als Foto; ein Bogen je Zelle (4 Spalten)."""
-    foto = ROOT / "foto"
+    foto, sheets_dir = ROOT / "foto", ROOT / "sheets"
     render_fragend(list(GUESTS), list(FORMATS), seeds, out=foto)
     sheets = []
     for gast in GUESTS:
         for fmt in FORMATS:
-            items = []
-            for seed in seeds:
-                f = _newest("%s_fragend_%s_s%d" % (gast, fmt, seed), foto)
-                if f:
-                    items.append(("s%d" % seed, f))
-            sheets.append(make_sheet("r1_%s_%s" % (gast, fmt), items, 4))
+            labelled = [("s%d" % seed, "%s_fragend_%s_s%d" % (gast, fmt, seed)) for seed in seeds]
+            items = _cells(labelled, lambda pre: _newest(pre, foto), sheets_dir)
+            sheets.append(make_sheet("r1_%s_%s" % (gast, fmt), items, 4, out=sheets_dir))
     return sheets
 
 
@@ -353,17 +375,17 @@ def runde2(picks_path, overrides_path=None):
     """Runde 2: Edits + Manga aus den Picks; ein Bogen je Gast (3 Spalten)."""
     picks = load_picks(picks_path)
     overrides = load_overrides(overrides_path) if overrides_path else None
-    edit, manga = ROOT / "edit", ROOT / "manga"
+    edit, manga, sheets_dir = ROOT / "edit", ROOT / "manga", ROOT / "sheets"
     render_edits(picks, out=edit, overrides=overrides)
     render_manga({**fragend_sources(picks), **edit_outputs(edit)}, out=manga, overrides=overrides)
-    guests = sorted({k.split("_")[0] for k in picks})
+    guests = {k.split("_")[0] for k in picks}
     sheets = []
     for gast in GUESTS:
         if gast not in guests:
             continue
         labelled = [("%s %d %s" % (mood, n, fmt), name_for(gast, mood, n, fmt))
                     for n in range(1, VARIANTS + 1) for fmt in FORMATS for mood in MOODS_ORDER]
-        sheets.append(_manga_sheet("r2_" + gast, labelled, manga))
+        sheets.append(_manga_sheet("r2_" + gast, labelled, manga, sheets_dir))
     return sheets
 
 

@@ -215,16 +215,20 @@ flutter test test/features/story/folge_01_layout_test.dart test/features/story/f
 
 Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×928, hoch 928×1664), je 5 Varianten. Code: `cafe_ansprache.py`, Test: `test_ansprache.py`. Ausgabe liegt unter `~/comfy_cafe_ansprache/` (`foto`, `edit`, `manga`, `final`, `sheets`).
 
+**Modelle:** Foto: Checkpoint `qwen-image-Q4_K_M.gguf` + LoRA `shotengai_style_ckpt6.safetensors` mit Stärke 0,3. Mood-Edits: `Qwen-Image-Edit-2509-Q4_K_M.gguf` + `Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors` (4 Schritte). Manga-Durchgang: ControlNet `Qwen-Image-InstantX-ControlNet-Union.safetensors` mit DepthAnythingV2, LoRA 1,5, denoise 0,7. Finish: `4x-UltraSharp.pth`.
+
 **Rezept:** Foto per Text-zu-Bild (Stimmung „fragend“, Blick in die Kamera) mit Stil-LoRA, daraus zwei Edits (zufrieden, abwinkend; Edit-Seed 21), danach je Bild der Manga-Durchgang (Seed 831). Seeds: Gate 911/912, Runde 1 921–928.
 
 **Stufen** (jede endet mit `ANSPRACHE_DONE`; vorhandene Ausgaben werden übersprungen, Fehler je Bild stehen als `ERR` im Log und brechen nicht ab):
 
 | Stufe | Wirkung | Bogen |
 |---|---|---|
-| `gate` | Wirtin quer/hoch × 2 Seeds: Foto → Edits → Manga | `gate.png` (3 Spalten: fragend, zufrieden, abwinkend) |
+| `gate` | Wirtin quer/hoch × 2 Seeds: Foto → Edits → Manga | `gate/sheets/gate.png` (3 Spalten: fragend, zufrieden, abwinkend) |
 | `runde1` | alle Gäste × Formate × 8 Seeds, nur Fotos | `r1_{gast}_{fmt}.png` (4 Spalten, Label `s{seed}`) |
 | `runde2 PICKS [OVERRIDES]` | Edits + Manga aus den Picks | `r2_{gast}.png` (3 Spalten, Zeilen n=1..5 × quer/hoch) |
 | `finish PICKS OUT` | Auslieferung (Task 6) | |
+
+Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `edit`, `manga`, `sheets`), damit Runde 2 keine Gate-Bilder wiederverwendet; der Bogen liegt unter `~/comfy_cafe_ansprache/gate/sheets/gate.png`. Fehlt ein Bild, steht `WARN fehlt: <Label>` im Log und ein dunkler Platzhalter (`_placeholder.png`) hält das Raster ausgerichtet. Schlägt `sheet.py` fehl, bricht die Stufe ab (kein `ANSPRACHE_DONE`).
 
 **Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
 

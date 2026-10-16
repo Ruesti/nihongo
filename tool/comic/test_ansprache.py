@@ -265,10 +265,14 @@ class Stages(FakeRun):
         super().setUp()
         self.sheet_items = {}
         self._saved_stage = (ca.ROOT, ca.make_sheet)
+        self._real_make_sheet = ca.make_sheet
         ca.ROOT = Path(self.d) / "root"
+
+        self.sheet_out = {}
 
         def fake_sheet(name, items, cols, out=None):
             self.sheet_items[name] = items
+            self.sheet_out[name] = out
             return Path(self.d) / (name + ".png")
         ca.make_sheet = fake_sheet
         self.picks_two_guests = os.path.join(self.d, "picks.txt")
@@ -286,9 +290,40 @@ class Stages(FakeRun):
         ca.gate(seeds=(1, 2))
         labels = [l for l, _ in self.sheet_items["gate"]]
         self.assertEqual(len(labels), 12)
-        self.assertEqual(labels[:3], ["quer s1 fragend", "quer s1 zufrieden", "quer s1 abwinkend"])
-        self.assertEqual(labels[9:], ["hoch s2 fragend", "hoch s2 zufrieden", "hoch s2 abwinkend"])
-        self.assertIn("manga", str(self.sheet_items["gate"][0][1]))
+        self.assertEqual(labels, [f"{f} s{s} {m}" for f in ("quer", "hoch") for s in (1, 2)
+                                  for m in ("fragend", "zufrieden", "abwinkend")])
+        base = ca.ROOT / "gate"
+        self.assertTrue(all(str(p).startswith(str(base / "manga")) for _, p in self.sheet_items["gate"]))
+        self.assertEqual(self.sheet_out["gate"], base / "sheets")
+        for sub in ("foto", "edit", "manga", "sheets"):
+            self.assertFalse((ca.ROOT / sub).exists())
+
+    def test_missing_image_placeholder(self):
+        real_run = cc.run
+
+        def skipping(graph, prefix, out_dir, client_id="x"):
+            if prefix == "wirtin_zufrieden_1_quer":
+                return []
+            return real_run(graph, prefix, out_dir, client_id)
+        cc.run = skipping
+        ca.gate(seeds=(1, 2))
+        items = self.sheet_items["gate"]
+        self.assertEqual(len(items), 12)
+        self.assertEqual(items[1][0], "quer s1 zufrieden")
+        self.assertEqual(items[1][1].name, "_placeholder.png")
+        self.assertTrue(items[1][1].exists())
+        self.assertIn("WARN fehlt: quer s1 zufrieden", self.log.getvalue())
+
+    def test_make_sheet_failure_raises(self):
+        import subprocess
+        saved = subprocess.run
+        subprocess.run = lambda cmd, **kw: subprocess.CompletedProcess(cmd, 1) if not kw.get("check") \
+            else (_ for _ in ()).throw(subprocess.CalledProcessError(1, cmd))
+        try:
+            with self.assertRaises(subprocess.CalledProcessError):
+                self._real_make_sheet("x", [("a", "b")], 3, out=Path(self.d) / "sh")
+        finally:
+            subprocess.run = saved
 
     def test_runde1_sheets_per_cell(self):
         ca.runde1(seeds=(1, 2, 3))
@@ -302,8 +337,9 @@ class Stages(FakeRun):
         ca.runde2(self.picks_two_guests)
         self.assertEqual(sorted(self.sheet_items), ["r2_schulkind", "r2_wirtin"])
         items = self.sheet_items["r2_wirtin"]
-        self.assertEqual(len(items), 30)
-        self.assertEqual(items[0][0], "fragend 1 quer")
+        self.assertEqual([l for l, _ in items],
+                         [f"{m} {n} {f}" for n in range(1, 6) for f in ("quer", "hoch")
+                          for m in ("fragend", "zufrieden", "abwinkend")])
         self.assertIn("manga", str(items[0][1]))
 
     def test_cli_unknown_stage(self):
