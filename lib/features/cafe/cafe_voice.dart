@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cafe_occupancy.dart';
@@ -96,11 +97,15 @@ class DeviceTtsSource implements VoiceSource {
         if (run != _run) return;
         final de = seg.lang == VoiceLang.de;
         await _engine.setLanguage(de ? 'de-DE' : 'ja-JP');
+        if (run != _run) return;
         if (de && germanVoice != null) {
           await _engine.setVoiceByName(germanVoice);
+          if (run != _run) return;
         }
         await _engine.setPitch(profile.pitch);
+        if (run != _run) return;
         await _engine.setRate(profile.rate);
+        if (run != _run) return;
         await _engine.speakAndWait(seg.text);
       }
     } finally {
@@ -153,13 +158,24 @@ class CafeVoice {
 
   Future<void> say(CafeGuest guest, String line) async {
     final source = _source;
-    if (source == null || !await _isEnabled!()) return;
-    if (!await source.hasGerman()) return;
-    final segments = splitSegments(line);
-    if (segments.isEmpty) return;
-    await source.stop();
-    await source.speak(segments, profileFor(guest), guest);
+    if (source == null) return;
+    try {
+      if (!await _isEnabled!()) return;
+      if (!await source.hasGerman()) return;
+      final segments = splitSegments(line);
+      if (segments.isEmpty) return;
+      await source.stop();
+      await source.speak(segments, profileFor(guest), guest);
+    } catch (e) {
+      debugPrint('CafeVoice.say: $e'); // Stimme ist nur Zierde
+    }
   }
 
-  Future<void> stop() async => _source?.stop();
+  Future<void> stop() async {
+    try {
+      await _source?.stop();
+    } catch (e) {
+      debugPrint('CafeVoice.stop: $e');
+    }
+  }
 }

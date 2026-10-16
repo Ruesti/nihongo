@@ -15,6 +15,9 @@ class FakeSpeechEngine implements SpeechEngine {
   /// Stimmennamen je Sprachpräfix, z. B. `{'de': ['a', 'b']}`.
   Map<String, List<String>> voices = {};
 
+  /// Wenn gesetzt, wartet `setPitch` auf den Completer.
+  Completer<void>? Function()? holdPitch;
+
   /// Wenn gesetzt, wartet `speakAndWait` auf dieses Completer-Objekt.
   Completer<void> Function(String text)? hold;
 
@@ -25,7 +28,11 @@ class FakeSpeechEngine implements SpeechEngine {
   }
 
   @override
-  Future<void> setPitch(double v) async => log.add('pitch:$v');
+  Future<void> setPitch(double v) async {
+    log.add('pitch:$v');
+    final c = holdPitch?.call();
+    if (c != null) await c.future;
+  }
 
   @override
   Future<void> setRate(double v) async => log.add('rate:$v');
@@ -52,10 +59,12 @@ class FakeSpeechEngine implements SpeechEngine {
 class FakeVoiceSource implements VoiceSource {
   final List<String> log = [];
   bool german = true;
+  bool throwOnSpeak = false;
 
   @override
   Future<void> speak(List<VoiceSegment> segments, GuestVoiceProfile profile,
       CafeGuest guest) async {
+    if (throwOnSpeak) throw StateError('boom');
     final s = segments.map((e) => '${e.text}|${e.lang.name}').join(',');
     log.add('speak:[$s] ${guest.name}');
   }

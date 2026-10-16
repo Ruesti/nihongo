@@ -84,11 +84,10 @@ class TtsService implements SpeechEngine {
     _initialized = false;
   }
 
-  bool _awaitSet = false;
-
   @override
   Future<bool> setLanguage(String locale) async {
     if (!_available) return false;
+    _initialized = false; // Café ändert Einstellungen: nächstes speak() stellt sie her
     try {
       final r = await _tts.setLanguage(locale);
       if (r != 1) return false;
@@ -103,23 +102,28 @@ class TtsService implements SpeechEngine {
   @override
   Future<void> setPitch(double v) async {
     if (!_available) return;
+    _initialized = false;
     await _tts.setPitch(v);
   }
 
   @override
   Future<void> setRate(double v) async {
     if (!_available) return;
+    _initialized = false;
     await _tts.setSpeechRate(v);
   }
 
   @override
   Future<void> speakAndWait(String text) async {
     if (!_available) return;
-    if (!_awaitSet) {
-      await _tts.awaitSpeakCompletion(true);
-      _awaitSet = true;
+    // Das Warte-Flag ist eine dauerhafte Plugin-Einstellung: nur um diesen
+    // Aufruf setzen, damit speak()/speakSlow() nicht blockierend werden.
+    await _tts.awaitSpeakCompletion(true);
+    try {
+      await _tts.speak(text);
+    } finally {
+      await _tts.awaitSpeakCompletion(false);
     }
-    await _tts.speak(text);
   }
 
   @override
@@ -127,7 +131,8 @@ class TtsService implements SpeechEngine {
     if (!_available) return const [];
     try {
       final voices = await _tts.getVoices;
-      return (voices as List)
+      if (voices is! List) return const [];
+      return voices
           .whereType<Map>()
           .where((v) => v['locale'].toString().startsWith(langPrefix))
           .map((v) => v['name'].toString())
@@ -141,8 +146,10 @@ class TtsService implements SpeechEngine {
   @override
   Future<void> setVoiceByName(String name) async {
     if (!_available) return;
+    _initialized = false;
     final voices = await _tts.getVoices;
-    for (final v in (voices as List).whereType<Map>()) {
+    if (voices is! List) return;
+    for (final v in voices.whereType<Map>()) {
       if (v['name'].toString() == name) {
         await _tts.setVoice({
           'name': name,

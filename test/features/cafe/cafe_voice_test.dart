@@ -43,6 +43,33 @@ void main() {
     expect(engine.log, contains('stop'));
   });
 
+  test('Überholen während setPitch: altes Stück wird nicht gesprochen',
+      () async {
+    final gate = Completer<void>();
+    var first = true;
+    engine.holdPitch = () {
+      if (first) {
+        first = false;
+        return gate;
+      }
+      return null;
+    };
+    final p = profileFor(CafeGuest.wirtin);
+    final a = src.speak([VoiceSegment('Alt', VoiceLang.de)], p, CafeGuest.wirtin);
+    await Future<void>.delayed(Duration.zero);
+    final b = src.speak([VoiceSegment('Neu', VoiceLang.de)], p, CafeGuest.wirtin);
+    gate.complete();
+    await Future.wait([a, b]);
+    expect(engine.log.where((e) => e.startsWith('speak:')), ['speak:Neu']);
+  });
+
+  test('CafeVoice schluckt Fehler der Quelle', () async {
+    final fake = FakeVoiceSource()..throwOnSpeak = true;
+    final v = CafeVoice(source: fake, isEnabled: () async => true);
+    await v.say(CafeGuest.wirtin, 'Setz dich.');
+    await v.stop();
+  });
+
   test('hasGerman false ohne deutsche Stimme', () async {
     engine.languages = {'ja-JP'};
     expect(await src.hasGerman(), isFalse);
