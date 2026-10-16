@@ -34,7 +34,7 @@ class Names(unittest.TestCase):
 class Prompts(unittest.TestCase):
     def test_t2i_contains_camera_and_format(self):
         pos, neg = ca.t2i_prompt("wirtin", "hoch")
-        for s in ["looks straight into the camera", "upper half", cm.LAND, cm.CAFE, cm.PHOTO]:
+        for s in ["looks straight into the camera", "upper third", cm.LAND, cm.CAFE, cm.PHOTO]:
             self.assertIn(s, pos)
         self.assertTrue(pos.startswith(cm.CAFE))
         self.assertNotIn("shotengai_style", pos)

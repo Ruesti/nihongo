@@ -73,13 +73,14 @@ GUESTS = {
 }
 
 # Gemeinsamer Kern der Stimmung "fragend"
-_KERN = ("looks straight into the camera and speaks to the viewer, mouth slightly open, "
-         "eyebrows raised in a question, medium shot from head to hips, alone")
+_KERN = ("close medium shot framed from the waist up, the figure large and filling most of "
+         "the frame height, face sharp and clearly visible, looks straight into the camera "
+         "and speaks to the viewer, mouth slightly open, eyebrows raised in a question, alone")
 _FORMAT_SATZ = {
-    "quer": ", the figure in the left half of the frame, the room continues to the right, wide framing",
-    "hoch": ", the face in the upper half of the frame, table or counter in the lower half, vertical framing",
+    "quer": ", standing in the left third of the frame close to the camera, the empty counter and booths continue to the right, wide framing",
+    "hoch": ", the face in the upper third of the frame, the counter edge at the bottom, vertical framing",
 }
-_NEG_EXTRA = ", two people, looking away, profile view, closed eyes, back turned"
+_NEG_EXTRA = ", two people, looking away, profile view, closed eyes, back turned, wide shot, full body, distant figure, small figure, far away"
 
 
 def _check(gast, stimmung, n, fmt):
