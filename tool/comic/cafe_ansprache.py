@@ -73,14 +73,14 @@ GUESTS = {
 }
 
 # Gemeinsamer Kern der Stimmung "fragend"
-_KERN = ("close medium shot framed from the waist up, the figure large and filling most of "
-         "the frame height, face sharp and clearly visible, looks straight into the camera "
-         "and speaks to the viewer, mouth slightly open, eyebrows raised in a question, alone")
+_KERN = ("waist-up portrait photo, close medium shot, the figure fills the frame, "
+         "direct eye contact, looks straight into the camera lens and speaks to the viewer, "
+         "mouth slightly open, eyebrows raised in a question, face sharp and large, alone")
 _FORMAT_SATZ = {
-    "quer": ", standing in the left third of the frame close to the camera, the empty counter and booths continue to the right, wide framing",
-    "hoch": ", the face in the upper third of the frame, the counter edge at the bottom, vertical framing",
+    "quer": ", horizontal composition, the figure in the left third of the frame close to the camera, the counter and booths blurred to the right",
+    "hoch": ", vertical portrait orientation filling the whole frame, the face in the upper third, the counter edge at the bottom",
 }
-_NEG_EXTRA = ", two people, looking away, profile view, closed eyes, back turned, wide shot, full body, distant figure, small figure, far away"
+_NEG_EXTRA = ", two people, looking away, profile view, closed eyes, back turned, wide shot, full body, distant figure, small figure, far away, black bars, letterbox, empty room"
 
 
 def _check(gast, stimmung, n, fmt):
@@ -112,8 +112,8 @@ def t2i_prompt(gast, fmt):
         raise ValueError(f"unbekanntes Format: {fmt!r}")
     g = GUESTS[gast]
     # der Auslöser "shotengai_style, " kommt von cc.t2i_graph selbst
-    pos = (CAFE + ", " + g["figure"] + ", " + g["place"] + ", "
-           + _KERN + ", " + g["note"] + _FORMAT_SATZ[fmt] + PHOTO)
+    pos = (_KERN + ", " + g["figure"] + ", " + g["note"] + ", " + g["place"]
+           + ", in " + CAFE + _FORMAT_SATZ[fmt] + PHOTO)
     return pos, NEG + _NEG_EXTRA
 
 

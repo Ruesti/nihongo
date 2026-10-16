@@ -36,7 +36,7 @@ class Prompts(unittest.TestCase):
         pos, neg = ca.t2i_prompt("wirtin", "hoch")
         for s in ["looks straight into the camera", "upper third", cm.LAND, cm.CAFE, cm.PHOTO]:
             self.assertIn(s, pos)
-        self.assertTrue(pos.startswith(cm.CAFE))
+        self.assertTrue(pos.startswith("waist-up portrait photo")); self.assertIn(cm.CAFE, pos)
         self.assertNotIn("shotengai_style", pos)
         self.assertIn("looking away", neg)
         self.assertIn(cm.NEG, neg)
@@ -180,7 +180,7 @@ class Render(FakeRun):
     def test_render_fragend_single_trigger_word(self):
         ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
         self.assertEqual(self.encoded[0].count("shotengai_style"), 1)
-        self.assertTrue(self.encoded[0].startswith("shotengai_style, " + cm.CAFE))
+        self.assertTrue(self.encoded[0].startswith("shotengai_style, waist-up portrait photo"))
 
     def test_render_edits_changed_source_rerenders(self):
         other = os.path.join(self.d, "anders.png")
