@@ -96,8 +96,42 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     _load();
   }
 
+  bool _watchingRoute = false;
+  VoidCallback? _unwatchRoute;
+
+  /// Beim Haupteinstieg (Endkarte → Café, pushReplacement) schaltet der
+  /// Reader im eigenen dispose die Leisten wieder ein — nach unserem
+  /// initState. Deshalb nach dem Einblenden der Route erneut Vollbild.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_watchingRoute) return;
+    final animation = ModalRoute.of(context)?.animation;
+    if (animation == null) return;
+    _watchingRoute = true;
+    // Beim ersten Frame steht die Route oft „offstage" (Hero-Messung) und
+    // meldet schon „fertig". Deshalb erst zählen, wenn sie wirklich
+    // einblendet, und dann beim Fertig-Werden einmal Vollbild setzen.
+    var entering = false;
+    void onStatus(AnimationStatus status) {
+      if (status == AnimationStatus.forward) entering = true;
+      if (status != AnimationStatus.completed || !entering) return;
+      animation.removeStatusListener(onStatus);
+      _unwatchRoute = null;
+      if (!mounted) return;
+      try {
+        widget.systemUi.enterImmersive();
+      } catch (_) {}
+    }
+
+    if (animation.status == AnimationStatus.forward) entering = true;
+    animation.addStatusListener(onStatus);
+    _unwatchRoute = () => animation.removeStatusListener(onStatus);
+  }
+
   @override
   void dispose() {
+    _unwatchRoute?.call();
     // Aufräumen darf nie werfen; Fehler der Stimme/Systemleiste sind egal.
     try {
       widget.systemUi.exitImmersive();

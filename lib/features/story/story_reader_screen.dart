@@ -123,11 +123,15 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
     _restorePosition();
   }
 
+  /// „Ins Café" gedrückt: das Café ersetzt den Reader und hat sein Vollbild
+  /// schon gesetzt — dispose darf die Leisten dann nicht zurückholen.
+  bool _handedToCafe = false;
+
   @override
   void dispose() {
-    // Zurück-Geste, Café-Wechsel, App-Navigation: Leisten immer wieder her.
+    // Zurück-Geste, App-Navigation: Leisten immer wieder her.
     // Doppelt aufgerufen (Endkarte + dispose) ist unschädlich.
-    widget.systemUi.exitImmersive();
+    if (!_handedToCafe) widget.systemUi.exitImmersive();
     super.dispose();
   }
 
@@ -529,7 +533,10 @@ class _StoryReaderScreenState extends State<StoryReaderScreen> {
                 if (widget.onEnterCafe != null) ...[
                   FilledButton(
                     key: const ValueKey('story-end-cafe'),
-                    onPressed: () => widget.onEnterCafe!(),
+                    onPressed: () {
+                      _handedToCafe = true;
+                      widget.onEnterCafe!();
+                    },
                     child: const Text('Ins Café'),
                   ),
                   const SizedBox(height: 8),

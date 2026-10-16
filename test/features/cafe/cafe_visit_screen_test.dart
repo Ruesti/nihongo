@@ -123,6 +123,37 @@ void main() {
     expect(recorder.calls, ['enter', 'exit']);
   });
 
+  testWidgets('nach dem Routenwechsel (wie Endkarte → Café) erneut Vollbild',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(
+        builder: (context) => TextButton(
+          key: const ValueKey('go'),
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+            builder: (_) => CafeVisitScreen.afterEpisode(
+              db: db, languageId: 'lang_ja', episode: _episode(), store: store,
+              speak: (_) async {}, speakSlow: (_) async {},
+              evaluator: _Always(1.0), light: CafeLight.tag,
+              systemUi: recorder, voice: voice,
+            ),
+          )),
+          child: const Text('go'),
+        ),
+      ),
+    ));
+    await tester.tap(find.byKey(const ValueKey('go')));
+    await tester.pump();
+    expect(recorder.calls, ['enter']); // initState
+    await tester.pumpAndSettle();
+    // Der alte Reader holt im dispose die Leisten zurück — nach dem
+    // Einblenden setzt das Café das Vollbild deshalb noch einmal.
+    expect(recorder.calls.where((c) => c == 'enter').length,
+        greaterThanOrEqualTo(2));
+  });
+
   testWidgets('Raum ohne AppBar mit Bild, Blase und Start; Zeile einmal gesprochen',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
@@ -236,7 +267,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('cafe-visit-room')), findsNothing);
     expect(find.byKey(const ValueKey('open')), findsOneWidget);
-    expect(recorder.calls, ['enter', 'exit']);
+    // initState + nach dem Einblenden der Route, dann beim Verlassen aus.
+    expect(recorder.calls, ['enter', 'enter', 'exit']);
   });
 
   testWidgets('Raum zeigt vier Gäste, Wirtin aktiv; Start öffnet die Wirtin',

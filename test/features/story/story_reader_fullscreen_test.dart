@@ -110,7 +110,8 @@ Episode twoFormatEpisode({String? cover, String? coverPortrait, String? titleJa}
 Future<void> pumpReader(WidgetTester tester, Episode episode,
     {required StoryProgressStore store,
     RecordingSystemUi? ui,
-    SpeakEvaluator? speakEvaluator}) async {
+    SpeakEvaluator? speakEvaluator,
+    Future<void> Function()? onEnterCafe}) async {
   await tester.pumpWidget(MaterialApp(
     home: StoryReaderScreen(
       episode: episode,
@@ -120,6 +121,7 @@ Future<void> pumpReader(WidgetTester tester, Episode episode,
       knownIds: const {},
       systemUi: ui ?? RecordingSystemUi(),
       speakEvaluator: speakEvaluator,
+      onEnterCafe: onEnterCafe,
     ),
   ));
   await tester.pump();
@@ -162,6 +164,29 @@ void main() {
       expect(ui.calls, ['enter']);
 
       await tester.pumpWidget(const SizedBox()); // Route weg → dispose
+      await tester.pump();
+      expect(ui.calls, ['enter', 'exit']);
+    });
+
+    testWidgets('„Ins Café": dispose holt die Leisten nicht zurück (Café hat Vollbild)',
+        (tester) async {
+      final ui = RecordingSystemUi();
+      var entered = false;
+      await pumpReader(tester, twoFormatEpisode(),
+          store: await freshStore(),
+          ui: ui,
+          onEnterCafe: () async => entered = true);
+      await tester.tap(find.byKey(const ValueKey('story-title-card')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('story-reader-panel')));
+      await tester.pumpAndSettle();
+      expect(ui.calls, ['enter', 'exit']);
+      await tester.tap(find.byKey(const ValueKey('story-end-cafe')));
+      await tester.pump();
+      expect(entered, isTrue);
+      await tester.pumpWidget(const SizedBox()); // ersetzt → dispose
       await tester.pump();
       expect(ui.calls, ['enter', 'exit']);
     });
