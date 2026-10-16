@@ -404,16 +404,22 @@ void main() {
     expect(frame(tester).variant, portraitVariant('lex_ja_eki', key, 5));
   });
 
-  testWidgets('Stimme wird vor dem Mikro gestoppt und spricht das Feedback',
+  testWidgets('Stimme wird nachweislich vor dem Mikro gestoppt',
       (tester) async {
     final fake = FakeVoiceSource()..german = true;
     final voice = CafeVoice(source: fake, isEnabled: () async => true);
-    await pump(tester, _FakeEvaluator([0.9]), ['lex_ja_ame'], voice: voice);
+    final ev = _GatedEvaluator();
+    await pump(tester, ev, ['lex_ja_ame'], voice: voice);
+    expect(fake.log, ['stop', 'speak:[$opener|de] wirtin']);
     await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pump();
+    // Erkennung steht noch aus: das stop kam also vor evaluate.
+    expect(ev.calls, 1);
+    expect(fake.log.last, 'stop');
+    expect(fake.log.where((e) => e == 'stop').length, 2);
+    ev.release(0.9);
     await tester.pumpAndSettle();
-    expect(fake.log, containsAllInOrder([
-      'speak:[$opener|de] wirtin', 'stop', 'speak:[Genau so.|de] wirtin',
-    ]));
+    expect(fake.log.last, 'speak:[Genau so.|de] wirtin');
   });
 }
