@@ -5,12 +5,17 @@ Datenschicht für die 60 Gästeporträts (4 Gäste x 3 Stimmungen x 5 Varianten,
 je in zwei Formaten). Kein ComfyUI-Aufruf, nur Texte und Namen.
 Spec: docs/superpowers/specs/2026-10-15-cafe-ansprache-design.md §2.
 """
+import glob
 import os
+import shutil
+from pathlib import Path
 
+import comfy_client as cc
 import folge01_manga
 from cafe_motifs import CAFE, GIRL, LAND, LORA_STRENGTH, MAN, NEG, PHOTO, YW  # noqa: F401
 from folge01_motifs import NEG_MANGA, STY
 
+ROOT = Path("~/comfy_cafe_ansprache").expanduser()  # Unterordner foto, edit, manga, final, sheets
 MOODS = ("fragend", "zufrieden", "abwinkend")
 FORMATS = {"quer": (1664, 928), "hoch": (928, 1664)}
 TARGET = {"quer": (1920, 1072), "hoch": (1080, 1936)}
@@ -152,3 +157,108 @@ def cells_missing(picks):
 def load_overrides(path):
     """Nachbesserungen je Bild; Schlüssel = voller Name `{gast}_{stimmung}_{n}_{fmt}`."""
     return folge01_manga.load_overrides(path, allowed={"seed", "extra", "force"})
+
+
+def _skip_existing(prefix, out):
+    return bool(glob.glob(os.path.join(glob.escape(str(out)), glob.escape(prefix) + "_*")))
+
+
+def _with_extra(text, opts):
+    return text + ", " + opts["extra"] if opts.get("extra") else text
+
+
+def _run_all(jobs):
+    """jobs: (prefix, Funktion) -> alle erzeugten Pfade; ein Fehler bricht den Lauf nicht ab."""
+    done = []
+    for prefix, job in jobs:
+        try:
+            done += [Path(p) for p in job()]
+            print("OK", prefix, flush=True)
+        except Exception as e:  # noqa: BLE001
+            print("ERR %s: %r" % (prefix, e), flush=True)
+    return done
+
+
+def render_fragend(guests, fmts, seeds, out=ROOT / "foto"):
+    """Runde 1: Text-zu-Bild je Gast/Format/Seed; vorhandene Ausgaben werden übersprungen."""
+    def make(gast, fmt, seed, prefix):
+        pos, neg = t2i_prompt(gast, fmt)
+        w, h = FORMATS[fmt]
+        return lambda: cc.run(cc.t2i_graph(pos, neg, seed, prefix, LORA_STRENGTH, w, h), prefix, out)
+    jobs = []
+    for gast in guests:
+        for fmt in fmts:
+            for seed in seeds:
+                prefix = "%s_fragend_%s_s%d" % (gast, fmt, seed)
+                if _skip_existing(prefix, out):
+                    print("SKIP", prefix, flush=True)
+                    continue
+                jobs.append((prefix, make(gast, fmt, seed, prefix)))
+    return _run_all(jobs)
+
+
+def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
+    """Runde 2: je Pick zwei Edits (zufrieden, abwinkend) aus dem Foto der Stimmung fragend."""
+    overrides = overrides or {}
+
+    def make(key, src, gast, mood, prefix, opts):
+        def job():
+            input_name = "ans_%s.png" % key
+            shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
+            graph = cc.edit_graph(input_name, _with_extra(edit_prompt(gast, mood), opts),
+                                  opts.get("seed", seed), prefix, negative=NEG)
+            return cc.run(graph, prefix, out)
+        return job
+    jobs = []
+    for key, src in picks.items():
+        gast, fmt, n = key.split("_")
+        for mood in ("zufrieden", "abwinkend"):
+            prefix = name_for(gast, mood, int(n), fmt)
+            opts = overrides.get(prefix, {})
+            if folge01_manga.should_skip(prefix, str(out), opts):
+                print("SKIP", prefix, flush=True)
+                continue
+            jobs.append((prefix, make(key, src, gast, mood, prefix, opts)))
+    return _run_all(jobs)
+
+
+def render_manga(sources, out=ROOT / "manga", overrides=None):
+    """Runde 3: Manga-Durchgang je Foto; sources = Name `{gast}_{stimmung}_{n}_{fmt}` -> Pfad."""
+    overrides = overrides or {}
+
+    def make(name, src, gast, opts):
+        def job():
+            input_name = "ansm_%s.png" % name
+            shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
+            pos, neg = manga_prompt(gast)
+            graph = cc.manga_graph(input_name, _with_extra(pos, opts), neg, opts.get("seed", 831), name)
+            return cc.run(graph, name, out)
+        return job
+    jobs = []
+    for name, src in sources.items():
+        opts = overrides.get(name, {})
+        if folge01_manga.should_skip(name, str(out), opts):
+            print("SKIP", name, flush=True)
+            continue
+        jobs.append((name, make(name, src, name.split("_")[0], opts)))
+    return _run_all(jobs)
+
+
+def edit_outputs(out=ROOT / "edit"):
+    """Name -> neueste Datei je Prefix `{gast}_{stimmung}_{n}_{fmt}` im Edit-Ordner."""
+    best = {}
+    for p in Path(out).glob("*.png"):
+        for name in all_names():
+            if p.name.startswith(name + "_"):
+                if name not in best or p.stat().st_mtime >= best[name].stat().st_mtime:
+                    best[name] = p
+    return {k: str(v) for k, v in sorted(best.items())}
+
+
+def fragend_sources(picks):
+    """Picks `{gast}_{fmt}_{n}` -> Manga-Quellen mit Schlüssel `name_for(gast, "fragend", n, fmt)`."""
+    out = {}
+    for key, path in picks.items():
+        gast, fmt, n = key.split("_")
+        out[name_for(gast, "fragend", int(n), fmt)] = path
+    return out
