@@ -1,0 +1,218 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
+/// Richtung der Sprechblasen-Spitze: nach oben (hoch) oder nach links (quer).
+enum TailDirection { up, left }
+
+/// Hochformat: Spitze nach oben, Querformat: Spitze nach links (zur Person).
+TailDirection tailFor(Orientation o) =>
+    o == Orientation.portrait ? TailDirection.up : TailDirection.left;
+
+const _bubbleFill = Color(0xF2FFF8E7);
+const _bubbleBorder = Color(0xFF444444);
+const _tailSize = 12.0;
+
+/// Halbtransparente Fläche über dem Gästebild (Hochformat unten, höchstens
+/// halbe Höhe und so klein wie der Inhalt; Querformat rechts, ein Drittel der
+/// Breite, mindestens 360 dp, höchstens die Hälfte, volle Höhe).
+class CafeOverlay extends StatelessWidget {
+  final Widget bubble;
+  final Widget child;
+  final Widget? bottom;
+  const CafeOverlay({
+    super.key,
+    required this.bubble,
+    required this.child,
+    this.bottom,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final landscape = MediaQuery.orientationOf(context) == Orientation.landscape;
+
+    Widget panel({required MainAxisSize mainAxisSize, required bool expand}) {
+      final scroll = SingleChildScrollView(child: child);
+      return DecoratedBox(
+        key: const ValueKey('cafe-overlay'),
+        decoration: const BoxDecoration(color: Color(0xCC1A1D21)),
+        child: DefaultTextStyle.merge(
+          style: const TextStyle(color: Colors.white),
+          child: Column(
+            mainAxisSize: mainAxisSize,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              bubble,
+              expand ? Expanded(child: scroll) : Flexible(child: scroll),
+              ?bottom,
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (landscape) {
+      final w = math.max(size.width / 3, 360.0).clamp(0.0, size.width / 2);
+      return Align(
+        alignment: Alignment.centerRight,
+        child: SizedBox(
+          width: w,
+          height: size.height,
+          child: panel(mainAxisSize: MainAxisSize.max, expand: true),
+        ),
+      );
+    }
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: size.width,
+          maxWidth: size.width,
+          maxHeight: size.height / 2,
+        ),
+        child: panel(mainAxisSize: MainAxisSize.min, expand: false),
+      ),
+    );
+  }
+}
+
+/// Sprechblase des Gasts: kleiner Name, darunter die Zeile, mit Spitze zur
+/// Person. [trailing] steht rechts in der Namenszeile (z. B. Lautsprecher).
+class GuestBubble extends StatelessWidget {
+  final String name;
+  final String line;
+  final TailDirection tail;
+  final Widget? trailing;
+  const GuestBubble({
+    super.key,
+    required this.name,
+    required this.line,
+    required this.tail,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final body = Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      decoration: BoxDecoration(
+        color: _bubbleFill,
+        border: Border.all(color: _bubbleBorder),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(color: Color(0xFF222222)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(children: [
+              Expanded(
+                child: Text(name,
+                    key: const ValueKey('cafe-station-name'),
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+              ?trailing,
+            ]),
+            const SizedBox(height: 2),
+            Text(line,
+                key: const ValueKey('cafe-station-voice'),
+                style: const TextStyle(fontSize: 20)),
+          ],
+        ),
+      ),
+    );
+    final tailPaint = CustomPaint(
+      size: tail == TailDirection.up
+          ? const Size(_tailSize * 2, _tailSize)
+          : const Size(_tailSize, _tailSize * 2),
+      painter: _TailPainter(tail),
+    );
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: tail == TailDirection.up
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 24),
+                  child: Align(alignment: Alignment.centerLeft, child: tailPaint),
+                ),
+                body,
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 16), child: tailPaint),
+                Expanded(child: body),
+              ],
+            ),
+    );
+  }
+}
+
+class _TailPainter extends CustomPainter {
+  final TailDirection dir;
+  _TailPainter(this.dir);
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final path = Path();
+    if (dir == TailDirection.up) {
+      path
+        ..moveTo(0, s.height)
+        ..lineTo(s.width / 2, 0)
+        ..lineTo(s.width, s.height);
+    } else {
+      path
+        ..moveTo(s.width, 0)
+        ..lineTo(0, s.height / 2)
+        ..lineTo(s.width, s.height);
+    }
+    // Füllung schließt den Rahmen der Blase an der Ansatzkante nahtlos ab.
+    canvas.drawPath(path..close(), Paint()..color = _bubbleFill);
+    canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = _bubbleBorder);
+  }
+
+  @override
+  bool shouldRepaint(_TailPainter old) => old.dir != dir;
+}
+
+/// Zurück-Chip oben links (halbtransparenter Kreis, wie im Reader). Die
+/// Position legt der Aufrufer fest; die Aussparung für Statusleiste/Notch
+/// steckt als [SafeArea] darin.
+class CafeBackChip extends StatelessWidget {
+  final VoidCallback onPressed;
+  const CafeBackChip({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            color: Color(0x99000000),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            key: const ValueKey('cafe-back'),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            tooltip: 'Zurück',
+            onPressed: onPressed,
+          ),
+        ),
+      ),
+    );
+  }
+}
