@@ -180,6 +180,36 @@ void main() {
     expect((img.image as AssetImage).assetName, endsWith('wirtin_tresen_tag.jpg'));
   });
 
+  testWidgets('Abschluss: erste Zeile wird gesprochen, danach kein stop',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(afterEpisode());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-visit-start')));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+      await tester.pumpAndSettle();
+    }
+    await typeKana(tester, 'あめ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-summary')), findsOneWidget);
+    final i = voiceSource.log.lastIndexWhere(
+        (l) => l == 'speak:[あめ|ja,und|de,かさ|ja,sitzen.|de] wirtin');
+    expect(i, isNonNegative);
+    expect(voiceSource.log.sublist(i + 1), isNot(contains('stop')));
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('Zurück-Chip verlässt das Café', (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;

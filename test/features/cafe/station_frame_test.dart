@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/features/cafe/cafe_portraits.dart';
 import 'package:nihongo_app/features/cafe/cafe_scenes.dart';
 import 'package:nihongo_app/features/cafe/cafe_visit.dart';
+import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
 import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/cafe/stations/station_frame.dart';
 
@@ -104,6 +105,15 @@ void main() {
     expect(fake.log.length, 4);
     await t.pumpWidget(const SizedBox());
     expect(fake.log.last, 'stop');
+  });
+
+  testWidgets('dispose stoppt eine fremde, jüngere Zeile nicht', (t) async {
+    setSize(t, portrait);
+    await pump(t, line: 'Setz dich.');
+    await voice.say(CafeGuest.wirtin, 'Abschluss.'); // jemand anderes spricht
+    fake.log.clear();
+    await t.pumpWidget(const SizedBox());
+    expect(fake.log, isNot(contains('stop')));
   });
 
   testWidgets('Drehen behält Zeile und Knöpfe, Fläche wechselt die Seite',

@@ -51,10 +51,7 @@ class CafeRoute extends ConsumerWidget {
     final db = ref.watch(learningDbProvider);
     final bridge = ref.watch(knowledgeBridgeProvider);
     final episodes = ref.watch(storyEpisodesProvider);
-    final voice = CafeVoice(
-      source: DeviceTtsSource(TtsService.instance),
-      isEnabled: CafeVoicePrefs().isEnabled,
-    );
+    final voice = ref.watch(cafeVoiceProvider);
     final deps = ref.watch(cafeVisitProvider(episodeId));
     return deps.when(
       loading: () =>

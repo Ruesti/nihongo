@@ -10,6 +10,8 @@ import 'package:nihongo_app/features/story/episode_registry.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fakes/fake_voice.dart';
+
 void main() {
   late LearningDb db;
   setUp(() async {
@@ -74,10 +76,17 @@ void main() {
 
   testWidgets('die Route übergibt dem Besuch eine echte Café-Stimme',
       (tester) async {
-    await tester.pumpWidget(app(const CafeRoute()));
+    final voice = CafeVoice(source: FakeVoiceSource(), isEnabled: () async => true);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        learningDbProvider.overrideWithValue(db),
+        cafeVoiceProvider.overrideWithValue(voice),
+      ],
+      child: const MaterialApp(home: CafeRoute()),
+    ));
     await tester.pumpAndSettle();
     final screen =
         tester.widget<CafeVisitScreen>(find.byType(CafeVisitScreen));
-    expect(identical(screen.voice, const CafeVoice.silent()), isFalse);
+    expect(identical(screen.voice, voice), isTrue);
   });
 }

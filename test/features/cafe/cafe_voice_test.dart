@@ -123,6 +123,21 @@ void main() {
     expect(fake.log, ['stop', 'speak:[Setz dich.|de] wirtin']);
   });
 
+  test('CafeVoice.stopIf: veraltete Nummer stoppt nicht, aktuelle schon',
+      () async {
+    final fake = FakeVoiceSource();
+    final v = CafeVoice(source: fake, isEnabled: () async => true);
+    final a = await v.say(CafeGuest.wirtin, 'Eins.');
+    final b = await v.say(CafeGuest.wirtin, 'Zwei.');
+    expect(b, greaterThan(a));
+    fake.log.clear();
+    await v.stopIf(a);
+    expect(fake.log, isNot(contains('stop')));
+    await v.stopIf(b);
+    expect(fake.log, contains('stop'));
+    expect(await const CafeVoice.silent().say(CafeGuest.wirtin, 'x'), 0);
+  });
+
   test('CafeVoice: leere Zerlegung → nichts; silent tut nichts', () async {
     final fake = FakeVoiceSource();
     await CafeVoice(source: fake, isEnabled: () async => true)

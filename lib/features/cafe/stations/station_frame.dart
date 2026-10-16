@@ -66,23 +66,32 @@ class StationFrame extends StatefulWidget {
 }
 
 class _StationFrameState extends State<StationFrame> {
+  int _lastId = 0;
+
+  void _say() {
+    final v = widget.voice;
+    if (v == null) return;
+    v.say(guestOf(widget.station), widget.line);
+    _lastId = v.currentId; // steht synchron fest
+  }
+
   @override
   void initState() {
     super.initState();
-    widget.voice?.say(guestOf(widget.station), widget.line);
+    _say();
   }
 
   @override
   void didUpdateWidget(StationFrame old) {
     super.didUpdateWidget(old);
     if (old.line != widget.line) {
-      widget.voice?.say(guestOf(widget.station), widget.line);
+      _say();
     }
   }
 
   @override
   void dispose() {
-    widget.voice?.stop();
+    widget.voice?.stopIf(_lastId);
     super.dispose();
   }
 

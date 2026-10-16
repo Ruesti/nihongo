@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/tts_service.dart';
 import 'cafe_occupancy.dart';
 import 'voice_segments.dart';
 
@@ -156,19 +158,37 @@ class CafeVoice {
   final VoiceSource? _source;
   final Future<bool> Function()? _isEnabled;
 
-  Future<void> say(CafeGuest guest, String line) async {
+  // Expando statt Feld, damit die Konstruktoren const bleiben können.
+  static final _ids = Expando<int>('CafeVoice.current');
+  int get _current => _ids[this] ?? 0;
+  set _current(int v) => _ids[this] = v;
+
+  /// Nummer der zuletzt begonnenen Zeile. Sie steht schon fest, sobald [say]
+  /// aufgerufen wurde (vor dem ersten Warten), und gehört dem Aufrufer.
+  int get currentId => _current;
+
+  /// Spricht die Zeile und liefert deren Nummer (0 bei stumm).
+  Future<int> say(CafeGuest guest, String line) async {
     final source = _source;
-    if (source == null) return;
+    if (source == null) return 0;
+    final id = ++_current;
     try {
-      if (!await _isEnabled!()) return;
-      if (!await source.hasGerman()) return;
+      if (!await _isEnabled!()) return id;
+      if (!await source.hasGerman()) return id;
       final segments = splitSegments(line);
-      if (segments.isEmpty) return;
+      if (segments.isEmpty) return id;
       await source.stop();
       await source.speak(segments, profileFor(guest), guest);
     } catch (e) {
       debugPrint('CafeVoice.say: $e'); // Stimme ist nur Zierde
     }
+    return id;
+  }
+
+  /// Stoppt nur, wenn die Zeile [id] noch die jüngste ist; sonst gehört die
+  /// Ausgabe schon jemand anderem und läuft weiter.
+  Future<void> stopIf(int id) async {
+    if (id == _current) await stop();
   }
 
   Future<void> stop() async {
@@ -179,3 +199,9 @@ class CafeVoice {
     }
   }
 }
+
+/// Die Gästestimme der App: einmal gebaut, von allen Besuchen geteilt.
+final cafeVoiceProvider = Provider<CafeVoice>((ref) => CafeVoice(
+      source: DeviceTtsSource(TtsService.instance),
+      isEnabled: CafeVoicePrefs().isEnabled,
+    ));
