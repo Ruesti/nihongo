@@ -114,7 +114,7 @@ void main() {
     await voice.say(CafeGuest.wirtin, 'Abschluss.'); // jemand anderes spricht
     fake.log.clear();
     await t.pumpWidget(const SizedBox());
-    expect(fake.log.skip(before), isNot(contains('stop')));
+    expect(fake.log, isNot(contains('stop')));
   });
 
   testWidgets('Drehen behält Zeile und Knöpfe, Fläche wechselt die Seite',
@@ -186,6 +186,6 @@ void main() {
     expect(icon().icon, Icons.volume_up);
     final p = await SharedPreferences.getInstance();
     expect(p.getBool(CafeVoicePrefs.key), true);
-    expect(fake.log, isNot(contains('stop')));
+    expect(fake.log.skip(before), isNot(contains('stop')));
   });
 }
