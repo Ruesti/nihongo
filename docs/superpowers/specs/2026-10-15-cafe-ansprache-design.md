@@ -45,7 +45,7 @@ Jede Aufgabe sagt, was zu tun ist.
 - Die vier Lichter für die Ansprache-Bilder (kommt mit Runde 2 der Café-Bilder).
 - Vorproduzierte Tondateien (Stufe B der Stimme, später; §5 hält den Platz frei).
 - Neue Inhalte der Stationen (Grammatik, Zeichen-Erklärung, Nachzeichnen): eigene
-  Spec „Nachbereitung der Folge“, in Arbeit.
+  Spec „Nachbereitung der Folge“ (16.10., `2026-10-16-cafe-nachbereitung-zeichen-design.md`).
 - Stationen 3 und 4 (alter Mann, Gleichaltrige): bleiben Plan B, bekommen aber den
   neuen Rahmen und die Bilder aus dieser Spec geschenkt.
 - Download-Paket für Bilder: bleibt wie in der Spec vom 2.10. ein späterer Schritt.
