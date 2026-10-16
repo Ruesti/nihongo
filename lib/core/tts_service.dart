@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-class TtsService {
+import '../features/cafe/cafe_voice.dart';
+
+class TtsService implements SpeechEngine {
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
   bool _available = true;
@@ -71,6 +73,7 @@ class TtsService {
     await _tts.setSpeechRate(0.5);
   }
 
+  @override
   Future<void> stop() async {
     if (!_available) return;
     await _tts.stop();
@@ -79,6 +82,75 @@ class TtsService {
   void setLocale(String locale) {
     _locale = locale;
     _initialized = false;
+  }
+
+  bool _awaitSet = false;
+
+  @override
+  Future<bool> setLanguage(String locale) async {
+    if (!_available) return false;
+    try {
+      final r = await _tts.setLanguage(locale);
+      if (r != 1) return false;
+      final avail = await _tts.isLanguageAvailable(locale);
+      return avail == true || avail == 1;
+    } on MissingPluginException {
+      _available = false;
+      return false;
+    }
+  }
+
+  @override
+  Future<void> setPitch(double v) async {
+    if (!_available) return;
+    await _tts.setPitch(v);
+  }
+
+  @override
+  Future<void> setRate(double v) async {
+    if (!_available) return;
+    await _tts.setSpeechRate(v);
+  }
+
+  @override
+  Future<void> speakAndWait(String text) async {
+    if (!_available) return;
+    if (!_awaitSet) {
+      await _tts.awaitSpeakCompletion(true);
+      _awaitSet = true;
+    }
+    await _tts.speak(text);
+  }
+
+  @override
+  Future<List<String>> voiceNamesFor(String langPrefix) async {
+    if (!_available) return const [];
+    try {
+      final voices = await _tts.getVoices;
+      return (voices as List)
+          .whereType<Map>()
+          .where((v) => v['locale'].toString().startsWith(langPrefix))
+          .map((v) => v['name'].toString())
+          .toList();
+    } on MissingPluginException {
+      _available = false;
+      return const [];
+    }
+  }
+
+  @override
+  Future<void> setVoiceByName(String name) async {
+    if (!_available) return;
+    final voices = await _tts.getVoices;
+    for (final v in (voices as List).whereType<Map>()) {
+      if (v['name'].toString() == name) {
+        await _tts.setVoice({
+          'name': name,
+          'locale': v['locale'].toString(),
+        });
+        return;
+      }
+    }
   }
 
   static final TtsService instance = TtsService();
