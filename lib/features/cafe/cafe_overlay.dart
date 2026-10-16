@@ -239,13 +239,17 @@ class _CafeVoiceToggleState extends State<CafeVoiceToggle> {
     super.initState();
     _prefs.isEnabled().then((v) {
       if (mounted) setState(() => _enabled = v);
-    });
+    }).catchError((_) {});
   }
 
   Future<void> _toggle() async {
     final next = !_enabled;
     setState(() => _enabled = next);
-    await _prefs.setEnabled(next);
+    try {
+      await _prefs.setEnabled(next);
+    } catch (_) {
+      // Speichern misslungen: Schalter bleibt trotzdem bedienbar.
+    }
     if (!next) await widget.voice?.stop();
   }
 

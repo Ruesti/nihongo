@@ -114,7 +114,7 @@ void main() {
     await voice.say(CafeGuest.wirtin, 'Abschluss.'); // jemand anderes spricht
     fake.log.clear();
     await t.pumpWidget(const SizedBox());
-    expect(fake.log, isNot(contains('stop')));
+    expect(fake.log.skip(before), isNot(contains('stop')));
   });
 
   testWidgets('Drehen behält Zeile und Knöpfe, Fläche wechselt die Seite',
@@ -168,5 +168,24 @@ void main() {
     final p = await SharedPreferences.getInstance();
     expect(p.getBool(CafeVoicePrefs.key), false);
     expect(fake.log.last, 'stop');
+  });
+
+  testWidgets('Lautsprecher: schon aus beim Aufbau, Tipp schaltet ein',
+      (t) async {
+    SharedPreferences.setMockInitialValues({CafeVoicePrefs.key: false});
+    setSize(t, portrait);
+    await pump(t);
+    await t.pumpAndSettle();
+    Icon icon() => t.widget<Icon>(find.descendant(
+        of: find.byKey(const ValueKey('cafe-voice-toggle')),
+        matching: find.byType(Icon)));
+    expect(icon().icon, Icons.volume_off);
+    final before = fake.log.length;
+    await t.tap(find.byKey(const ValueKey('cafe-voice-toggle')));
+    await t.pumpAndSettle();
+    expect(icon().icon, Icons.volume_up);
+    final p = await SharedPreferences.getInstance();
+    expect(p.getBool(CafeVoicePrefs.key), true);
+    expect(fake.log, isNot(contains('stop')));
   });
 }
