@@ -11,6 +11,7 @@ import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/cafe/stations/station_frame.dart';
 import 'package:nihongo_app/features/cafe/stations/wirtin_station.dart';
 import 'package:nihongo_app/features/story/episode.dart';
+import 'package:nihongo_app/features/story/panel_geometry.dart';
 import 'package:nihongo_app/features/story/speak_evaluator.dart';
 
 import 'fakes/fake_voice.dart';
@@ -131,11 +132,15 @@ void main() {
   tearDown(() => db.close());
 
   Future<_Result> pump(WidgetTester tester, SpeakEvaluator ev, List<String> ids,
-      {CafeVoice? voice, String visitKey = ''}) async {
+      {CafeVoice? voice,
+      String visitKey = '',
+      List<String>? events,
+      Size size = const Size(800, 1600),
+      double dpr = 1.0}) async {
     final spoken = <String>[], slow = <String>[], positions = <int>[];
     Set<String>? wobbly;
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = dpr;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
       home: WirtinStation(
@@ -143,8 +148,14 @@ void main() {
         episode: _episode(),
         itemIds: ids,
         startIndex: 0,
-        speak: (t) async => spoken.add(t),
-        speakSlow: (t) async => slow.add(t),
+        speak: (t) async {
+          spoken.add(t);
+          events?.add('word:$t');
+        },
+        speakSlow: (t) async {
+          slow.add(t);
+          events?.add('word:$t');
+        },
         evaluator: ev,
         voice: voice ?? const CafeVoice.silent(),
         visitKey: visitKey,
@@ -203,12 +214,43 @@ void main() {
         'えき');
   });
 
-  testWidgets('Panel im Querformat in voller Breite (ganzes Panel sichtbar)',
+  testWidgets('Panel im Querformat, ganz sichtbar, als Miniatur',
       (tester) async {
     await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_ame']);
     final panel = find.byKey(const ValueKey('wirtin-panel'));
     expect(tester.widget<PanelWithBubble>(panel).format, PanelFormat.landscape);
-    expect(tester.getSize(panel).width, closeTo(800 - 32, 1));
+    final size = tester.getSize(panel);
+    expect(size.width / size.height, closeTo(aspectOf(PanelFormat.landscape), 0.01));
+    expect(size.height, lessThanOrEqualTo(0.4 * 800 + 0.01)); // 40 % von 1600/2
+  });
+
+  for (final (name, phys) in [
+    ('hoch', const Size(1080, 2340)),
+    ('quer', const Size(2340, 1080)),
+  ]) {
+    testWidgets('Panel-Miniatur am Telefon ($name): Seitenverhältnis fest, '
+        'höchstens 40 % der Fläche, kein Überlauf', (tester) async {
+      await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_ame'],
+          size: phys, dpr: 3.0);
+      final r = tester.getRect(find.byKey(const ValueKey('wirtin-panel')));
+      expect(r.width / r.height, closeTo(1.79, 0.05));
+      final overlay = tester.getRect(find.byKey(const ValueKey('cafe-overlay')));
+      expect(r.height, lessThanOrEqualTo(0.4 * overlay.height + 0.01));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Reihenfolge: erst die Zeile der Wirtin, dann das Wort',
+      (tester) async {
+    final events = <String>[];
+    final fake = FakeVoiceSource(sink: events);
+    final voice = CafeVoice(source: fake, isEnabled: () async => true);
+    await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_ame'],
+        voice: voice, events: events);
+    final firstLine = events.indexWhere((e) => e.startsWith('line:'));
+    final firstWord = events.indexWhere((e) => e.startsWith('word:'));
+    expect(firstLine, isNonNegative);
+    expect(firstWord, greaterThan(firstLine));
   });
 
   testWidgets('Sprechziel enthält Lesung und Blasen-Form als Alternativen',

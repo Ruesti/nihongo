@@ -10,6 +10,8 @@ import '../../story/episode.dart';
 import '../../story/speak_evaluator.dart';
 import '../bubble_overlay.dart';
 import '../cafe_debrief.dart';
+import '../cafe_occupancy.dart';
+import '../cafe_overlay.dart';
 import '../cafe_scenes.dart';
 import '../cafe_summary.dart';
 import '../cafe_turn.dart';
@@ -110,6 +112,9 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
   bool _writeInstead = false; // Sehen→Sprechen ohne Mikro: Tastatur statt Mikro
   bool _showKana = false; // nach falschem 1. Versuch im Sprechen: Kana zeigen
   bool _lastCorrect = false; // letzte Bewertung richtig (Stimmung)
+  // Zeigt die Blase gerade eine Rückmeldung zum Versuch (Fehlversuch,
+  // „nichts gehört")? „Dann schreib es." ist keine Bewertung.
+  bool _evaluationShown = false;
   int _variant = 1; // Porträtnummer des Worts, über Versuche stabil
   final _records = <VisitRecord>[];
 
@@ -168,6 +173,32 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     }
   }
 
+  /// Wortaudio erst nach dem nächsten Frame anfragen: dann hat der Rahmen
+  /// die neue Zeile schon in die Warteschlange gestellt — erst die Zeile,
+  /// dann das Wort.
+  void _afterLine(Future<void> Function() play) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) play();
+    });
+  }
+
+  /// Lädt die Bilder der übrigen Stimmungen vor (kein Leerbild beim Wechsel).
+  void _precacheMoods() {
+    try {
+      final format = MediaQuery.orientationOf(context) == Orientation.portrait
+          ? PanelFormat.portrait
+          : PanelFormat.landscape;
+      for (final mood in const [CafeMood.zufrieden, CafeMood.abwinkend]) {
+        final choice = resolvePortrait(
+            CafeGuest.schulkind, mood, _variant, format, widget.light);
+        if (!choice.isPortrait) continue;
+        precacheImage(AssetImage(choice.asset), context).catchError((_) {});
+      }
+    } catch (e) {
+      debugPrint('schulmaedchen: Vorladen fehlgeschlagen: $e');
+    }
+  }
+
   Future<void> _loadCurrent() async {
     while (_index < widget.itemIds.length) {
       _Word? w;
@@ -189,6 +220,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
           _writeInstead = false;
           _showKana = false;
           _lastCorrect = false;
+          _evaluationShown = false;
           _variant = portraitVariant(
             widget.itemIds[_index],
             widget.visitKey,
@@ -196,7 +228,11 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
           );
           _kind = _kindFor(w!);
         });
-        if (_kind == _Kind.hearWrite) await _say(w.reading);
+        _precacheMoods();
+        if (_kind == _Kind.hearWrite) {
+          final reading = w.reading;
+          _afterLine(() => _say(reading));
+        }
         return;
       }
       _index++;
@@ -260,8 +296,19 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
         _showTiles = _kind == _Kind.hearWrite;
         _showKana = _kind == _Kind.seeSpeak;
         _typed = '';
+        _evaluationShown = true;
       });
-      await _say(w.reading);
+      if (_kind == _Kind.seeSpeak) {
+        // Die Zeile sagt die Lesung schon (ja-Stück); nur ohne Stimme
+        // liest das Wortaudio sie vor.
+        _afterLine(() async {
+          if (!await widget.voice.isActive() && mounted) {
+            await _say(w.reading);
+          }
+        });
+      } else {
+        _afterLine(() => _say(w.reading));
+      }
       return;
     }
     final res = await _ladder.submit(
@@ -313,6 +360,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       setState(() {
         _listening = false;
         _writeInstead = true;
+        _evaluationShown = false;
         _feedback = 'Dann schreib es.';
       });
       return;
@@ -323,6 +371,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       setState(() {
         _listening = false;
         _writeInstead = true;
+        _evaluationShown = true; // Spec: abwinkend
         _feedback = 'Ich hab nichts gehört. Schreib es lieber.';
       });
       return;
@@ -338,13 +387,14 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     _loadCurrent();
   }
 
-  /// Stimmung: fragend, solange eine Antwort erwartet wird (Zuhören, Tippen);
-  /// nach der Bewertung zufrieden oder abwinkend; nach einem Fehlversuch
-  /// abwinkend, bis wieder getippt wird.
+  /// Stimmung: fragend, solange eine Antwort erwartet wird (Zuhören, Tippen,
+  /// auch nach „Dann schreib es."); nach der Bewertung zufrieden oder
+  /// abwinkend; nach einem Fehlversuch oder „nichts gehört" abwinkend, bis
+  /// wieder getippt wird.
   CafeMood get _mood {
     if (_listening) return CafeMood.fragend;
     if (_graded) return _lastCorrect ? CafeMood.zufrieden : CafeMood.abwinkend;
-    if (_feedback != null) {
+    if (_evaluationShown) {
       return _typed.isNotEmpty ? CafeMood.fragend : CafeMood.abwinkend;
     }
     return CafeMood.fragend;
@@ -411,11 +461,8 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               if (w.panel != null && w.bubble != null)
-                // Miniatur, höchstens 2/5 der Überlagerung (≤ halber Schirm).
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.sizeOf(context).height * 0.2,
-                  ),
+                // Miniatur: Seitenverhältnis fest, höchstens 40 % der Fläche.
+                CafeThumbnail(
                   child: PanelWithBubble(
                     key: const ValueKey('schul-panel'),
                     panel: w.panel!,
@@ -447,6 +494,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                       key: const ValueKey('schul-write-instead'),
                       onPressed: () => setState(() {
                         _writeInstead = true;
+                        _evaluationShown = false; // keine Bewertung
                         _feedback = 'Dann schreib es.'; // Lesung nicht abschreiben (INV-9)
                       }),
                       child: const Text('lieber schreiben'),

@@ -7,6 +7,8 @@ import '../../story/episode.dart';
 import '../../story/speak_evaluator.dart';
 import '../bubble_overlay.dart';
 import '../cafe_debrief.dart';
+import '../cafe_occupancy.dart';
+import '../cafe_overlay.dart';
 import '../cafe_scenes.dart';
 import '../cafe_portraits.dart';
 import '../cafe_visit.dart';
@@ -143,6 +145,32 @@ class _WirtinStationState extends State<WirtinStation> {
     }
   }
 
+  /// Wortaudio erst nach dem nächsten Frame anfragen: dann hat der Rahmen
+  /// die neue Zeile der Wirtin schon in die Warteschlange gestellt — erst
+  /// die Zeile, dann das Wort.
+  void _afterLine(Future<void> Function() play) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) play();
+    });
+  }
+
+  /// Lädt die Bilder der übrigen Stimmungen vor (kein Leerbild beim Wechsel).
+  void _precacheMoods() {
+    try {
+      final format = MediaQuery.orientationOf(context) == Orientation.portrait
+          ? PanelFormat.portrait
+          : PanelFormat.landscape;
+      for (final mood in const [CafeMood.zufrieden, CafeMood.abwinkend]) {
+        final choice = resolvePortrait(
+            CafeGuest.wirtin, mood, _variant, format, widget.light);
+        if (!choice.isPortrait) continue;
+        precacheImage(AssetImage(choice.asset), context).catchError((_) {});
+      }
+    } catch (e) {
+      debugPrint('wirtin: Vorladen fehlgeschlagen: $e');
+    }
+  }
+
   Future<void> _loadCurrent() async {
     while (_index < widget.itemIds.length) {
       _WirtinWord? w;
@@ -162,8 +190,13 @@ class _WirtinStationState extends State<WirtinStation> {
           _succeeded = false;
           _listening = false;
         });
-        await _say(widget.speak, w.reading);
-        await _say(widget.speakSlow, w.reading);
+        _precacheMoods();
+        final reading = w.reading;
+        _afterLine(() async {
+          await _say(widget.speak, reading);
+          if (!mounted) return;
+          await _say(widget.speakSlow, reading);
+        });
         return;
       }
       _index++; // Item ohne Lexem: überspringen (Review Focus 4)
@@ -201,7 +234,7 @@ class _WirtinStationState extends State<WirtinStation> {
     }
     if (_attempts == 1) {
       setState(() => _feedback = 'Fast. Hör noch einmal, ich sage es langsam.');
-      await _say(widget.speakSlow, w.reading);
+      _afterLine(() => _say(widget.speakSlow, w.reading));
     } else {
       setState(() => _feedback = 'Das nehmen wir später noch einmal.');
     }
@@ -246,15 +279,18 @@ class _WirtinStationState extends State<WirtinStation> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (w.panel != null && w.bubble != null)
-              // Querformat in voller Breite: AspectRatio setzt die Höhe, das
-              // ganze Panel ist sichtbar und die Blase sitzt richtig.
-              PanelWithBubble(
-                key: const ValueKey('wirtin-panel'),
-                panel: w.panel!,
-                bubble: w.bubble!,
-                targetSurface: w.surface,
-                mode: BubbleOverlayMode.highlight,
-                format: PanelFormat.landscape,
+              // Miniatur im Querformat: Seitenverhältnis fest, höchstens
+              // 40 % der Fläche hoch; das ganze Panel ist sichtbar und die
+              // Blase sitzt richtig.
+              CafeThumbnail(
+                child: PanelWithBubble(
+                  key: const ValueKey('wirtin-panel'),
+                  panel: w.panel!,
+                  bubble: w.bubble!,
+                  targetSurface: w.surface,
+                  mode: BubbleOverlayMode.highlight,
+                  format: PanelFormat.landscape,
+                ),
               ),
             const SizedBox(height: 16),
             if (w.hasKanji)

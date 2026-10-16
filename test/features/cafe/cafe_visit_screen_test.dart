@@ -287,7 +287,7 @@ void main() {
 
   testWidgets('Raum zeigt vier Gäste, Wirtin aktiv; Start öffnet die Wirtin',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(afterEpisode());
@@ -304,7 +304,7 @@ void main() {
 
   testWidgets('Später weiter speichert die Position; Fortsetzen springt dorthin',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(afterEpisode());
@@ -328,7 +328,7 @@ void main() {
 
   testWidgets('ganzer Weg 1: Wirtin → Schulmädchen → Abschluss; Besuch erledigt',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(afterEpisode());
@@ -359,7 +359,7 @@ void main() {
 
   testWidgets('freier Besuch ohne fällige Items: Wirtin wischt den Tresen, '
       'kein Start-Knopf', (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     final empty = LearningDb.forTesting();
@@ -386,7 +386,7 @@ void main() {
 
   testWidgets('freier Besuch, nichts fällig, aber bekannte Wörter: freiwillige '
       'Runde beim Schulmädchen', (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     // Beide Items kennen wir schon (Sprosse 2) und sie sind erst morgen fällig.
@@ -419,7 +419,7 @@ void main() {
 
   testWidgets('freier Besuch: Später weiter speichert nichts, kein Fortsetzen',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(freeVisit());
@@ -438,7 +438,7 @@ void main() {
 
   testWidgets('freiwillige Runde: Später weiter lässt Weg-1-Position unberührt',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     for (final id in ['lex_ja_ame', 'lex_ja_kasa']) {
@@ -461,7 +461,7 @@ void main() {
   testWidgets('Weg 1: wackelige Wirtin-Wörter werden gespeichert; Fortsetzen '
       'nach der Wirtin ordnet das Schulmädchen genauso (wackelige zuerst)',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     final spoken = <String>[];
@@ -502,7 +502,7 @@ void main() {
 
   testWidgets('Weg 1 ohne übbare Wörter: leerer Raum, Besuch sofort erledigt',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     final empty = Episode.fromJson({
@@ -538,7 +538,7 @@ void main() {
 
   testWidgets('Doppeltipp auf „Setz dich" startet den Besuch nur einmal',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     final obs = _PushCounter();
