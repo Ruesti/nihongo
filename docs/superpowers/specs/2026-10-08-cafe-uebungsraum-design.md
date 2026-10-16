@@ -242,4 +242,4 @@ Die Zuordnung Sprosse ↔ Gast (`guestForRung`) bleibt; nach einer Folge laufen 
 
 - Entwurfstexte (Monolog, Fragen, Situationen, Grammatiknotizen, Abschluss-Sätze) schreibt Claude in Plan B, Uli liest gegen.
 - Später: Katakana auf der Tastatur; Café-Bilder in den vier Lichtern (Runde 2); ab Folge 02 wachsen die Sätze des alten Mannes mit Miras Wortschatz. Vollbild kommt mit der Ansprache-Spec (15.10.), nicht mehr als Plan 4.
-- Uli 15.10.: Das Café soll alles aus der Folge wiederholen (Grammatik, was warum gesagt wurde, Zeichen-Erklärung mit Trübung/Halbtrübung/Dehnung, Nachzeichnen erst einfach, dann schwer). Eigene Spec „Nachbereitung der Folge“, in Arbeit.
+- Uli 15.10.: Das Café soll alles aus der Folge wiederholen (Grammatik, was warum gesagt wurde, Zeichen-Erklärung mit Trübung/Halbtrübung/Dehnung, Nachzeichnen erst einfach, dann schwer). Eigene Spec „Nachbereitung der Folge“ (16.10., `2026-10-16-cafe-nachbereitung-zeichen-design.md`): Abdeckungsregel INV-28, Zeichen-Erklärung bei der Wirtin, Nachzeichnen beim Schulmädchen = Plan C.
