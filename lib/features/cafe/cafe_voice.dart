@@ -41,8 +41,10 @@ abstract class SpeechEngine {
   Future<void> setRate(double v);
 
   /// Spricht den Text und kehrt erst nach dem Ende der Ausgabe zurück
-  /// (setzt [setAwaitCompletion] mit true voraus).
-  Future<void> speakAndWait(String text);
+  /// (setzt [setAwaitCompletion] mit true voraus). false, wenn die Ausgabe
+  /// angehalten wurde, fehlschlug oder hing — dann entfallen die übrigen
+  /// Stücke der Zeile.
+  Future<bool> speakAndWait(String text);
 
   /// Ob `speak` bis zum Ende der Ausgabe wartet (dauerhafte Einstellung).
   Future<void> setAwaitCompletion(bool on);
@@ -146,7 +148,7 @@ class DeviceTtsSource implements VoiceSource {
             if (run != _run) return;
             await _engine.setRate(profile.rate);
             if (run != _run) return;
-            await _engine.speakAndWait(seg.text);
+            if (!await _engine.speakAndWait(seg.text)) return;
           }
         } finally {
           await _engine.setAwaitCompletion(false);

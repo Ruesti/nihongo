@@ -165,11 +165,13 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     );
   }
 
-  Future<void> _say(String text) async {
+  /// Liest vor; true nur, wenn das Wort zu Ende gesprochen wurde.
+  Future<bool> _say(String text) async {
     try {
-      await widget.speak(text);
+      return await widget.speak(text);
     } catch (e) {
       debugPrint('schulmaedchen: Vorlesen fehlgeschlagen: $e');
+      return false;
     }
   }
 
@@ -302,9 +304,10 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
         // Die Zeile sagt die Lesung schon (ja-Stück); nur ohne Stimme
         // liest das Wortaudio sie vor.
         _afterLine(() async {
-          if (!await widget.voice.isActive() && mounted) {
-            await _say(w.reading);
-          }
+          if (await widget.voice.isActive()) return;
+          // Inzwischen das Mikro angetippt? Dann nicht hineinsprechen.
+          if (!mounted || _listening) return;
+          await _say(w.reading);
         });
       } else {
         _afterLine(() => _say(w.reading));

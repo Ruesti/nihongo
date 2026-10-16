@@ -32,3 +32,9 @@ class TtsQueue {
   /// läuft zu Ende (anhalten muss der Aufrufer selbst).
   void cancelPending() => _generation++;
 }
+
+/// Wie lange ein Auftrag höchstens auf das Ende einer Äußerung wartet, bevor
+/// er sie als hängend behandelt (der Sprachmotor meldet Fehler nicht immer
+/// zurück): 3 s Grundzeit plus 200 ms je Zeichen.
+Duration ttsTimeoutFor(String text) =>
+    const Duration(seconds: 3) + Duration(milliseconds: 200 * text.length);

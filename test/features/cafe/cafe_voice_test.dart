@@ -29,6 +29,14 @@ void main() {
     ]);
   });
 
+  test('Stück bricht ab (angehalten/Fehler): Rest der Zeile entfällt',
+      () async {
+    engine.failing = {'Hör zu:'};
+    await src.speak(splitSegments('Hör zu: あめ. Jetzt du.'),
+        profileFor(CafeGuest.schulkind), CafeGuest.schulkind);
+    expect(engine.log.where((e) => e.startsWith('speak:')), ['speak:Hör zu:']);
+  });
+
   test('neue Anfrage überholt die alte, ohne hart anzuhalten', () async {
     final gate = Completer<void>();
     engine.hold = (t) => t == 'Eins' ? gate : (Completer<void>()..complete());

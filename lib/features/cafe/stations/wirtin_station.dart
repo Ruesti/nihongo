@@ -137,11 +137,13 @@ class _WirtinStationState extends State<WirtinStation> {
     );
   }
 
-  Future<void> _say(Speak fn, String text) async {
+  /// Liest vor; true nur, wenn das Wort zu Ende gesprochen wurde.
+  Future<bool> _say(Speak fn, String text) async {
     try {
-      await fn(text);
+      return await fn(text);
     } catch (e) {
       debugPrint('wirtin: Vorlesen fehlgeschlagen: $e');
+      return false;
     }
   }
 
@@ -193,8 +195,11 @@ class _WirtinStationState extends State<WirtinStation> {
         _precacheMoods();
         final reading = w.reading;
         _afterLine(() async {
-          await _say(widget.speak, reading);
-          if (!mounted) return;
+          // Das langsame Wort nur, wenn das normale zu Ende lief: ein Stopp
+          // vor dem Mikro bricht die ganze Kette ab (sonst spräche es ins
+          // Mikro hinein).
+          final done = await _say(widget.speak, reading);
+          if (!done || !mounted || _listening) return;
           await _say(widget.speakSlow, reading);
         });
         return;

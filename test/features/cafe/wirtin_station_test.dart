@@ -151,10 +151,12 @@ void main() {
         speak: (t) async {
           spoken.add(t);
           events?.add('word:$t');
+          return true;
         },
         speakSlow: (t) async {
           slow.add(t);
           events?.add('word:$t');
+          return true;
         },
         evaluator: ev,
         voice: voice ?? const CafeVoice.silent(),
@@ -463,5 +465,68 @@ void main() {
     ev.release(0.9);
     await tester.pumpAndSettle();
     expect(fake.log.last, 'speak:[Genau so.|de] wirtin');
+  });
+
+  // B1: Ein Stopp vor dem Mikro beendet die ganze Wort-Kette — das langsame
+  // Wort darf nicht ins laufende Mikro sprechen.
+  Future<({List<String> calls, Completer<bool> word, _GatedEvaluator ev})>
+      pumpParked(WidgetTester tester) async {
+    final calls = <String>[];
+    final word = Completer<bool>();
+    final ev = _GatedEvaluator();
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(MaterialApp(
+      home: WirtinStation(
+        db: db,
+        episode: _episode(),
+        itemIds: const ['lex_ja_ame'],
+        startIndex: 0,
+        // Das normale Wort „läuft", bis der Test es freigibt.
+        speak: (t) async {
+          calls.add('speak:$t');
+          return word.future;
+        },
+        speakSlow: (t) async {
+          calls.add('slow:$t');
+          return true;
+        },
+        evaluator: ev,
+        grammarNotes: const {},
+        light: CafeLight.tag,
+        onPosition: (_) {},
+        onDone: (_) {},
+        onLater: () {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(calls, ['speak:あめ']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pump();
+    calls.add('mic');
+    expect(ev.calls, 1);
+    return (calls: calls, word: word, ev: ev);
+  }
+
+  testWidgets('Mikro während das Wort läuft: kein langsames Wort, solange '
+      'das Mikro hört', (tester) async {
+    final p = await pumpParked(tester);
+    p.word.complete(true); // endet regulär, aber das Mikro hört schon
+    await tester.pumpAndSettle();
+    p.ev.release(0.9);
+    await tester.pumpAndSettle();
+    expect(p.calls, ['speak:あめ', 'mic']);
+  });
+
+  testWidgets('Mikro während das Wort läuft: abgebrochenes Wort (false) '
+      'beendet die Kette', (tester) async {
+    final p = await pumpParked(tester);
+    p.ev.release(0.9); // Erkennung schon fertig, Mikro wieder frei
+    await tester.pumpAndSettle();
+    p.word.complete(false); // der Stopp vor dem Mikro hat es abgebrochen
+    await tester.pumpAndSettle();
+    expect(p.calls, ['speak:あめ', 'mic']);
   });
 }

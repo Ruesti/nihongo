@@ -43,7 +43,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: CafeVisitScreen.free(
         db: db, languageId: 'lang_ja', episodes: const [], store: store,
-        speak: (_) async {}, speakSlow: (_) async {},
+        speak: (_) async => true, speakSlow: (_) async => true,
         evaluator: const _NeverHeard(),
       ),
     ));

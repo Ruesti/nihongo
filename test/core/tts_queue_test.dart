@@ -53,4 +53,26 @@ void main() {
     await later;
     expect(log, ['laufend', 'später']);
   });
+
+  test('ttsTimeoutFor: 3 s Grundzeit plus 200 ms je Zeichen', () {
+    expect(ttsTimeoutFor(''), const Duration(seconds: 3));
+    expect(ttsTimeoutFor('0123456789'), const Duration(seconds: 5));
+  });
+
+  test('ein hängender Auftrag mit Zeitlimit gibt die Schlange wieder frei',
+      () async {
+    final q = TtsQueue();
+    final never = Completer<int>(); // Motor meldet sich nie (onError)
+    final hung = q.run(() async {
+      try {
+        return await never.future
+            .timeout(const Duration(milliseconds: 20));
+      } on TimeoutException {
+        return 0; // wie abgebrochen
+      }
+    });
+    final next = q.run(() async => 1);
+    expect(await hung, 0);
+    expect(await next, 1);
+  });
 }

@@ -78,7 +78,7 @@ void main() {
         itemIds: const ['lex_ja_dog'],
         startIndex: 0, // Hören→Schreiben
         bridge: KnowledgeBridge(mining),
-        speak: (_) async {},
+        speak: (_) async => true,
         evaluator: _Always(),
         light: CafeLight.tag,
         onPosition: (_) {},

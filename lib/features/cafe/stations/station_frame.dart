@@ -9,7 +9,9 @@ import '../cafe_scenes.dart';
 import '../cafe_visit.dart';
 import '../cafe_voice.dart';
 
-typedef Speak = Future<void> Function(String text);
+/// Wortaudio: liefert true, wenn das Wort zu Ende gesprochen wurde — false,
+/// wenn es verworfen oder angehalten wurde (z. B. vor dem Mikro).
+typedef Speak = Future<bool> Function(String text);
 
 const stationTitles = {
   CafeStation.wirtin: 'Die Wirtin',

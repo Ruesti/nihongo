@@ -98,7 +98,7 @@ void main() {
   Widget afterEpisode() => MaterialApp(
         home: CafeVisitScreen.afterEpisode(
           db: db, languageId: 'lang_ja', episode: _episode(), store: store,
-          speak: (_) async {}, speakSlow: (_) async {},
+          speak: (_) async => true, speakSlow: (_) async => true,
           evaluator: _Always(1.0), light: CafeLight.tag,
           systemUi: recorder, voice: voice,
         ),
@@ -135,7 +135,7 @@ void main() {
           onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
             builder: (_) => CafeVisitScreen.afterEpisode(
               db: db, languageId: 'lang_ja', episode: _episode(), store: store,
-              speak: (_) async {}, speakSlow: (_) async {},
+              speak: (_) async => true, speakSlow: (_) async => true,
               evaluator: _Always(1.0), light: CafeLight.tag,
               systemUi: recorder, voice: voice,
             ),
@@ -266,7 +266,7 @@ void main() {
           onPressed: () => Navigator.of(c).push(MaterialPageRoute(
               builder: (_) => CafeVisitScreen.afterEpisode(
                     db: db, languageId: 'lang_ja', episode: _episode(),
-                    store: store, speak: (_) async {}, speakSlow: (_) async {},
+                    store: store, speak: (_) async => true, speakSlow: (_) async => true,
                     evaluator: _Always(1.0), light: CafeLight.tag,
                     systemUi: recorder, voice: voice,
                   ))),
@@ -366,7 +366,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: CafeVisitScreen.free(
         db: empty, languageId: 'lang_ja', episodes: [_episode()], store: store,
-        speak: (_) async {}, speakSlow: (_) async {},
+        speak: (_) async => true, speakSlow: (_) async => true,
         evaluator: _Always(1.0), light: CafeLight.tag,
       ),
     ));
@@ -398,7 +398,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: CafeVisitScreen.free(
         db: db, languageId: 'lang_ja', episodes: [_episode()], store: store,
-        speak: (_) async {}, speakSlow: (_) async {},
+        speak: (_) async => true, speakSlow: (_) async => true,
         evaluator: _Always(1.0), light: CafeLight.tag,
       ),
     ));
@@ -412,7 +412,7 @@ void main() {
   Widget freeVisit() => MaterialApp(
         home: CafeVisitScreen.free(
           db: db, languageId: 'lang_ja', episodes: [_episode()], store: store,
-          speak: (_) async {}, speakSlow: (_) async {},
+          speak: (_) async => true, speakSlow: (_) async => true,
           evaluator: _Always(1.0), light: CafeLight.tag,
         ),
       );
@@ -468,7 +468,7 @@ void main() {
     Widget screen() => MaterialApp(
           home: CafeVisitScreen.afterEpisode(
             db: db, languageId: 'lang_ja', episode: _episode(), store: store,
-            speak: (t) async => spoken.add(t), speakSlow: (_) async {},
+            speak: (t) async { spoken.add(t); return true; }, speakSlow: (_) async => true,
             evaluator: _Always(0.0), light: CafeLight.tag,
           ),
         );
@@ -526,7 +526,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: CafeVisitScreen.afterEpisode(
         db: db, languageId: 'lang_ja', episode: empty, store: store,
-        speak: (_) async {}, speakSlow: (_) async {},
+        speak: (_) async => true, speakSlow: (_) async => true,
         evaluator: _Always(1.0), light: CafeLight.tag,
       ),
     ));
@@ -546,7 +546,7 @@ void main() {
       navigatorObservers: [obs],
       home: CafeVisitScreen.afterEpisode(
         db: db, languageId: 'lang_ja', episode: _episode(), store: store,
-        speak: (_) async {}, speakSlow: (_) async {},
+        speak: (_) async => true, speakSlow: (_) async => true,
         evaluator: _Always(1.0), light: CafeLight.tag,
       ),
     ));

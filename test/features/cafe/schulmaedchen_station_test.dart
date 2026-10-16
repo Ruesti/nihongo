@@ -111,6 +111,7 @@ void main() {
         speak: (t) async {
           spoken.add(t);
           events?.add('word:$t');
+          return true;
         },
         evaluator: ev,
         light: CafeLight.tag,
@@ -310,6 +311,33 @@ void main() {
     expect(r.spoken.skip(before2), ['あめ']);
   });
 
+  testWidgets('Sehen→Sprechen falsch: Mikro während der Stimmprüfung — '
+      'kein Vorsagen ins Mikro', (tester) async {
+    final fake = FakeVoiceSource();
+    final voice = CafeVoice(source: fake, isEnabled: () async => true);
+    final ev = _GatedEvaluator();
+    final r = await pump(tester, ev, ['lex_ja_kasa', 'lex_ja_ame'],
+        voice: voice);
+    await toSeeSpeak(tester);
+    final gate = Completer<bool>();
+    fake.germanGate = gate; // isActive hängt, bis der Test es freigibt
+    final before = r.spoken.length;
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pump();
+    ev.release(0.1); // erster Versuch falsch → Vorsagen nach isActive
+    await tester.pumpAndSettle();
+    expect(bubble(tester), 'Nee. Hör zu: あめ. Jetzt du.');
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pump();
+    expect(ev.calls, 2); // das Mikro hört
+    gate.complete(false); // keine Stimme → würde ohne Wache vorlesen
+    await tester.pumpAndSettle();
+    expect(r.spoken.skip(before), isEmpty);
+    ev.release(0.9);
+    await tester.pumpAndSettle();
+    expect(r.spoken.skip(before), isEmpty);
+  });
+
   testWidgets('Sehen→Sprechen falsch: sie sagt es vor, aber keine Kacheln',
       (tester) async {
     await pump(tester, _FakeEvaluator([0.1]), ['lex_ja_kasa', 'lex_ja_ame']);
@@ -348,7 +376,7 @@ void main() {
       home: SchulmaedchenStation(
         db: db, languageId: 'lang_ja', episode: _episode(),
         itemIds: const ['lex_ja_kasa', 'lex_ja_ame'], startIndex: 1,
-        speak: (_) async {}, evaluator: _FakeEvaluator([-1.0]),
+        speak: (_) async => true, evaluator: _FakeEvaluator([-1.0]),
         light: CafeLight.tag, onPosition: (_) {}, onDone: (_) {},
         onLater: () {},
       ),

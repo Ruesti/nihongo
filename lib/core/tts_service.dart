@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -20,10 +22,25 @@ class TtsService implements SpeechEngine {
   /// Läuft gerade ein Wort-Auftrag (speak/speakSlow)?
   bool _wordRunning = false;
 
+  /// Zählt harte Stopps ([stop]); ein Wort, in dessen Lauf einer fiel, gilt
+  /// als abgebrochen.
+  int _stops = 0;
+
+  bool _errorHandlerSet = false;
+
   Future<void> init({String locale = 'ja-JP'}) async {
     if (!_available) return;
     _locale = locale;
     try {
+      // Meldet der Motor einen Fehler (Netzstimme offline, Sprachdaten
+      // fehlen), beendet nur stop() das wartende speak — sonst hinge die
+      // Warteschlange für immer.
+      if (!_errorHandlerSet) {
+        _errorHandlerSet = true;
+        _tts.setErrorHandler((_) {
+          _tts.stop().catchError((Object _) {});
+        });
+      }
       await _applyDefaults(rate: 0.5);
     } on MissingPluginException {
       _available = false;
@@ -74,43 +91,66 @@ class TtsService implements SpeechEngine {
     await _tts.setPitch(1.0);
   }
 
-  Future<void> speak(String text) => _speakWord(text, rate: 0.5);
+  /// Spricht ein Wort; true, wenn es zu Ende gesprochen wurde — false, wenn
+  /// es verworfen, angehalten, abgeschnitten oder nicht hörbar war.
+  Future<bool> speak(String text) => _speakWord(text, rate: 0.5);
 
-  Future<void> speakSlow(String text) => _speakWord(text, rate: 0.3);
+  /// Wie [speak], nur langsam.
+  Future<bool> speakSlow(String text) => _speakWord(text, rate: 0.3);
+
+  /// Spricht [text] (awaitSpeakCompletion muss an sein) und wartet auf das
+  /// Ende — höchstens [ttsTimeoutFor]; danach wird hart angehalten. true nur,
+  /// wenn der Motor das Ende meldet (stop() liefert 0).
+  Future<bool> _speakTimed(String text) async {
+    try {
+      final r = await _tts.speak(text).timeout(ttsTimeoutFor(text));
+      return r != 0;
+    } on TimeoutException {
+      debugPrint('TtsService: speak hängt — angehalten.');
+      try {
+        await _tts.stop();
+      } catch (_) {}
+      return false;
+    }
+  }
 
   /// Ein Wort als eigener Auftrag der Warteschlange: wartet, bis eine
   /// laufende Café-Zeile fertig ist, und wird von ihr nie abgeschnitten.
   /// Ein neues Wort schneidet ein noch laufendes Wort ab (Antippen).
-  Future<void> _speakWord(String text, {required double rate}) async {
-    if (!_available) return;
+  Future<bool> _speakWord(String text, {required double rate}) async {
+    if (!_available) return false;
+    final stops = _stops;
     if (_wordRunning) {
       try {
         await _tts.stop();
       } on MissingPluginException {
         _available = false;
-        return;
+        return false;
       }
     }
     try {
-      await _queue.run(() async {
-        if (!_available) return;
+      final done = await _queue.run(() async {
+        if (!_available) return false;
         _wordRunning = true;
         try {
           await _applyDefaults(rate: rate);
           await _tts.awaitSpeakCompletion(true);
           try {
-            await _tts.speak(text);
+            return await _speakTimed(text);
           } finally {
             await _tts.awaitSpeakCompletion(false);
           }
         } on MissingPluginException {
           _available = false;
+          return false;
         } finally {
           _wordRunning = false;
         }
       });
+      return done && stops == _stops;
     } on TtsJobCancelled {
       // vor dem Start abgebrochen (stop): nichts sprechen
+      return false;
     }
   }
 
@@ -120,6 +160,7 @@ class TtsService implements SpeechEngine {
   /// Hält alles an: die laufende Ausgabe und alle wartenden Aufträge.
   @override
   Future<void> stop() async {
+    _stops++;
     _queue.cancelPending();
     if (!_available) return;
     try {
@@ -167,10 +208,11 @@ class TtsService implements SpeechEngine {
 
   /// Spricht und wartet auf das Ende — vorausgesetzt, der Auftrag hat
   /// [setAwaitCompletion] mit true gesetzt (die Café-Zeile tut das einmal).
+  /// false, wenn angehalten, fehlgeschlagen oder hängend (Zeitlimit).
   @override
-  Future<void> speakAndWait(String text) async {
-    if (!_available) return;
-    await _tts.speak(text);
+  Future<bool> speakAndWait(String text) async {
+    if (!_available) return false;
+    return _speakTimed(text);
   }
 
   @override

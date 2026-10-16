@@ -22,6 +22,9 @@ class FakeSpeechEngine implements SpeechEngine {
   /// Wenn gesetzt, wartet `speakAndWait` auf dieses Completer-Objekt.
   Completer<void> Function(String text)? hold;
 
+  /// Texte, bei denen `speakAndWait` false liefert (angehalten/Fehler).
+  Set<String> failing = {};
+
   @override
   Future<bool> setLanguage(String locale) async {
     log.add('lang:$locale');
@@ -39,10 +42,11 @@ class FakeSpeechEngine implements SpeechEngine {
   Future<void> setRate(double v) async => log.add('rate:$v');
 
   @override
-  Future<void> speakAndWait(String text) async {
+  Future<bool> speakAndWait(String text) async {
     log.add('speak:$text');
     final c = hold?.call(text);
     if (c != null) await c.future;
+    return !failing.contains(text);
   }
 
   @override
@@ -93,6 +97,14 @@ class FakeVoiceSource implements VoiceSource {
   @override
   Future<void> stop() async => log.add('stop');
 
+  /// Wenn gesetzt, wartet `hasGerman` auf diesen Completer und liefert
+  /// dessen Wert (statt [german]).
+  Completer<bool>? germanGate;
+
   @override
-  Future<bool> hasGerman() async => german;
+  Future<bool> hasGerman() async {
+    final g = germanGate;
+    if (g != null) return g.future;
+    return german;
+  }
 }
