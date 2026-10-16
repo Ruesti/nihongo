@@ -114,8 +114,8 @@ class PicksAndOverrides(unittest.TestCase):
             ca.load_overrides(self.write("wirtin_zufrieden_2_quer denoise=0.5"))
 
 
-class Render(unittest.TestCase):
-    """Render-Stufen mit Fake-Run: kein ComfyUI nötig."""
+class FakeRun(unittest.TestCase):
+    """Basis ohne eigene Tests: Fake-Run statt ComfyUI."""
 
     def setUp(self):
         self.d = tempfile.mkdtemp()
@@ -160,6 +160,9 @@ class Render(unittest.TestCase):
 
     def tearDown(self):
         cc.COMFY_INPUT, cc.run = self._saved
+
+class Render(FakeRun):
+    """Render-Stufen mit Fake-Run: kein ComfyUI nötig."""
 
     def test_render_fragend_prefixes_and_sizes(self):
         ca.render_fragend(["wirtin"], ["quer", "hoch"], [911], out=self.out)
@@ -253,6 +256,63 @@ class Render(unittest.TestCase):
         self.assertEqual(ca.edit_outputs(self.out), {"wirtin_zufrieden_2_quer": str(a)})
         os.utime(a, (100, 100))
         self.assertEqual(ca.edit_outputs(self.out), {"wirtin_zufrieden_2_quer": str(c)})
+
+
+class Stages(FakeRun):
+    """Stufen gate/runde1/runde2 mit Fake-Run und Fake-Bogen."""
+
+    def setUp(self):
+        super().setUp()
+        self.sheet_items = {}
+        self._saved_stage = (ca.ROOT, ca.make_sheet)
+        ca.ROOT = Path(self.d) / "root"
+
+        def fake_sheet(name, items, cols, out=None):
+            self.sheet_items[name] = items
+            return Path(self.d) / (name + ".png")
+        ca.make_sheet = fake_sheet
+        self.picks_two_guests = os.path.join(self.d, "picks.txt")
+        with open(self.picks_two_guests, "w", encoding="utf-8") as f:
+            for g in ("wirtin", "schulkind"):
+                for fmt in ca.FORMATS:
+                    for n in range(1, 6):
+                        f.write(f"{g}_{fmt}_{n}={self.img}\n")
+
+    def tearDown(self):
+        ca.ROOT, ca.make_sheet = self._saved_stage
+        super().tearDown()
+
+    def test_gate_sheet_rows(self):
+        ca.gate(seeds=(1, 2))
+        labels = [l for l, _ in self.sheet_items["gate"]]
+        self.assertEqual(len(labels), 12)
+        self.assertEqual(labels[:3], ["quer s1 fragend", "quer s1 zufrieden", "quer s1 abwinkend"])
+        self.assertEqual(labels[9:], ["hoch s2 fragend", "hoch s2 zufrieden", "hoch s2 abwinkend"])
+        self.assertIn("manga", str(self.sheet_items["gate"][0][1]))
+
+    def test_runde1_sheets_per_cell(self):
+        ca.runde1(seeds=(1, 2, 3))
+        self.assertEqual(sorted(self.sheet_items),
+                         sorted(f"r1_{g}_{f}" for g in ca.GUESTS for f in ca.FORMATS))
+        self.assertEqual(len(self.sheet_items["r1_wirtin_quer"]), 3)
+        self.assertEqual([l for l, _ in self.sheet_items["r1_wirtin_quer"]], ["s1", "s2", "s3"])
+        self.assertIn("foto", str(self.sheet_items["r1_wirtin_quer"][0][1]))
+
+    def test_runde2_sheet_per_guest(self):
+        ca.runde2(self.picks_two_guests)
+        self.assertEqual(sorted(self.sheet_items), ["r2_schulkind", "r2_wirtin"])
+        items = self.sheet_items["r2_wirtin"]
+        self.assertEqual(len(items), 30)
+        self.assertEqual(items[0][0], "fragend 1 quer")
+        self.assertIn("manga", str(items[0][1]))
+
+    def test_cli_unknown_stage(self):
+        with self.assertRaises(SystemExit):
+            ca.main(["nix"])
+
+    def test_cli_marker(self):
+        ca.main(["gate"])
+        self.assertIn("ANSPRACHE_DONE", self.log.getvalue())
 
 
 if __name__ == "__main__":

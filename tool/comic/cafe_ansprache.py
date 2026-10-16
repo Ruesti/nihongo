@@ -8,6 +8,8 @@ Spec: docs/superpowers/specs/2026-10-15-cafe-ansprache-design.md §2.
 import glob
 import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import comfy_client as cc
@@ -15,6 +17,7 @@ import folge01_manga
 from cafe_motifs import CAFE, GIRL, LAND, LORA_STRENGTH, MAN, NEG, PHOTO, YW  # noqa: F401
 from folge01_motifs import NEG_MANGA, STY
 
+HERE = Path(__file__).resolve().parent
 ROOT = Path("~/comfy_cafe_ansprache").expanduser()  # Unterordner foto, edit, manga, final, sheets
 MOODS = ("fragend", "zufrieden", "abwinkend")
 FORMATS = {"quer": (1664, 928), "hoch": (928, 1664)}
@@ -284,3 +287,102 @@ def fragend_sources(picks):
             continue
         out[name_for(gast, "fragend", n, fmt)] = path
     return out
+
+
+# --- Bögen und Stufen -------------------------------------------------------
+
+MOODS_ORDER = ("fragend", "zufrieden", "abwinkend")
+
+
+def make_sheet(name, items, cols, out=None):
+    """Kontaktbogen `name.png` aus (Label, Pfad)-Paaren über sheet.py; Rückgabe = Bogenpfad."""
+    out = Path(out) if out else ROOT / "sheets"
+    out.mkdir(parents=True, exist_ok=True)
+    target = out / (name + ".png")
+    subprocess.run([sys.executable, str(HERE / "sheet.py"), str(target), str(cols)]
+                   + ["%s=%s" % (label, path) for label, path in items], check=False)
+    return target
+
+
+def _newest(prefix, folder):
+    """Neueste Datei `prefix_*` im Ordner oder None."""
+    found = glob.glob(os.path.join(glob.escape(str(folder)), glob.escape(prefix) + "_*"))
+    return max(found, key=lambda f: (os.path.getmtime(f), f)) if found else None
+
+
+def _manga_sheet(name, labelled, manga_dir):
+    """Bogen mit 3 Spalten aus den Manga-Ausgaben; (Label, Name)-Paare, fehlende Bilder entfallen."""
+    manga = edit_outputs(manga_dir)
+    return make_sheet(name, [(label, manga[n]) for label, n in labelled if n in manga], 3)
+
+
+def gate(seeds=(911, 912)):
+    """Gate: Wirtin quer/hoch, je Seed fragend -> Edits -> Manga; Bogen gate.png."""
+    foto, edit, manga = ROOT / "foto", ROOT / "edit", ROOT / "manga"
+    render_fragend(["wirtin"], list(FORMATS), seeds, out=foto)
+    picks = {}
+    for fmt in FORMATS:
+        for i, seed in enumerate(seeds, 1):
+            f = _newest("wirtin_fragend_%s_s%d" % (fmt, seed), foto)
+            if f:
+                picks["wirtin_%s_%d" % (fmt, i)] = f
+    render_edits(picks, out=edit)
+    render_manga({**fragend_sources(picks), **edit_outputs(edit)}, out=manga)
+    labelled = [("%s s%d %s" % (fmt, seed, mood), name_for("wirtin", mood, i, fmt))
+                for fmt in FORMATS for i, seed in enumerate(seeds, 1) for mood in MOODS_ORDER]
+    return _manga_sheet("gate", labelled, manga)
+
+
+def runde1(seeds=tuple(range(921, 929))):
+    """Runde 1: alle Gäste/Formate/Seeds als Foto; ein Bogen je Zelle (4 Spalten)."""
+    foto = ROOT / "foto"
+    render_fragend(list(GUESTS), list(FORMATS), seeds, out=foto)
+    sheets = []
+    for gast in GUESTS:
+        for fmt in FORMATS:
+            items = []
+            for seed in seeds:
+                f = _newest("%s_fragend_%s_s%d" % (gast, fmt, seed), foto)
+                if f:
+                    items.append(("s%d" % seed, f))
+            sheets.append(make_sheet("r1_%s_%s" % (gast, fmt), items, 4))
+    return sheets
+
+
+def runde2(picks_path, overrides_path=None):
+    """Runde 2: Edits + Manga aus den Picks; ein Bogen je Gast (3 Spalten)."""
+    picks = load_picks(picks_path)
+    overrides = load_overrides(overrides_path) if overrides_path else None
+    edit, manga = ROOT / "edit", ROOT / "manga"
+    render_edits(picks, out=edit, overrides=overrides)
+    render_manga({**fragend_sources(picks), **edit_outputs(edit)}, out=manga, overrides=overrides)
+    guests = sorted({k.split("_")[0] for k in picks})
+    sheets = []
+    for gast in GUESTS:
+        if gast not in guests:
+            continue
+        labelled = [("%s %d %s" % (mood, n, fmt), name_for(gast, mood, n, fmt))
+                    for n in range(1, VARIANTS + 1) for fmt in FORMATS for mood in MOODS_ORDER]
+        sheets.append(_manga_sheet("r2_" + gast, labelled, manga))
+    return sheets
+
+
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    stage, args = (argv[0] if argv else ""), argv[1:]
+    if stage == "gate":
+        gate()
+    elif stage == "runde1":
+        runde1()
+    elif stage == "runde2" and 1 <= len(args) <= 2:
+        runde2(*args)
+    elif stage == "finish":
+        print("finish: Task 6")
+        raise SystemExit(1)
+    else:
+        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish PICKS OUT")
+    print("ANSPRACHE_DONE", flush=True)
+
+
+if __name__ == "__main__":
+    main()

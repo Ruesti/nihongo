@@ -211,6 +211,32 @@ Episode, Titelbild und Tippflächen verdrahten, dann:
 flutter test test/features/story/folge_01_layout_test.dart test/features/story/folge_01_panel_assets_test.dart test/features/story/folge_01_regen_test.dart
 ```
 
+## Café-Ansprache (Bilder für die Ansprache-Spec)
+
+Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×928, hoch 928×1664), je 5 Varianten. Code: `cafe_ansprache.py`, Test: `test_ansprache.py`. Ausgabe liegt unter `~/comfy_cafe_ansprache/` (`foto`, `edit`, `manga`, `final`, `sheets`).
+
+**Rezept:** Foto per Text-zu-Bild (Stimmung „fragend“, Blick in die Kamera) mit Stil-LoRA, daraus zwei Edits (zufrieden, abwinkend; Edit-Seed 21), danach je Bild der Manga-Durchgang (Seed 831). Seeds: Gate 911/912, Runde 1 921–928.
+
+**Stufen** (jede endet mit `ANSPRACHE_DONE`; vorhandene Ausgaben werden übersprungen, Fehler je Bild stehen als `ERR` im Log und brechen nicht ab):
+
+| Stufe | Wirkung | Bogen |
+|---|---|---|
+| `gate` | Wirtin quer/hoch × 2 Seeds: Foto → Edits → Manga | `gate.png` (3 Spalten: fragend, zufrieden, abwinkend) |
+| `runde1` | alle Gäste × Formate × 8 Seeds, nur Fotos | `r1_{gast}_{fmt}.png` (4 Spalten, Label `s{seed}`) |
+| `runde2 PICKS [OVERRIDES]` | Edits + Manga aus den Picks | `r2_{gast}.png` (3 Spalten, Zeilen n=1..5 × quer/hoch) |
+| `finish PICKS OUT` | Auslieferung (Task 6) | |
+
+**Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
+
+**Overrides-Datei:** eine Zeile je Bild, `{gast}_{stimmung}_{n}_{fmt} seed=7 extra="text" force`; erlaubt sind nur `seed`, `extra`, `force`.
+
+**Lauf:**
+
+    cd tool/comic && python3 cafe_ansprache.py gate        # lokal, wenn ComfyUI läuft
+    ssh pc 'setsid nohup sh ~/f01tool/run_ansprache.sh runde1 > ~/f01tool/ansprache.log 2>&1 </dev/null &'
+
+Das Skript `run_ansprache.sh` wartet auf `localhost:8188`, startet die Stufe und schreibt am Ende `ANSPRACHE_DONE` (Python) und `RUN_ANSPRACHE_DONE` (Skript).
+
 ## Regeln und Fallen
 
 - **Vor jedem Neu-Render die alte Ausgabe löschen.** Die Skripte überspringen einen Key, sobald
