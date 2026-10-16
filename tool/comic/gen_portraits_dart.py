@@ -34,7 +34,11 @@ def _parse(filename):
 
 def main(asset_dir=ASSET_DIR, out=OUT):
     table = {}
-    for p in sorted(Path(asset_dir).glob("*.jpg")):
+    for p in sorted(Path(asset_dir).iterdir()):
+        if p.name.startswith("."):
+            continue
+        if p.suffix != ".jpg":
+            raise SystemExit("Fremde Datei im Ansprache-Ordner (nur .jpg erlaubt): %s" % p.name)
         gast, mood, n, fmt = _parse(p.name)
         table.setdefault("%s_%s" % (gast, mood), {}).setdefault(fmt, []).append(n)
     if not table:

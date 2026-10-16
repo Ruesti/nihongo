@@ -219,27 +219,27 @@ Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×92
 
 **Rezept:** Foto per Text-zu-Bild (Stimmung „fragend“, Blick in die Kamera) mit Stil-LoRA, daraus zwei Edits (zufrieden, abwinkend; Edit-Seed 21), danach je Bild der Manga-Durchgang (Seed 831). Seeds: Gate 911/912, Runde 1 921–928.
 
-**Stufen** (jede endet mit `ANSPRACHE_DONE`; vorhandene Ausgaben werden übersprungen, Fehler je Bild stehen als `ERR` im Log und brechen nicht ab):
+**Stufen** (jede endet bei Erfolg mit der Zeile `ANSPRACHE_DONE`; vorhandene Ausgaben werden übersprungen; ändert sich das Quellfoto eines Namens, wird er neu gerendert, gemerkt in `<Ausgabeordner>/_sources.json`). Fehler je Bild stehen als `ERR` im Log und brechen nicht ab; dagegen brechen `load_picks`, `final_picks`, `sheet.py` und Größenfehler im finish die Stufe ab und schreiben `ANSPRACHE_FAILED: <Typ>: <Meldung>`:
 
 | Stufe | Wirkung | Bogen |
 |---|---|---|
 | `gate` | Wirtin quer/hoch × 2 Seeds: Foto → Edits → Manga | `gate/sheets/gate.png` (3 Spalten: fragend, zufrieden, abwinkend) |
 | `runde1` | alle Gäste × Formate × 8 Seeds, nur Fotos | `r1_{gast}_{fmt}.png` (4 Spalten, Label `s{seed}`) |
 | `runde2 PICKS [OVERRIDES]` | Edits + Manga aus den Picks | `r2_{gast}.png` (3 Spalten, Zeilen n=1..5 × quer/hoch) |
-| `finish PICKS OUT` | Auslieferung (Task 6) | |
+| `finish MANGA_DIR OUT` | Vergrößern auf 1920×1072 (quer) / 1080×1936 (hoch), JPEG q88 optimiert nach `OUT`, Zwischen-PNGs in `<OUT>/../final_png`; danach `python3 tool/comic/gen_portraits_dart.py` (schreibt `lib/features/cafe/cafe_portrait_library.g.dart`) | |
 
-Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `edit`, `manga`, `sheets`), damit Runde 2 keine Gate-Bilder wiederverwendet; der Bogen liegt unter `~/comfy_cafe_ansprache/gate/sheets/gate.png`. Fehlt ein Bild, steht `WARN fehlt: <Label>` im Log und ein dunkler Platzhalter (`_placeholder.png`) hält das Raster ausgerichtet. Schlägt `sheet.py` fehl, bricht die Stufe ab (kein `ANSPRACHE_DONE`).
+Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `edit`, `manga`, `sheets`), damit Runde 2 keine Gate-Bilder wiederverwendet; der Bogen liegt unter `~/comfy_cafe_ansprache/gate/sheets/gate.png`. Fehlt ein Bild, steht `WARN fehlt: <Label>` im Log und ein dunkler Platzhalter (`_placeholder.png`) hält das Raster ausgerichtet. Schlägt `sheet.py` fehl, bricht die Stufe ab (`ANSPRACHE_FAILED`, kein `ANSPRACHE_DONE`).
 
 **Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
 
-**Overrides-Datei:** eine Zeile je Bild, `{gast}_{stimmung}_{n}_{fmt} seed=7 extra="text" force`; erlaubt sind nur `seed`, `extra`, `force`.
+**Overrides-Datei:** eine Zeile je Bild, `{gast}_{stimmung}_{n}_{fmt} seed=7 extra=Text force` (kein Anführungszeichen, der Parser behält sie wörtlich); erlaubt sind nur `seed`, `extra`, `force`; ein unbekannter Schlüssel (Tippfehler) bricht mit Fehler ab. Eine Zeile gilt für den Edit- UND den Manga-Durchgang dieses Namens: `seed=` ändert beide Seeds, `extra=` kommt in beide Prompts.
 
 **Lauf:**
 
     cd tool/comic && python3 cafe_ansprache.py gate        # lokal, wenn ComfyUI läuft
-    ssh pc 'setsid nohup sh ~/f01tool/run_ansprache.sh runde1 > ~/f01tool/ansprache.log 2>&1 </dev/null &'
+    ssh pc 'setsid nohup bash ~/f01tool/run_ansprache.sh runde1 > ~/f01tool/ansprache.log 2>&1 </dev/null &'
 
-Das Skript `run_ansprache.sh` wartet auf `localhost:8188`, startet die Stufe und schreibt am Ende `ANSPRACHE_DONE` (Python) und `RUN_ANSPRACHE_DONE` (Skript).
+Das Skript `run_ansprache.sh` wartet auf `localhost:8188`, startet die Stufe und schreibt am Ende `RUN_ANSPRACHE_EXIT <rc>` und beendet sich mit diesem Wert. Erfolg nur, wenn die GANZE Zeile `ANSPRACHE_DONE` im Log steht (`grep -x ANSPRACHE_DONE`); `ANSPRACHE_FAILED:` oder ein `RUN_ANSPRACHE_EXIT` ungleich 0 heißt Fehler.
 
 ## Regeln und Fallen
 

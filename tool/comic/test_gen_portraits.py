@@ -42,6 +42,11 @@ class GenPortraits(unittest.TestCase):
         self.touch(".gitkeep")
         self.assertIn("cafePortraitFiles = {};", gp.main(self.dir, self.out))
 
+    def test_gen_rejects_foreign_file(self):
+        self.touch("wirtin_fragend_1_quer.png")
+        with self.assertRaisesRegex(SystemExit, "wirtin_fragend_1_quer.png"):
+            gp.main(self.dir, self.out)
+
     def test_gen_rejects_bad_name(self):
         self.touch("wirtin_froh_1_quer.jpg")
         with self.assertRaisesRegex(SystemExit, "wirtin_froh_1_quer.jpg"):

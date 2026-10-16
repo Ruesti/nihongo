@@ -2,6 +2,7 @@
 """Aufruf: cd tool/comic && python3 -m unittest test_ansprache -v"""
 import contextlib
 import io
+import json
 import os
 import shutil
 import tempfile
@@ -35,7 +36,8 @@ class Prompts(unittest.TestCase):
         pos, neg = ca.t2i_prompt("wirtin", "hoch")
         for s in ["looks straight into the camera", "upper half", cm.LAND, cm.CAFE, cm.PHOTO]:
             self.assertIn(s, pos)
-        self.assertTrue(pos.startswith("shotengai_style, "))
+        self.assertTrue(pos.startswith(cm.CAFE))
+        self.assertNotIn("shotengai_style", pos)
         self.assertIn("looking away", neg)
         self.assertIn(cm.NEG, neg)
 
@@ -109,6 +111,10 @@ class PicksAndOverrides(unittest.TestCase):
         self.assertEqual(ca.load_overrides(self.write("wirtin_zufrieden_2_quer seed=5 force")),
                          {"wirtin_zufrieden_2_quer": {"seed": 5, "force": True}})
 
+    def test_load_overrides_rejects_unknown_key(self):
+        with self.assertRaisesRegex(ValueError, "wirtin_zufriden_2_quer"):
+            ca.load_overrides(self.write("wirtin_zufriden_2_quer seed=5"))
+
     def test_load_overrides_rejects_other_fields(self):
         with self.assertRaises(ValueError):
             ca.load_overrides(self.write("wirtin_zufrieden_2_quer denoise=0.5"))
@@ -129,6 +135,7 @@ class FakeRun(unittest.TestCase):
         with open(self.img, "wb") as f:
             f.write(b"png")
         self.prefixes, self.sizes, self.seeds, self.positives, self.inputs = [], [], [], [], []
+        self.encoded = []
         self._saved = (cc.COMFY_INPUT, cc.run)
         cc.COMFY_INPUT = os.path.join(self.d, "input")
         os.makedirs(cc.COMFY_INPUT)
@@ -147,6 +154,7 @@ class FakeRun(unittest.TestCase):
                 node = graph[node["inputs"]["positive"][0]]
             pos = node["inputs"]
             text = pos.get("text", pos.get("prompt"))
+            self.encoded.append(text)  # roh, wie ins Modell kodiert
             # t2i/manga setzen "shotengai_style, " vor den Prompt; für den Vergleich abziehen
             self.positives.append(text[len("shotengai_style, "):] if text.startswith("shotengai_style, ") else text)
             for li in first("LoadImage"):
@@ -168,6 +176,39 @@ class Render(FakeRun):
         ca.render_fragend(["wirtin"], ["quer", "hoch"], [911], out=self.out)
         self.assertEqual(self.prefixes, ["wirtin_fragend_quer_s911", "wirtin_fragend_hoch_s911"])
         self.assertEqual([(g["w"], g["h"]) for g in self.sizes], [(1664, 928), (928, 1664)])
+
+    def test_render_fragend_single_trigger_word(self):
+        ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
+        self.assertEqual(self.encoded[0].count("shotengai_style"), 1)
+        self.assertTrue(self.encoded[0].startswith("shotengai_style, " + cm.CAFE))
+
+    def test_render_edits_changed_source_rerenders(self):
+        other = os.path.join(self.d, "anders.png")
+        with open(other, "wb") as f:
+            f.write(b"png2")
+        pick = "wirtin_quer_2"
+        ca.render_edits({pick: self.img}, out=self.out)
+        ca.render_edits({pick: self.img}, out=self.out)
+        self.assertEqual(len(self.prefixes), 2)  # gleiche Quelle: übersprungen
+        ca.render_edits({pick: other}, out=self.out)
+        self.assertEqual(self.prefixes[2:], ["wirtin_zufrieden_2_quer", "wirtin_abwinkend_2_quer"])
+        with open(self.out / "_sources.json", encoding="utf-8") as f:
+            rec = json.load(f)
+        self.assertEqual(rec, {"wirtin_zufrieden_2_quer": other, "wirtin_abwinkend_2_quer": other})
+        ca.render_edits({pick: other}, out=self.out)
+        self.assertEqual(len(self.prefixes), 4)
+
+    def test_render_manga_changed_source_rerenders(self):
+        other = os.path.join(self.d, "anders.png")
+        with open(other, "wb") as f:
+            f.write(b"png2")
+        name = "wirtin_fragend_2_quer"
+        ca.render_manga({name: self.img}, out=self.out)
+        ca.render_manga({name: self.img}, out=self.out)
+        self.assertEqual(len(self.prefixes), 1)
+        ca.render_manga({name: other}, out=self.out)
+        self.assertEqual(len(self.prefixes), 2)
+        self.assertEqual(ca._load_sources(self.out)[name], other)
 
     def test_render_fragend_skips_existing(self):
         ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
@@ -341,6 +382,24 @@ class Stages(FakeRun):
                          [f"{m} {n} {f}" for n in range(1, 6) for f in ("quer", "hoch")
                           for m in ("fragend", "zufrieden", "abwinkend")])
         self.assertIn("manga", str(items[0][1]))
+
+    def test_runde2_overrides_reach_edits(self):
+        ov = os.path.join(self.d, "ov.txt")
+        with open(ov, "w", encoding="utf-8") as f:
+            f.write("wirtin_zufrieden_1_quer seed=77\n")
+        ca.runde2(self.picks_two_guests, ov)
+        i = self.prefixes.index("wirtin_zufrieden_1_quer")
+        self.assertEqual(self.seeds[i], 77)
+        j = self.prefixes.index("wirtin_abwinkend_1_quer")
+        self.assertEqual(self.seeds[j], 21)
+
+    def test_cli_failure_marker(self):
+        with self.assertRaises(SystemExit) as cm_:
+            ca.main(["runde2", "/nonexistent/picks.txt"])
+        self.assertEqual(cm_.exception.code, 1)
+        out = self.log.getvalue()
+        self.assertIn("ANSPRACHE_FAILED:", out)
+        self.assertNotIn("ANSPRACHE_DONE", out)
 
     def test_cli_unknown_stage(self):
         with self.assertRaises(SystemExit):

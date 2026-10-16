@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Café-Ansprache-Bilder: Prompt-Tabelle, Stimmungen und Dateinamen.
+"""Café-Ansprache-Bilder: 60 Gästeporträts (4 Gäste x 3 Stimmungen x 5 Varianten, je in zwei Formaten).
 
-Datenschicht für die 60 Gästeporträts (4 Gäste x 3 Stimmungen x 5 Varianten,
-je in zwei Formaten). Kein ComfyUI-Aufruf, nur Texte und Namen.
+Inhalt: Datenschicht (Gäste, Stimmungen, Dateinamen, Prompts), Picks- und Override-Dateien,
+Render-Stufen über ComfyUI (Foto fragend, Edits zufrieden/abwinkend, Manga-Durchgang), Kontaktbögen,
+die Stufen gate/runde1/runde2, finish (Vergrößern + JPEG) und die Kommandozeile `main`.
 Spec: docs/superpowers/specs/2026-10-15-cafe-ansprache-design.md §2.
+Aufruf: python3 cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish MANGA_DIR OUT
 """
 import glob
+import json
 import os
 import shutil
 import subprocess
 import sys
+import traceback
 from pathlib import Path
 
 import comfy_client as cc
@@ -106,7 +110,8 @@ def t2i_prompt(gast, fmt):
     if fmt not in FORMATS:
         raise ValueError(f"unbekanntes Format: {fmt!r}")
     g = GUESTS[gast]
-    pos = ("shotengai_style, " + CAFE + ", " + g["figure"] + ", " + g["place"] + ", "
+    # der Auslöser "shotengai_style, " kommt von cc.t2i_graph selbst
+    pos = (CAFE + ", " + g["figure"] + ", " + g["place"] + ", "
            + _KERN + ", " + g["note"] + _FORMAT_SATZ[fmt] + PHOTO)
     return pos, NEG + _NEG_EXTRA
 
@@ -159,11 +164,41 @@ def cells_missing(picks):
 
 def load_overrides(path):
     """Nachbesserungen je Bild; Schlüssel = voller Name `{gast}_{stimmung}_{n}_{fmt}`."""
-    return folge01_manga.load_overrides(path, allowed={"seed", "extra", "force"})
+    ov = folge01_manga.load_overrides(path, allowed={"seed", "extra", "force"})
+    valid = set(all_names())
+    for key in ov:
+        if key not in valid:
+            raise ValueError("Override-Schlüssel unbekannt: %r" % key)
+    return ov
 
 
 def _skip_existing(prefix, out):
     return bool(glob.glob(os.path.join(glob.escape(str(out)), glob.escape(prefix) + "_*")))
+
+
+def _sources_path(out):
+    return Path(out) / "_sources.json"
+
+
+def _load_sources(out):
+    try:
+        with open(_sources_path(out), encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def _record_source(out, name, src):
+    """Merkt sich je Ausgabename den absoluten Quellpfad (Quellwechsel erzwingt Neurender)."""
+    data = _load_sources(out)
+    data[name] = os.path.abspath(str(src))
+    Path(out).mkdir(parents=True, exist_ok=True)
+    _sources_path(out).write_text(json.dumps(data, indent=1, sort_keys=True), encoding="utf-8")
+
+
+def _source_changed(out, name, src):
+    old = _load_sources(out).get(name)
+    return old is not None and old != os.path.abspath(str(src))
 
 
 def _with_extra(text, opts):
@@ -220,7 +255,10 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
             shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
             graph = cc.edit_graph(input_name, _with_extra(edit_prompt(gast, mood), opts),
                                   opts.get("seed", seed), prefix, negative=NEG)
-            return cc.run(graph, prefix, out)
+            got = cc.run(graph, prefix, out)
+            if got:
+                _record_source(out, prefix, src)
+            return got
         return job
     jobs = []
     for key, src in picks.items():
@@ -232,6 +270,8 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
         for mood in ("zufrieden", "abwinkend"):
             prefix = name_for(gast, mood, int(n), fmt)
             opts = overrides.get(prefix, {})
+            if _source_changed(out, prefix, src):
+                opts = {**opts, "force": True}
             if folge01_manga.should_skip(prefix, str(out), opts):
                 print("SKIP", prefix, flush=True)
                 continue
@@ -249,7 +289,10 @@ def render_manga(sources, out=ROOT / "manga", overrides=None):
             shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
             pos, neg = manga_prompt(gast)
             graph = cc.manga_graph(input_name, _with_extra(pos, opts), neg, opts.get("seed", 831), name)
-            return cc.run(graph, name, out)
+            got = cc.run(graph, name, out)
+            if got:
+                _record_source(out, name, src)
+            return got
         return job
     jobs = []
     for name, src in sources.items():
@@ -257,6 +300,8 @@ def render_manga(sources, out=ROOT / "manga", overrides=None):
             print("ERR %s: %r" % (name, ValueError("unbekannter Gast")), flush=True)
             continue
         opts = overrides.get(name, {})
+        if _source_changed(out, name, src):
+            opts = {**opts, "force": True}
         if folge01_manga.should_skip(name, str(out), opts):
             print("SKIP", name, flush=True)
             continue
@@ -430,8 +475,11 @@ def finish(sources, out=ROOT / "final"):
         shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
         got = cc.run(cc.upscale_graph(input_name, "fin_" + name, w, h), "fin_" + name, out.parent / "final_png")
         with Image.open(got[0]) as im:
-            assert im.size == (w, h), "%s: %s statt %s" % (name, im.size, (w, h))
-            im.convert("RGB").save(dest, "JPEG", quality=88, optimize=True)
+            if im.size != (w, h):
+                raise AssertionError("%s: %s statt %s" % (name, im.size, (w, h)))
+            tmp = dest.with_suffix(".tmp")  # erst ganz schreiben, dann ersetzen
+            im.convert("RGB").save(tmp, "JPEG", quality=88, optimize=True)
+            os.replace(tmp, dest)
         print("OK", name, (w, h), flush=True)
         done.append(dest)
     return done
@@ -440,16 +488,22 @@ def finish(sources, out=ROOT / "final"):
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     stage, args = (argv[0] if argv else ""), argv[1:]
-    if stage == "gate":
-        gate()
-    elif stage == "runde1":
-        runde1()
-    elif stage == "runde2" and 1 <= len(args) <= 2:
-        runde2(*args)
-    elif stage == "finish" and len(args) == 2:
-        finish(final_picks(Path(args[0]).expanduser()), out=Path(args[1]).expanduser())
-    else:
-        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish PICKS OUT")
+    if stage not in ("gate", "runde1", "runde2", "finish") or (
+            stage == "runde2" and not 1 <= len(args) <= 2) or (stage == "finish" and len(args) != 2):
+        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish MANGA_DIR OUT")
+    try:
+        if stage == "gate":
+            gate()
+        elif stage == "runde1":
+            runde1()
+        elif stage == "runde2":
+            runde2(*args)
+        else:
+            finish(final_picks(Path(args[0]).expanduser()), out=Path(args[1]).expanduser())
+    except Exception as e:  # noqa: BLE001
+        print("ANSPRACHE_FAILED: %s: %s" % (type(e).__name__, e), flush=True)
+        traceback.print_exc()
+        raise SystemExit(1)
     print("ANSPRACHE_DONE", flush=True)
 
 
