@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/db/learning_db.dart';
 import '../../../core/db/lexeme_lookup.dart';
+import '../../../core/i18n/concept_meaning.dart';
 import '../../../core/ladder/ladder_review.dart';
 import '../../../core/pipeline/knowledge_bridge.dart';
 import '../../../core/srs/scheduler.dart';
@@ -9,10 +10,14 @@ import '../../story/episode.dart';
 import '../../story/speak_evaluator.dart';
 import '../bubble_overlay.dart';
 import '../cafe_debrief.dart';
+import '../cafe_occupancy.dart';
+import '../cafe_overlay.dart';
 import '../cafe_scenes.dart';
 import '../cafe_summary.dart';
 import '../cafe_turn.dart';
+import '../cafe_portraits.dart';
 import '../cafe_visit.dart';
+import '../cafe_voice.dart';
 import '../kana_keyboard.dart';
 import '../word_decomposition.dart';
 import 'station_frame.dart';
@@ -24,16 +29,26 @@ class _Word {
   final LearnItem learn;
   final String writtenForm;
   final String reading;
+  final String meaning; // deutsche Bedeutung (Aufgabe Bedeutung → Sprechen)
   final StoryPanel? panel;
   final StoryBubble? bubble;
   final String surface;
-  const _Word(this.itemId, this.learn, this.writtenForm, this.reading,
-      this.panel, this.bubble, this.surface);
+  const _Word(
+    this.itemId,
+    this.learn,
+    this.writtenForm,
+    this.reading,
+    this.meaning,
+    this.panel,
+    this.bubble,
+    this.surface,
+  );
 }
 
-/// Station 2 „Abfrage" (Spec §3.2). Gerade Position: Hören→Schreiben auf der
-/// Kana-Tastatur; ungerade: Sehen→Sprechen mit ausgeblendetem Wort in der
-/// Blase — ohne Panel/Blase für das Wort ebenfalls Hören→Schreiben. Zwei Versuche; Bewertung 1. Versuch richtig good, 2. hard, sonst
+/// Station 2 „Abfrage" (Spec §3.2, §4). Gerade Position: Hören→Schreiben auf
+/// der Kana-Tastatur; ungerade: Bedeutung→Sprechen — die deutsche Bedeutung
+/// steht da, das Kind sagt das Wort; das Panel mit ausgeblendetem Wort kommt
+/// nur dazu, wenn es eins gibt. Zwei Versuche; Bewertung 1. Versuch richtig good, 2. hard, sonst
 /// again — genau ein `LadderReview.submit` je Wort (Spec §7). Keine Auswahl,
 /// kein Selbsteinschätzen (I1).
 class SchulmaedchenStation extends StatefulWidget {
@@ -52,6 +67,12 @@ class SchulmaedchenStation extends StatefulWidget {
   final VoidCallback onLater;
   final double threshold;
 
+  /// Stimme der Schülerin (Sprechblase); standardmäßig stumm.
+  final CafeVoice voice;
+
+  /// Schlüssel dieses Besuchs: wählt die Porträt-Variante je Wort.
+  final String visitKey;
+
   const SchulmaedchenStation({
     super.key,
     required this.db,
@@ -68,6 +89,8 @@ class SchulmaedchenStation extends StatefulWidget {
     required this.onDone,
     required this.onLater,
     this.threshold = 0.6,
+    this.voice = const CafeVoice.silent(),
+    this.visitKey = '',
   });
 
   @override
@@ -75,8 +98,10 @@ class SchulmaedchenStation extends StatefulWidget {
 }
 
 class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
-  late final LadderReview _ladder =
-      LadderReview(widget.db, bridge: widget.bridge);
+  late final LadderReview _ladder = LadderReview(
+    widget.db,
+    bridge: widget.bridge,
+  );
   int _index = 0;
   _Word? _word;
   String _typed = '';
@@ -85,15 +110,19 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
   String? _feedback;
   bool _showTiles = false;
   bool _writeInstead = false; // Sehen→Sprechen ohne Mikro: Tastatur statt Mikro
+  bool _showKana = false; // nach falschem 1. Versuch im Sprechen: Kana zeigen
+  bool _lastCorrect = false; // letzte Bewertung richtig (Stimmung)
+  // Zeigt die Blase gerade eine Rückmeldung zum Versuch (Fehlversuch,
+  // „nichts gehört")? „Dann schreib es." ist keine Bewertung.
+  bool _evaluationShown = false;
+  int _variant = 1; // Porträtnummer des Worts, über Versuche stabil
   final _records = <VisitRecord>[];
 
   _Kind _kind = _Kind.hearWrite;
 
-  /// Je Wort entschieden: ungerade Position mit Panel und Blase →
-  /// Sehen→Sprechen, sonst Hören→Schreiben.
-  _Kind _kindFor(_Word w) => _index.isOdd && w.panel != null && w.bubble != null
-      ? _Kind.seeSpeak
-      : _Kind.hearWrite;
+  /// Je Position entschieden: ungerade → Bedeutung→Sprechen (das Panel nur,
+  /// wenn es eins gibt), gerade → Hören→Schreiben.
+  _Kind _kindFor(_Word w) => _index.isOdd ? _Kind.seeSpeak : _Kind.hearWrite;
 
   @override
   void initState() {
@@ -104,7 +133,9 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
 
   Future<_Word?> _load(String id) async {
     final found = await loadLexemeWithConcept(widget.db, id);
-    final learn = await widget.db.getLearnItem('${widget.languageId}:lexeme:$id');
+    final learn = await widget.db.getLearnItem(
+      '${widget.languageId}:lexeme:$id',
+    );
     if (found == null || learn == null) return null;
     final ep = widget.episode ?? episodeIntroducing(widget.episodes, id);
     final panel = ep == null ? null : firstAppearancePanel(ep, id);
@@ -122,15 +153,51 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
         if (bubble != null) break;
       }
     }
-    return _Word(id, learn, found.lexeme.writtenForm, found.lexeme.reading,
-        panel, bubble, surface);
+    return _Word(
+      id,
+      learn,
+      found.lexeme.writtenForm,
+      found.lexeme.reading,
+      meaningForConcept(found.concept.id, fallback: found.concept.glossKey),
+      panel,
+      bubble,
+      surface,
+    );
   }
 
-  Future<void> _say(String text) async {
+  /// Liest vor; true nur, wenn das Wort zu Ende gesprochen wurde.
+  Future<bool> _say(String text) async {
     try {
-      await widget.speak(text);
+      return await widget.speak(text);
     } catch (e) {
       debugPrint('schulmaedchen: Vorlesen fehlgeschlagen: $e');
+      return false;
+    }
+  }
+
+  /// Wortaudio erst nach dem nächsten Frame anfragen: dann hat der Rahmen
+  /// die neue Zeile schon in die Warteschlange gestellt — erst die Zeile,
+  /// dann das Wort.
+  void _afterLine(Future<void> Function() play) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) play();
+    });
+  }
+
+  /// Lädt die Bilder der übrigen Stimmungen vor (kein Leerbild beim Wechsel).
+  void _precacheMoods() {
+    try {
+      final format = MediaQuery.orientationOf(context) == Orientation.portrait
+          ? PanelFormat.portrait
+          : PanelFormat.landscape;
+      for (final mood in const [CafeMood.zufrieden, CafeMood.abwinkend]) {
+        final choice = resolvePortrait(
+            CafeGuest.schulkind, mood, _variant, format, widget.light);
+        if (!choice.isPortrait) continue;
+        precacheImage(AssetImage(choice.asset), context).catchError((_) {});
+      }
+    } catch (e) {
+      debugPrint('schulmaedchen: Vorladen fehlgeschlagen: $e');
     }
   }
 
@@ -153,9 +220,21 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
           _feedback = null;
           _showTiles = false;
           _writeInstead = false;
+          _showKana = false;
+          _lastCorrect = false;
+          _evaluationShown = false;
+          _variant = portraitVariant(
+            widget.itemIds[_index],
+            widget.visitKey,
+            5,
+          );
           _kind = _kindFor(w!);
         });
-        if (_kind == _Kind.hearWrite) await _say(w.reading);
+        _precacheMoods();
+        if (_kind == _Kind.hearWrite) {
+          final reading = w.reading;
+          _afterLine(() => _say(reading));
+        }
         return;
       }
       _index++;
@@ -186,15 +265,24 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     _attempts++;
     if (correct) {
       final result = _attempts == 1 ? ReviewResult.good : ReviewResult.hard;
-      final res = await _ladder.submit(w.learn, result,
-          languageCode: widget.languageId.replaceFirst('lang_', ''));
-      _records.add(VisitRecord(
-          itemId: w.itemId, writtenForm: w.writtenForm,
-          outcome: CafeOutcome.correct, firstTry: _attempts == 1,
-          dueAt: res.scheduleOutput.dueAt));
+      final res = await _ladder.submit(
+        w.learn,
+        result,
+        languageCode: widget.languageId.replaceFirst('lang_', ''),
+      );
+      _records.add(
+        VisitRecord(
+          itemId: w.itemId,
+          writtenForm: w.writtenForm,
+          outcome: CafeOutcome.correct,
+          firstTry: _attempts == 1,
+          dueAt: res.scheduleOutput.dueAt,
+        ),
+      );
       if (!mounted) return;
       setState(() {
         _graded = true;
+        _lastCorrect = true;
         _feedback = _attempts == 1 ? 'Ha, gewusst!' : 'Siehst du, geht doch.';
       });
       return;
@@ -202,31 +290,56 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     if (_attempts == 1) {
       if (!mounted) return;
       setState(() {
-        _feedback = 'Nee. Nochmal — aber richtig diesmal.';
-        // Zerlegung nur beim Hören→Schreiben; Sehen→Sprechen: nur vorsagen.
+        _feedback = _kind == _Kind.seeSpeak
+            ? 'Nee. Hör zu: ${w.reading}. Jetzt du.'
+            : 'Nee. Nochmal — aber richtig diesmal.';
+        // Zerlegung nur beim Hören→Schreiben; Sehen→Sprechen: Kana zeigen
+        // und vorsagen.
         _showTiles = _kind == _Kind.hearWrite;
+        _showKana = _kind == _Kind.seeSpeak;
         _typed = '';
+        _evaluationShown = true;
       });
-      await _say(w.reading);
+      if (_kind == _Kind.seeSpeak) {
+        // Die Zeile sagt die Lesung schon (ja-Stück); nur ohne Stimme
+        // liest das Wortaudio sie vor.
+        _afterLine(() async {
+          if (await widget.voice.isActive()) return;
+          // Inzwischen das Mikro angetippt? Dann nicht hineinsprechen.
+          if (!mounted || _listening) return;
+          await _say(w.reading);
+        });
+      } else {
+        _afterLine(() => _say(w.reading));
+      }
       return;
     }
-    final res = await _ladder.submit(w.learn, ReviewResult.again,
-        languageCode: widget.languageId.replaceFirst('lang_', ''));
-    _records.add(VisitRecord(
-        itemId: w.itemId, writtenForm: w.writtenForm,
-        outcome: CafeOutcome.wrong, firstTry: false,
-        dueAt: res.scheduleOutput.dueAt));
+    final res = await _ladder.submit(
+      w.learn,
+      ReviewResult.again,
+      languageCode: widget.languageId.replaceFirst('lang_', ''),
+    );
+    _records.add(
+      VisitRecord(
+        itemId: w.itemId,
+        writtenForm: w.writtenForm,
+        outcome: CafeOutcome.wrong,
+        firstTry: false,
+        dueAt: res.scheduleOutput.dueAt,
+      ),
+    );
     if (!mounted) return;
     setState(() {
       _graded = true;
+      _lastCorrect = false;
       _feedback = 'Das heißt ${w.reading}. Kommt wieder dran.';
     });
   }
 
   void _onTyped(String v) => setState(() {
-        _typed = v;
-        if (v.isNotEmpty) _showTiles = false; // zweiter Versuch ohne Krücke
-      });
+    _typed = v;
+    if (v.isNotEmpty) _showTiles = false; // zweiter Versuch ohne Krücke
+  });
 
   void _submitTyped() {
     final w = _word!;
@@ -239,8 +352,10 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     double score;
     try {
       final w = _word!;
-      score = await widget.evaluator
-          .evaluate(speakTarget(w.reading, w.writtenForm, w.surface));
+      await widget.voice.stop(); // Mikro darf die Stimme nicht hören
+      score = await widget.evaluator.evaluate(
+        speakTarget(w.reading, w.writtenForm, w.surface),
+      );
     } catch (e) {
       debugPrint('schulmaedchen: Erkennung fehlgeschlagen: $e');
       if (!mounted) return;
@@ -248,6 +363,8 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       setState(() {
         _listening = false;
         _writeInstead = true;
+        _evaluationShown = false;
+        _feedback = 'Dann schreib es.';
       });
       return;
     }
@@ -257,6 +374,7 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       setState(() {
         _listening = false;
         _writeInstead = true;
+        _evaluationShown = true; // Spec: abwinkend
         _feedback = 'Ich hab nichts gehört. Schreib es lieber.';
       });
       return;
@@ -272,6 +390,26 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     _loadCurrent();
   }
 
+  /// Stimmung: fragend, solange eine Antwort erwartet wird (Zuhören, Tippen,
+  /// auch nach „Dann schreib es."); nach der Bewertung zufrieden oder
+  /// abwinkend; nach einem Fehlversuch oder „nichts gehört" abwinkend, bis
+  /// wieder getippt wird.
+  CafeMood get _mood {
+    if (_listening) return CafeMood.fragend;
+    if (_graded) return _lastCorrect ? CafeMood.zufrieden : CafeMood.abwinkend;
+    if (_evaluationShown) {
+      return _typed.isNotEmpty ? CafeMood.fragend : CafeMood.abwinkend;
+    }
+    return CafeMood.fragend;
+  }
+
+  /// Große Schrift auf der dunklen Fläche: der Stil kommt aus dem hellen
+  /// App-Theme (dieser Kontext liegt über der Fläche) und brächte dunkle
+  /// Tinte mit — deshalb ausdrücklich weiß.
+  TextStyle _onOverlay(BuildContext context) =>
+      (Theme.of(context).textTheme.headlineMedium ?? const TextStyle())
+          .copyWith(color: Colors.white);
+
   @override
   Widget build(BuildContext context) {
     final w = _word;
@@ -280,10 +418,17 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final hearWrite = _kind == _Kind.hearWrite;
+    // INV-9: die Aufgabe nennt die bekannte Bedeutung, nie die Lösung.
+    final aufgabe = hearWrite
+        ? 'Hör zu und schreib es. Schnell!'
+        : 'Wie heißt ‚${w.meaning}‘? Sag\'s.';
     return StationFrame(
       station: CafeStation.schulmaedchen,
       light: widget.light,
-      voiceLine: hearWrite ? 'Hör zu und schreib es. Schnell!' : 'Was steht da? Sag es. Los.',
+      mood: _mood,
+      variant: _variant,
+      line: _feedback ?? aufgabe,
+      voice: widget.voice,
       onNext: _graded ? _next : null,
       onLater: widget.onLater,
       child: Padding(
@@ -312,15 +457,30 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                 ),
               ],
             ] else ...[
+              Text(
+                w.meaning,
+                key: const ValueKey('schul-meaning'),
+                textAlign: TextAlign.center,
+                style: _onOverlay(context),
+              ),
+              if (_showKana && !_writeInstead)
+                Text(
+                  w.reading,
+                  key: const ValueKey('schul-kana'),
+                  textAlign: TextAlign.center,
+                  style: _onOverlay(context),
+                ),
               if (w.panel != null && w.bubble != null)
-                // Querformat in voller Breite: das ganze Panel, Blase passgenau.
-                PanelWithBubble(
-                  key: const ValueKey('schul-panel'),
-                  panel: w.panel!,
-                  bubble: w.bubble!,
-                  targetSurface: w.surface,
-                  mode: BubbleOverlayMode.blank,
-                  format: PanelFormat.landscape,
+                // Miniatur: Seitenverhältnis fest, höchstens 40 % der Fläche.
+                CafeThumbnail(
+                  child: PanelWithBubble(
+                    key: const ValueKey('schul-panel'),
+                    panel: w.panel!,
+                    bubble: w.bubble!,
+                    targetSurface: w.surface,
+                    mode: BubbleOverlayMode.blank,
+                    format: PanelFormat.landscape,
+                  ),
                 ),
               const SizedBox(height: 8),
               // Wrap statt Row: auf schmalen Geräten rutscht „lieber
@@ -335,12 +495,18 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                     key: const ValueKey('schul-mic'),
                     icon: const Icon(Icons.mic),
                     label: const Text('sagen'),
-                    onPressed: _graded || _writeInstead || _listening ? null : _attemptSpeak,
+                    onPressed: _graded || _writeInstead || _listening
+                        ? null
+                        : _attemptSpeak,
                   ),
                   if (!_graded && !_writeInstead)
                     TextButton(
                       key: const ValueKey('schul-write-instead'),
-                      onPressed: () => setState(() => _writeInstead = true),
+                      onPressed: () => setState(() {
+                        _writeInstead = true;
+                        _evaluationShown = false; // keine Bewertung
+                        _feedback = 'Dann schreib es.'; // Lesung nicht abschreiben (INV-9)
+                      }),
                       child: const Text('lieber schreiben'),
                     ),
                 ],
@@ -363,11 +529,6 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                   for (final u in decompose(w.reading))
                     Chip(label: Text('${u.text} ${u.romaji}')),
                 ],
-              ),
-            if (_feedback != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(_feedback!, key: const ValueKey('schul-feedback')),
               ),
           ],
         ),

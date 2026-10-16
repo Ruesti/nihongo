@@ -4,9 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/app/knowledge_providers.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/features/cafe/cafe_route.dart';
+import 'package:nihongo_app/features/cafe/cafe_visit_screen.dart';
+import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/story/episode_registry.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'fakes/fake_voice.dart';
 
 void main() {
   late LearningDb db;
@@ -68,5 +72,21 @@ void main() {
     await tester.pumpWidget(app(const CafeRoute()));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('cafe-visit-empty')), findsOneWidget);
+  });
+
+  testWidgets('die Route übergibt dem Besuch eine echte Café-Stimme',
+      (tester) async {
+    final voice = CafeVoice(source: FakeVoiceSource(), isEnabled: () async => true);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        learningDbProvider.overrideWithValue(db),
+        cafeVoiceProvider.overrideWithValue(voice),
+      ],
+      child: const MaterialApp(home: CafeRoute()),
+    ));
+    await tester.pumpAndSettle();
+    final screen =
+        tester.widget<CafeVisitScreen>(find.byType(CafeVisitScreen));
+    expect(identical(screen.voice, voice), isTrue);
   });
 }
