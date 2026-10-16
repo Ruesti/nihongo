@@ -203,6 +203,57 @@ class Render(unittest.TestCase):
         self.assertEqual(ca.fragend_sources({"wirtin_quer_2": self.img}),
                          {"wirtin_fragend_2_quer": self.img})
 
+    def test_prompts_and_default_seeds(self):
+        ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
+        ca.render_edits({"wirtin_quer_2": self.img}, out=self.out)
+        ca.render_manga({"wirtin_fragend_2_quer": self.img}, out=self.out)
+        self.assertEqual(self.positives[0], ca.t2i_prompt("wirtin", "quer")[0])
+        self.assertEqual(self.positives[1], ca.edit_prompt("wirtin", "zufrieden"))
+        self.assertEqual(self.positives[2], ca.edit_prompt("wirtin", "abwinkend"))
+        self.assertEqual(self.seeds, [911, 21, 21, 831])
+
+    def test_extra_in_prompts(self):
+        ca.render_edits({"wirtin_quer_2": self.img}, out=self.out,
+                        overrides={"wirtin_zufrieden_2_quer": {"extra": "eyes open"}})
+        self.assertEqual(self.positives[0], ca.edit_prompt("wirtin", "zufrieden") + ", eyes open")
+        self.assertEqual(self.positives[1], ca.edit_prompt("wirtin", "abwinkend"))
+        ca.render_manga({"wirtin_fragend_2_quer": self.img}, out=self.out,
+                        overrides={"wirtin_fragend_2_quer": {"extra": "soft light"}})
+        self.assertEqual(self.positives[2], ca.manga_prompt("wirtin")[0] + ", soft light")
+
+    def test_manga_seed_override_and_force(self):
+        src = {"wirtin_fragend_2_quer": self.img}
+        ca.render_manga(src, out=self.out)
+        ca.render_manga(src, out=self.out)
+        self.assertEqual(len(self.prefixes), 1)
+        ca.render_manga(src, out=self.out, overrides={"wirtin_fragend_2_quer": {"seed": 7, "force": True}})
+        self.assertEqual(len(self.prefixes), 2)
+        self.assertEqual(self.seeds[-1], 7)
+
+    def test_bad_keys_log_err_and_continue(self):
+        picks = {"wirtin_quer_6": self.img, "wirtin_hoch_1": self.img}
+        ca.render_edits(picks, out=self.out)
+        self.assertEqual(self.prefixes, ["wirtin_zufrieden_1_hoch", "wirtin_abwinkend_1_hoch"])
+        self.assertEqual(self.log.getvalue().count("ERR wirtin_quer_6"), 1)
+        self.assertEqual(ca.fragend_sources(picks), {"wirtin_fragend_1_hoch": self.img})
+        self.assertEqual(self.log.getvalue().count("ERR wirtin_quer_6"), 2)
+        del self.prefixes[:]
+        ca.render_manga({"unbekannt_fragend_1_quer": self.img, "wirtin_fragend_1_quer": self.img}, out=self.out)
+        self.assertEqual(self.prefixes, ["wirtin_fragend_1_quer"])
+        self.assertIn("ERR unbekannt_fragend_1_quer", self.log.getvalue())
+
+    def test_edit_outputs_newest_and_tie_break(self):
+        self.out.mkdir(parents=True, exist_ok=True)
+        a, b, c = (self.out / n for n in ("wirtin_zufrieden_2_quer_a_00001_.png",
+                                          "wirtin_zufrieden_2_quer_b_00001_.png",
+                                          "wirtin_zufrieden_2_quer_c_00001_.png"))
+        for f, t in ((a, 200), (b, 100), (c, 100)):
+            f.write_bytes(b"x")
+            os.utime(f, (t, t))
+        self.assertEqual(ca.edit_outputs(self.out), {"wirtin_zufrieden_2_quer": str(a)})
+        os.utime(a, (100, 100))
+        self.assertEqual(ca.edit_outputs(self.out), {"wirtin_zufrieden_2_quer": str(c)})
+
 
 if __name__ == "__main__":
     unittest.main()

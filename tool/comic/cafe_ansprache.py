@@ -179,6 +179,16 @@ def _run_all(jobs):
     return done
 
 
+def _parse_key(key):
+    """`{gast}_{fmt}_{n}` -> (gast, fmt, n); ValueError bei ungültigem Schlüssel."""
+    parts = key.split("_")
+    if len(parts) != 3 or not parts[2].isdigit():
+        raise ValueError("Schlüssel ungültig (erwartet {gast}_{fmt}_{n}): %r" % key)
+    gast, fmt, n = parts[0], parts[1], int(parts[2])
+    name_for(gast, "fragend", n, fmt)  # prüft Gast, Format und Nummer
+    return gast, fmt, n
+
+
 def render_fragend(guests, fmts, seeds, out=ROOT / "foto"):
     """Runde 1: Text-zu-Bild je Gast/Format/Seed; vorhandene Ausgaben werden übersprungen."""
     def make(gast, fmt, seed, prefix):
@@ -211,7 +221,11 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
         return job
     jobs = []
     for key, src in picks.items():
-        gast, fmt, n = key.split("_")
+        try:
+            gast, fmt, n = _parse_key(key)
+        except ValueError as e:
+            print("ERR %s: %r" % (key, e), flush=True)
+            continue
         for mood in ("zufrieden", "abwinkend"):
             prefix = name_for(gast, mood, int(n), fmt)
             opts = overrides.get(prefix, {})
@@ -236,6 +250,9 @@ def render_manga(sources, out=ROOT / "manga", overrides=None):
         return job
     jobs = []
     for name, src in sources.items():
+        if name.split("_")[0] not in GUESTS:
+            print("ERR %s: %r" % (name, ValueError("unbekannter Gast")), flush=True)
+            continue
         opts = overrides.get(name, {})
         if folge01_manga.should_skip(name, str(out), opts):
             print("SKIP", name, flush=True)
@@ -250,7 +267,8 @@ def edit_outputs(out=ROOT / "edit"):
     for p in Path(out).glob("*.png"):
         for name in all_names():
             if p.name.startswith(name + "_"):
-                if name not in best or p.stat().st_mtime >= best[name].stat().st_mtime:
+                # neueste mtime gewinnt, bei Gleichstand der lexikalisch größere Name
+                if name not in best or (p.stat().st_mtime, p.name) > (best[name].stat().st_mtime, best[name].name):
                     best[name] = p
     return {k: str(v) for k, v in sorted(best.items())}
 
@@ -259,6 +277,10 @@ def fragend_sources(picks):
     """Picks `{gast}_{fmt}_{n}` -> Manga-Quellen mit Schlüssel `name_for(gast, "fragend", n, fmt)`."""
     out = {}
     for key, path in picks.items():
-        gast, fmt, n = key.split("_")
-        out[name_for(gast, "fragend", int(n), fmt)] = path
+        try:
+            gast, fmt, n = _parse_key(key)
+        except ValueError as e:
+            print("ERR %s: %r" % (key, e), flush=True)
+            continue
+        out[name_for(gast, "fragend", n, fmt)] = path
     return out
