@@ -49,9 +49,10 @@ PanelFormat _other(PanelFormat f) => f == PanelFormat.landscape
     ? PanelFormat.portrait
     : PanelFormat.landscape;
 
-/// Rückfallkette (gleiche Nummer): gewünscht → gewünscht im anderen Format →
-/// fragend → fragend im anderen Format → null. Die Stimmung bleibt also vor
-/// dem Format erhalten; ein anderes Format wird mit Rand gezeigt.
+/// Rückfallkette (gleiche Nummer): gewünscht → fragend (gleiches Format) →
+/// gewünscht im anderen Format → fragend im anderen Format → null. Ein
+/// richtig formatiertes Bild schlägt ein richtig reagierendes; ein anderes
+/// Format wird mit Rand gezeigt.
 PortraitChoice? resolvePortraitIn(Map<String, Map<String, List<int>>> files,
     CafeGuest g, CafeMood m, int n, PanelFormat f) {
   bool has(CafeMood mood, PanelFormat fmt) =>
@@ -62,8 +63,8 @@ PortraitChoice? resolvePortraitIn(Map<String, Map<String, List<int>>> files,
 
   final o = _other(f);
   if (has(m, f)) return pick(m, f, false);
-  if (has(m, o)) return pick(m, o, true);
   if (has(CafeMood.fragend, f)) return pick(CafeMood.fragend, f, false);
+  if (has(m, o)) return pick(m, o, true);
   if (has(CafeMood.fragend, o)) return pick(CafeMood.fragend, o, true);
   return null;
 }
