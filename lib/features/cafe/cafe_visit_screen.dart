@@ -3,11 +3,16 @@ import 'package:flutter/material.dart';
 import '../../core/db/learning_db.dart';
 import '../../core/pipeline/knowledge_bridge.dart';
 import '../story/episode.dart';
+import '../story/reader_system_ui.dart';
 import '../story/speak_evaluator.dart';
 import '../story/story_progress_store.dart';
+import 'cafe_occupancy.dart';
+import 'cafe_overlay.dart';
+import 'cafe_portraits.dart';
 import 'cafe_scenes.dart';
 import 'cafe_summary.dart';
 import 'cafe_visit.dart';
+import 'cafe_voice.dart';
 import 'stations/schulmaedchen_station.dart';
 import 'stations/station_frame.dart';
 import 'stations/wirtin_station.dart';
@@ -30,6 +35,12 @@ class CafeVisitScreen extends StatefulWidget {
   final CafeLight? light;
   final Map<String, String> grammarNotes;
 
+  /// Vollbild-Steuerung (in Tests ersetzbar).
+  final ReaderSystemUi systemUi;
+
+  /// Stimme der Gäste; Standard: stumm.
+  final CafeVoice voice;
+
   const CafeVisitScreen.afterEpisode({
     super.key,
     required this.db,
@@ -42,6 +53,8 @@ class CafeVisitScreen extends StatefulWidget {
     required this.evaluator,
     this.light,
     this.grammarNotes = const {},
+    this.systemUi = const SystemChromeReaderUi(),
+    this.voice = const CafeVoice.silent(),
   }) : episodes = const [];
 
   const CafeVisitScreen.free({
@@ -56,6 +69,8 @@ class CafeVisitScreen extends StatefulWidget {
     required this.evaluator,
     this.light,
     this.grammarNotes = const {},
+    this.systemUi = const SystemChromeReaderUi(),
+    this.voice = const CafeVoice.silent(),
   }) : episode = null;
 
   String get visitId => episode?.id ?? 'free';
@@ -77,7 +92,20 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
   void initState() {
     super.initState();
     _light = widget.light ?? lightFor(DateTime.now());
+    widget.systemUi.enterImmersive();
     _load();
+  }
+
+  @override
+  void dispose() {
+    // Aufräumen darf nie werfen; Fehler der Stimme/Systemleiste sind egal.
+    try {
+      widget.systemUi.exitImmersive();
+    } catch (_) {}
+    try {
+      widget.voice.stop();
+    } catch (_) {}
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -166,6 +194,8 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
               speak: widget.speak,
               speakSlow: widget.speakSlow,
               evaluator: widget.evaluator,
+              voice: widget.voice,
+              visitKey: widget.visitId,
               grammarNotes: widget.grammarNotes,
               light: _light,
               onPosition: (i) => _persist(s, i),
@@ -185,6 +215,8 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
               startIndex: start,
               speak: widget.speak,
               evaluator: widget.evaluator,
+              voice: widget.voice,
+              visitKey: widget.visitId,
               light: _light,
               onPosition: (i) => _persist(s, i),
               onDone: (r) {
@@ -248,123 +280,229 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
         ),
       );
 
+  /// Eine Ansicht des Besuchs: Bild füllt den Schirm, darüber Zurück-Chip und
+  /// die Fläche mit der Zeile der Wirtin in der Blase und dem [child].
+  Widget _frame({
+    required String viewKey,
+    required String asset,
+    bool letterbox = false,
+    bool isPortrait = false,
+    required String line,
+    required Widget child,
+  }) {
+    final orientation = MediaQuery.orientationOf(context);
+    return _VisitFrame(
+      key: ValueKey('cafe-visit-frame-$viewKey'),
+      voice: widget.voice,
+      line: line,
+      image: Image.asset(
+        asset,
+        fit: letterbox ? BoxFit.contain : BoxFit.cover,
+        alignment: isPortrait ? Alignment.topCenter : Alignment.centerLeft,
+        excludeFromSemantics: true,
+        errorBuilder: (_, _, _) => Container(color: const Color(0xFF2A3035)),
+      ),
+      orientation: orientation,
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final plan = _plan;
     final summary = _summary;
     if (summary != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Die Wirtin')),
-        body: ListView(
+      final format = MediaQuery.orientationOf(context) == Orientation.portrait
+          ? PanelFormat.portrait
+          : PanelFormat.landscape;
+      final choice = resolvePortrait(CafeGuest.wirtin, CafeMood.zufrieden,
+          portraitVariant('abschluss', widget.visitId, 5), format, _light);
+      return _frame(
+        viewKey: 'summary',
+        asset: choice.asset,
+        letterbox: choice.letterbox,
+        isPortrait: choice.isPortrait,
+        line: summary.isEmpty ? '' : summary.first,
+        child: Column(
           key: const ValueKey('cafe-visit-summary'),
-          padding: const EdgeInsets.all(24),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (var i = 0; i < summary.length; i++)
+            for (var i = 1; i < summary.length; i++)
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                 child: Text(summary[i],
                     key: ValueKey('cafe-visit-summary-line-$i'),
                     style: const TextStyle(fontSize: 18)),
               ),
-            const SizedBox(height: 24),
-            FilledButton(
-              key: const ValueKey('cafe-visit-leave'),
-              onPressed: () => Navigator.of(context).maybePop(),
-              child: Text(widget.episode != null ? 'Zurück zur Folge' : 'Café verlassen'),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: FilledButton(
+                key: const ValueKey('cafe-visit-leave'),
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: Text(
+                    widget.episode != null ? 'Zurück zur Folge' : 'Café verlassen'),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      );
+    }
+    if (plan == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1A1D21),
+        body: Stack(
+          children: [
+            const Center(child: CircularProgressIndicator()),
+            Positioned(
+              top: 0,
+              left: 0,
+              child: CafeBackChip(
+                  onPressed: () => Navigator.of(context).maybePop()),
             ),
           ],
         ),
       );
     }
-    return Scaffold(
-      appBar: AppBar(title: const Text('Café')),
-      body: plan == null
-          ? const Center(child: CircularProgressIndicator())
-          : plan.stations.isEmpty
-              ? ListView(
-                  key: const ValueKey('cafe-visit-empty'),
-                  children: [
-                    Image.asset(sceneAsset(CafeMotif.wirtinTresen, _light),
-                        height: 200, width: double.infinity, fit: BoxFit.cover,
-                        excludeFromSemantics: true,
-                        errorBuilder: (_, _, _) =>
-                            Container(height: 200, color: const Color(0xFF2A3035))),
-                    const Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text('Die Wirtin wischt den Tresen und nickt dir zu.',
-                          textAlign: TextAlign.center),
-                    ),
-                    if (_practice != null)
-                      Center(
-                        child: TextButton(
-                          key: const ValueKey('cafe-visit-practice-anyway'),
-                          onPressed: () {
-                            _plan = _practice;
-                            _run(fromStation: 0, fromItem: 0);
-                          },
-                          child: const Text('Trotzdem eine Runde mit dem Schulmädchen'),
-                        ),
-                      ),
-                  ],
-                )
-              : ListView(
-                  key: const ValueKey('cafe-visit-room'),
-                  children: [
-                    Image.asset(sceneAsset(CafeMotif.leer, _light),
-                        height: 200, width: double.infinity, fit: BoxFit.cover,
-                        excludeFromSemantics: true,
-                        errorBuilder: (_, _, _) =>
-                            Container(height: 200, color: const Color(0xFF2A3035))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          for (final s in CafeStation.values)
-                            _guest(s,
-                                active: s == (_resume == null
-                                    ? plan.stations.first.station
-                                    : plan.stations[_resume!.station].station)),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        widget.episode != null
-                            ? 'Es geht reihum: erst die Wirtin, dann die anderen.'
-                            : 'Heute sitzen die da, bei denen etwas liegt.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_resume != null) ...[
-                      Center(
-                        child: FilledButton(
-                          key: const ValueKey('cafe-visit-resume'),
-                          onPressed: () => _run(
-                              fromStation: _resume!.station, fromItem: _resume!.item),
-                          child: Text(
-                              'Weitermachen bei ${stationTitles[plan.stations[_resume!.station].station]!.toLowerCase().replaceFirst(RegExp('^(die|das|der) '), '')}'),
-                        ),
-                      ),
-                      Center(
-                        child: TextButton(
-                          key: const ValueKey('cafe-visit-restart'),
-                          onPressed: () => _run(fromStation: 0, fromItem: 0),
-                          child: const Text('Von vorn'),
-                        ),
-                      ),
-                    ] else
-                      Center(
-                        child: FilledButton(
-                          key: const ValueKey('cafe-visit-start'),
-                          onPressed: () => _run(fromStation: 0, fromItem: 0),
-                          child: const Text('Setz dich'),
-                        ),
-                      ),
-                  ],
+    if (plan.stations.isEmpty) {
+      return _frame(
+        viewKey: 'empty',
+        asset: sceneAsset(CafeMotif.wirtinTresen, _light),
+        line: 'Die Wirtin wischt den Tresen und nickt dir zu.',
+        child: Column(
+          key: const ValueKey('cafe-visit-empty'),
+          children: [
+            if (_practice != null)
+              Center(
+                child: TextButton(
+                  key: const ValueKey('cafe-visit-practice-anyway'),
+                  onPressed: () {
+                    _plan = _practice;
+                    _run(fromStation: 0, fromItem: 0);
+                  },
+                  child: const Text('Trotzdem eine Runde mit dem Schulmädchen'),
                 ),
+              ),
+          ],
+        ),
+      );
+    }
+    return _frame(
+      viewKey: 'room',
+      asset: sceneAsset(CafeMotif.leer, _light),
+      line: 'Setz dich. Wer ist heute da?',
+      child: Column(
+        key: const ValueKey('cafe-visit-room'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              runSpacing: 12,
+              spacing: 12,
+              children: [
+                for (final s in CafeStation.values)
+                  _guest(s,
+                      active: s == (_resume == null
+                          ? plan.stations.first.station
+                          : plan.stations[_resume!.station].station)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              widget.episode != null
+                  ? 'Es geht reihum: erst die Wirtin, dann die anderen.'
+                  : 'Heute sitzen die da, bei denen etwas liegt.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_resume != null) ...[
+            Center(
+              child: FilledButton(
+                key: const ValueKey('cafe-visit-resume'),
+                onPressed: () =>
+                    _run(fromStation: _resume!.station, fromItem: _resume!.item),
+                child: Text(
+                    'Weitermachen bei ${stationTitles[plan.stations[_resume!.station].station]!.toLowerCase().replaceFirst(RegExp('^(die|das|der) '), '')}'),
+              ),
+            ),
+            Center(
+              child: TextButton(
+                key: const ValueKey('cafe-visit-restart'),
+                onPressed: () => _run(fromStation: 0, fromItem: 0),
+                child: const Text('Von vorn'),
+              ),
+            ),
+          ] else
+            Center(
+              child: FilledButton(
+                key: const ValueKey('cafe-visit-start'),
+                onPressed: () => _run(fromStation: 0, fromItem: 0),
+                child: const Text('Setz dich'),
+              ),
+            ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rahmen einer Besuchs-Ansicht; spricht die Zeile der Wirtin genau einmal,
+/// solange die Ansicht steht (Neuaufbau spricht nicht erneut).
+class _VisitFrame extends StatefulWidget {
+  final CafeVoice voice;
+  final String line;
+  final Widget image;
+  final Orientation orientation;
+  final Widget child;
+  const _VisitFrame({
+    super.key,
+    required this.voice,
+    required this.line,
+    required this.image,
+    required this.orientation,
+    required this.child,
+  });
+
+  @override
+  State<_VisitFrame> createState() => _VisitFrameState();
+}
+
+class _VisitFrameState extends State<_VisitFrame> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.line.isNotEmpty) widget.voice.say(CafeGuest.wirtin, widget.line);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1A1D21),
+      body: Stack(
+        children: [
+          Positioned.fill(child: widget.image),
+          Positioned(
+            top: 0,
+            left: 0,
+            child: CafeBackChip(
+                onPressed: () => Navigator.of(context).maybePop()),
+          ),
+          CafeOverlay(
+            bubble: GuestBubble(
+              name: 'Die Wirtin',
+              line: widget.line,
+              tail: tailFor(widget.orientation),
+            ),
+            child: widget.child,
+          ),
+        ],
+      ),
     );
   }
 }

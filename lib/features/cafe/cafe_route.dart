@@ -9,6 +9,7 @@ import '../story/episode_registry.dart';
 import '../story/speak_evaluator.dart';
 import '../story/story_progress_store.dart';
 import 'cafe_visit_screen.dart';
+import 'cafe_voice.dart';
 
 /// Was die Route wissen muss: der Fortschritts-Store und ob für
 /// [episodeId] ein Besuch nach der Folge offen ist (Spec §2, Weg 1).
@@ -50,6 +51,10 @@ class CafeRoute extends ConsumerWidget {
     final db = ref.watch(learningDbProvider);
     final bridge = ref.watch(knowledgeBridgeProvider);
     final episodes = ref.watch(storyEpisodesProvider);
+    final voice = CafeVoice(
+      source: DeviceTtsSource(TtsService.instance),
+      isEnabled: CafeVoicePrefs().isEnabled,
+    );
     final deps = ref.watch(cafeVisitProvider(episodeId));
     return deps.when(
       loading: () =>
@@ -69,6 +74,7 @@ class CafeRoute extends ConsumerWidget {
             speak: (t) => TtsService.instance.speak(t),
             speakSlow: (t) => TtsService.instance.speakSlow(t),
             evaluator: SttSpeakEvaluator(),
+            voice: voice,
           );
         }
         return CafeVisitScreen.free(
@@ -80,6 +86,7 @@ class CafeRoute extends ConsumerWidget {
           speak: (t) => TtsService.instance.speak(t),
           speakSlow: (t) => TtsService.instance.speakSlow(t),
           evaluator: SttSpeakEvaluator(),
+            voice: voice,
         );
       },
     );

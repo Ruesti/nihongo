@@ -4,11 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/core/ladder/rung_defs.dart';
 import 'package:nihongo_app/features/cafe/cafe_scenes.dart';
+import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/cafe/cafe_visit_screen.dart';
 import 'package:nihongo_app/features/story/episode.dart';
+import 'package:nihongo_app/features/story/reader_system_ui.dart';
 import 'package:nihongo_app/features/story/speak_evaluator.dart';
 import 'package:nihongo_app/features/story/story_progress_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'fakes/fake_voice.dart';
+
+class _RecordingSystemUi implements ReaderSystemUi {
+  final List<String> calls = [];
+  @override
+  Future<void> enterImmersive() async => calls.add('enter');
+  @override
+  Future<void> exitImmersive() async => calls.add('exit');
+}
 
 class _Always implements SpeakEvaluator {
   final double score;
@@ -74,11 +86,21 @@ void main() {
   tearDown(() => db.close());
 
 
+  final recorder = _RecordingSystemUi();
+  final voiceSource = FakeVoiceSource();
+  late CafeVoice voice;
+  setUp(() {
+    recorder.calls.clear();
+    voiceSource.log.clear();
+    voice = CafeVoice(source: voiceSource, isEnabled: () async => true);
+  });
+
   Widget afterEpisode() => MaterialApp(
         home: CafeVisitScreen.afterEpisode(
           db: db, languageId: 'lang_ja', episode: _episode(), store: store,
           speak: (_) async {}, speakSlow: (_) async {},
           evaluator: _Always(1.0), light: CafeLight.tag,
+          systemUi: recorder, voice: voice,
         ),
       );
 
@@ -89,6 +111,103 @@ void main() {
       await tester.pump();
     }
   }
+
+  testWidgets('Vollbild beim Betreten, Ende beim Verlassen', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(afterEpisode());
+    await tester.pumpAndSettle();
+    expect(recorder.calls, ['enter']);
+    await tester.pumpWidget(const SizedBox());
+    expect(recorder.calls, ['enter', 'exit']);
+  });
+
+  testWidgets('Raum ohne AppBar mit Bild, Blase und Start; Zeile einmal gesprochen',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(afterEpisode());
+    await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsNothing);
+    expect(find.byKey(const ValueKey('cafe-visit-room')), findsOneWidget);
+    expect(find.descendant(
+        of: find.byKey(const ValueKey('cafe-station-voice')),
+        matching: find.text('Setz dich. Wer ist heute da?')), findsNothing);
+    expect(find.text('Setz dich. Wer ist heute da?'), findsOneWidget);
+    expect(find.byKey(const ValueKey('cafe-visit-start')), findsOneWidget);
+    await tester.pumpWidget(afterEpisode()); // Neuaufbau, gleiche Ansicht
+    await tester.pumpAndSettle();
+    final said = voiceSource.log.where((l) => l.startsWith('speak:')).toList();
+    expect(said.length, 1);
+    expect(said.single, endsWith(' wirtin'));
+  });
+
+  testWidgets('Abschluss zeigt Wirtin zufrieden und Zeilen', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(afterEpisode());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-visit-start')));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+      await tester.pumpAndSettle();
+    }
+    await typeKana(tester, 'あめ');
+    await tester.tap(find.byKey(const ValueKey('schul-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('schul-mic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsNothing);
+    expect(find.byKey(const ValueKey('cafe-visit-summary')), findsOneWidget);
+    expect(find.descendant(
+        of: find.byKey(const ValueKey('cafe-station-voice')),
+        matching: find.byType(Text)), findsNothing);
+    expect(tester.widget<Text>(find.byKey(const ValueKey('cafe-station-voice'))).data,
+        'あめ und かさ sitzen.');
+    expect(find.byKey(const ValueKey('cafe-visit-summary-line-0')), findsNothing);
+    expect(find.byKey(const ValueKey('cafe-visit-leave')), findsOneWidget);
+    final img = tester.widget<Image>(find.descendant(
+        of: find.byKey(const ValueKey('cafe-visit-frame-summary')),
+        matching: find.byType(Image)));
+    expect((img.image as AssetImage).assetName, endsWith('wirtin_tresen_tag.jpg'));
+  });
+
+  testWidgets('Zurück-Chip verlässt das Café', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(
+        builder: (c) => TextButton(
+          key: const ValueKey('open'),
+          onPressed: () => Navigator.of(c).push(MaterialPageRoute(
+              builder: (_) => CafeVisitScreen.afterEpisode(
+                    db: db, languageId: 'lang_ja', episode: _episode(),
+                    store: store, speak: (_) async {}, speakSlow: (_) async {},
+                    evaluator: _Always(1.0), light: CafeLight.tag,
+                    systemUi: recorder, voice: voice,
+                  ))),
+          child: const Text('auf'),
+        ),
+      ),
+    ));
+    await tester.tap(find.byKey(const ValueKey('open')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-room')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('cafe-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('cafe-visit-room')), findsNothing);
+    expect(find.byKey(const ValueKey('open')), findsOneWidget);
+    expect(recorder.calls, ['enter', 'exit']);
+  });
 
   testWidgets('Raum zeigt vier Gäste, Wirtin aktiv; Start öffnet die Wirtin',
       (tester) async {
