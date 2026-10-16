@@ -61,6 +61,30 @@ void main() {
             PanelFormat.portrait),
         isNull);
   });
+  test('Stufenreihenfolge: 2 schlägt 3, 3 schlägt 4', () {
+    // Stufe 2 (fragend, gleiches Format) schlägt Stufe 3 (gewünscht, anderes).
+    final c2 = resolvePortraitIn({
+      'wirtin_zufrieden': {
+        'quer': [1]
+      },
+      'wirtin_fragend': {
+        'hoch': [1]
+      },
+    }, CafeGuest.wirtin, CafeMood.zufrieden, 1, PanelFormat.portrait)!;
+    expect(c2.asset, endsWith('wirtin_fragend_1_hoch.jpg'));
+    expect(c2.letterbox, isFalse);
+    // Stufe 3 (gewünscht, anderes Format) schlägt Stufe 4 (fragend, anderes).
+    final c3 = resolvePortraitIn({
+      'wirtin_zufrieden': {
+        'quer': [2]
+      },
+      'wirtin_fragend': {
+        'quer': [2]
+      },
+    }, CafeGuest.wirtin, CafeMood.zufrieden, 2, PanelFormat.portrait)!;
+    expect(c3.asset, endsWith('wirtin_zufrieden_2_quer.jpg'));
+    expect(c3.letterbox, isTrue);
+  });
   test('resolvePortrait fällt auf die Stammplatz-Szene zurück', () {
     final c = resolvePortrait(CafeGuest.vielredner, CafeMood.fragend, 1,
         PanelFormat.portrait, CafeLight.tag);
