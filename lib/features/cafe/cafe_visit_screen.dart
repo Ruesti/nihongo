@@ -320,7 +320,6 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     required String viewKey,
     required String asset,
     bool letterbox = false,
-    bool isPortrait = false,
     required String line,
     required Widget child,
   }) {
@@ -329,12 +328,10 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
       key: ValueKey('cafe-visit-frame-$viewKey'),
       voice: widget.voice,
       line: line,
-      image: Image.asset(
-        asset,
-        fit: letterbox ? BoxFit.contain : BoxFit.cover,
-        alignment: isPortrait ? Alignment.topCenter : Alignment.centerLeft,
-        excludeFromSemantics: true,
-        errorBuilder: (_, _, _) => Container(color: const Color(0xFF2A3035)),
+      image: CafeSceneImage(
+        asset: asset,
+        letterbox: letterbox,
+        imageKey: ValueKey('cafe-visit-scene-$viewKey'),
       ),
       orientation: orientation,
       child: child,
@@ -355,7 +352,6 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
         viewKey: 'summary',
         asset: choice.asset,
         letterbox: choice.letterbox,
-        isPortrait: choice.isPortrait,
         line: summary.isEmpty ? '' : summary.first,
         child: Column(
           key: const ValueKey('cafe-visit-summary'),
@@ -402,7 +398,9 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     if (plan.stations.isEmpty) {
       return _frame(
         viewKey: 'empty',
+        // Ganz zeigen: mit cover fiele die Wirtin aus dem Bild.
         asset: sceneAsset(CafeMotif.wirtinTresen, _light),
+        letterbox: true,
         line: 'Die Wirtin wischt den Tresen und nickt dir zu.',
         child: Column(
           key: const ValueKey('cafe-visit-empty'),
@@ -532,6 +530,9 @@ class _VisitFrameState extends State<_VisitFrame> {
               name: 'Die Wirtin',
               line: widget.line,
               tail: tailFor(widget.orientation),
+              trailing: widget.voice.isSilent
+                  ? null
+                  : CafeVoiceToggle(voice: widget.voice),
             ),
             child: widget.child,
           ),

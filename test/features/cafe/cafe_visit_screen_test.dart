@@ -154,6 +154,20 @@ void main() {
         greaterThanOrEqualTo(2));
   });
 
+  testWidgets('Raum: Bild füllt (cover), Lautsprecher in der Blase',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(afterEpisode());
+    await tester.pumpAndSettle();
+    final img =
+        tester.widget<Image>(find.byKey(const ValueKey('cafe-visit-scene-room')));
+    expect(img.fit, BoxFit.cover);
+    expect(img.alignment, Alignment.topCenter);
+    expect(find.byKey(const ValueKey('cafe-voice-toggle')), findsOneWidget);
+  });
+
   testWidgets('Raum ohne AppBar mit Bild, Blase und Start; Zeile einmal gesprochen',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
@@ -361,6 +375,12 @@ void main() {
     expect(find.text('Die Wirtin wischt den Tresen und nickt dir zu.'), findsOneWidget);
     expect(find.byKey(const ValueKey('cafe-visit-start')), findsNothing);
     expect(find.byKey(const ValueKey('cafe-visit-practice-anyway')), findsNothing);
+    // Tresen ganz zeigen, sonst fällt die Wirtin aus dem Bild.
+    final img = tester
+        .widget<Image>(find.byKey(const ValueKey('cafe-visit-scene-empty')));
+    expect(img.fit, BoxFit.contain);
+    // Stumme Stimme: kein Lautsprecher.
+    expect(find.byKey(const ValueKey('cafe-voice-toggle')), findsNothing);
     await empty.close();
   });
 

@@ -328,3 +328,69 @@ class _CafeVoiceToggleState extends State<CafeVoiceToggle> {
     );
   }
 }
+
+/// Bild hinter der Fläche (Gast, Raum, Tresen): füllt den Schirm (`cover`)
+/// oder steht ganz darin (`contain`, [letterbox]). Ausrichtung folgt der Lage
+/// des Schirms: hoch oben bündig (Fläche liegt unten), quer links bündig
+/// (Fläche liegt rechts). `gaplessPlayback`: beim Stimmungswechsel bleibt das
+/// alte Bild stehen, bis das neue geladen ist (kein Aufblitzen).
+class CafeSceneImage extends StatelessWidget {
+  final String asset;
+  final bool letterbox;
+
+  /// Schlüssel des inneren [Image] (Tests).
+  final Key? imageKey;
+
+  const CafeSceneImage({
+    super.key,
+    required this.asset,
+    required this.letterbox,
+    this.imageKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final portrait =
+        MediaQuery.orientationOf(context) == Orientation.portrait;
+    return ColoredBox(
+      color: cafeDark,
+      child: Image.asset(
+        asset,
+        key: imageKey,
+        fit: letterbox ? BoxFit.contain : BoxFit.cover,
+        alignment: portrait ? Alignment.topCenter : Alignment.centerLeft,
+        gaplessPlayback: true,
+        excludeFromSemantics: true,
+        errorBuilder: (_, _, _) => Container(color: const Color(0xFF2A3035)),
+      ),
+    );
+  }
+}
+
+/// Größte Höhe der Fläche: hoch die halbe, quer die volle Schirmhöhe
+/// (siehe [CafeOverlay]).
+double cafeOverlayMaxHeight(BuildContext context) {
+  final size = MediaQuery.sizeOf(context);
+  return MediaQuery.orientationOf(context) == Orientation.landscape
+      ? size.height
+      : size.height / 2;
+}
+
+/// Miniatur in der Fläche (z. B. Panel der Folge): behält ihr
+/// Seitenverhältnis, steht links und ist höchstens 40 % der Flächenhöhe hoch.
+class CafeThumbnail extends StatelessWidget {
+  final Widget child;
+  const CafeThumbnail({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxHeight: 0.4 * cafeOverlayMaxHeight(context)),
+        child: child,
+      ),
+    );
+  }
+}

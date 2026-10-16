@@ -109,16 +109,10 @@ class _StationFrameState extends State<StationFrame> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              choice.asset,
-              key: const ValueKey('cafe-station-scene'),
-              fit: choice.letterbox ? BoxFit.contain : BoxFit.cover,
-              alignment: choice.isPortrait
-                  ? Alignment.topCenter
-                  : Alignment.centerLeft,
-              excludeFromSemantics: true,
-              errorBuilder: (_, _, _) =>
-                  Container(color: const Color(0xFF2A3035)),
+            child: CafeSceneImage(
+              asset: choice.asset,
+              letterbox: choice.letterbox,
+              imageKey: const ValueKey('cafe-station-scene'),
             ),
           ),
           Positioned(

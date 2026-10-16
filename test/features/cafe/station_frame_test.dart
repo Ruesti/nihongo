@@ -94,6 +94,22 @@ void main() {
     expect(asset(), sceneAsset(CafeMotif.wirtinTresen, CafeLight.tag));
   });
 
+  for (final (name, size, alignment) in [
+    ('hoch', portrait, Alignment.topCenter),
+    ('quer', landscape, Alignment.centerLeft),
+  ]) {
+    testWidgets('leerer Tisch ($name): ganz zeigen, Ausrichtung nach Lage',
+        (t) async {
+      setSize(t, size);
+      await pump(t, files: const {}, withVoice: false);
+      final img =
+          t.widget<Image>(find.byKey(const ValueKey('cafe-station-scene')));
+      expect(img.fit, BoxFit.contain);
+      expect(img.alignment, alignment);
+      expect(img.gaplessPlayback, isTrue);
+    });
+  }
+
   testWidgets('Zeile wird beim Aufbau und bei Änderung gesprochen, dispose stoppt',
       (t) async {
     setSize(t, portrait);
