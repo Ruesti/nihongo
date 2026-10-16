@@ -10,6 +10,7 @@ import '../cafe_debrief.dart';
 import '../cafe_scenes.dart';
 import '../cafe_portraits.dart';
 import '../cafe_visit.dart';
+import '../cafe_voice.dart';
 import '../word_decomposition.dart';
 import 'station_frame.dart';
 
@@ -54,6 +55,12 @@ class WirtinStation extends StatefulWidget {
   final VoidCallback onLater;
   final double threshold;
 
+  /// Stimme der Wirtin (Zeilen der Blase); still, wenn nicht gesetzt.
+  final CafeVoice voice;
+
+  /// Schlüssel des Besuchs; legt zusammen mit dem Wort die Bildnummer fest.
+  final String visitKey;
+
   const WirtinStation({
     super.key,
     required this.db,
@@ -70,6 +77,8 @@ class WirtinStation extends StatefulWidget {
     required this.onDone,
     required this.onLater,
     this.threshold = 0.6,
+    this.voice = const CafeVoice.silent(),
+    this.visitKey = '',
   });
 
   @override
@@ -83,6 +92,7 @@ class _WirtinStationState extends State<WirtinStation> {
   String? _feedback;
   bool _succeeded = false;
   bool _listening = false; // Erkennung läuft: Mikro gesperrt
+  int _variant = 1; // Bildnummer des aktuellen Worts, über Versuche stabil
   final _wobbly = <String>{};
 
   @override
@@ -146,6 +156,7 @@ class _WirtinStationState extends State<WirtinStation> {
         if (!mounted) return;
         setState(() {
           _word = w;
+          _variant = portraitVariant(widget.itemIds[_index], widget.visitKey, 5);
           _attempts = 0;
           _feedback = null;
           _succeeded = false;
@@ -164,6 +175,7 @@ class _WirtinStationState extends State<WirtinStation> {
     if (_listening) return;
     final w = _word!;
     setState(() => _listening = true);
+    await widget.voice.stop(); // Mikro darf die Stimme nicht hören
     double score;
     try {
       score = await widget.evaluator.evaluate(
@@ -204,6 +216,15 @@ class _WirtinStationState extends State<WirtinStation> {
     _loadCurrent();
   }
 
+  static const _opener = 'Setz dich. Das hier hattest du in der Folge:';
+
+  /// Stimmung: fragend, solange eine Antwort erwartet wird (auch beim
+  /// Zuhören); zufrieden bei Erfolg, sonst abwinkend.
+  CafeMood get _mood {
+    if (_listening || _feedback == null) return CafeMood.fragend;
+    return _succeeded ? CafeMood.zufrieden : CafeMood.abwinkend;
+  }
+
   @override
   Widget build(BuildContext context) {
     final w = _word;
@@ -213,9 +234,10 @@ class _WirtinStationState extends State<WirtinStation> {
     return StationFrame(
       station: CafeStation.wirtin,
       light: widget.light,
-      mood: CafeMood.fragend,
-      variant: 1,
-      line: 'Setz dich. Das hier hattest du in der Folge:',
+      mood: _mood,
+      variant: _variant,
+      line: _feedback ?? _opener,
+      voice: widget.voice,
       onNext: _next,
       onLater: widget.onLater,
       child: Padding(
@@ -291,12 +313,6 @@ class _WirtinStationState extends State<WirtinStation> {
                   onPressed:
                       _succeeded || _attempts >= 2 || _listening ? null : _attempt,
                 ),
-                const SizedBox(width: 12),
-                if (_feedback != null)
-                  Expanded(
-                    child: Text(_feedback!,
-                        key: const ValueKey('wirtin-feedback')),
-                  ),
               ],
             ),
           ],

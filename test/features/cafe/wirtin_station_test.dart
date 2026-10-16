@@ -5,10 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihongo_app/core/db/learning_db.dart';
 import 'package:nihongo_app/features/cafe/bubble_overlay.dart';
+import 'package:nihongo_app/features/cafe/cafe_portraits.dart';
 import 'package:nihongo_app/features/cafe/cafe_scenes.dart';
+import 'package:nihongo_app/features/cafe/cafe_voice.dart';
+import 'package:nihongo_app/features/cafe/stations/station_frame.dart';
 import 'package:nihongo_app/features/cafe/stations/wirtin_station.dart';
 import 'package:nihongo_app/features/story/episode.dart';
 import 'package:nihongo_app/features/story/speak_evaluator.dart';
+
+import 'fakes/fake_voice.dart';
 
 class _FakeEvaluator implements SpeakEvaluator {
   final List<double> scores;
@@ -125,10 +130,11 @@ void main() {
   });
   tearDown(() => db.close());
 
-  Future<_Result> pump(WidgetTester tester, SpeakEvaluator ev, List<String> ids) async {
+  Future<_Result> pump(WidgetTester tester, SpeakEvaluator ev, List<String> ids,
+      {CafeVoice? voice, String visitKey = ''}) async {
     final spoken = <String>[], slow = <String>[], positions = <int>[];
     Set<String>? wobbly;
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
@@ -140,6 +146,8 @@ void main() {
         speak: (t) async => spoken.add(t),
         speakSlow: (t) async => slow.add(t),
         evaluator: ev,
+        voice: voice ?? const CafeVoice.silent(),
+        visitKey: visitKey,
         grammarNotes: const {'lex_ja_ame': 'Keine Form, nur das Wort.'},
         light: CafeLight.tag,
         onPosition: positions.add,
@@ -170,6 +178,7 @@ void main() {
 
   testWidgets('Tipp auf eine Kachel spricht nur diesen Laut', (tester) async {
     final r = await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_ame']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-tile-1')));
     await tester.tap(find.byKey(const ValueKey('wirtin-tile-1')));
     await tester.pump();
     expect(r.spoken.last, 'め');
@@ -206,6 +215,7 @@ void main() {
       (tester) async {
     final ev = _FakeEvaluator([1.0]);
     await pump(tester, ev, ['lex_ja_eki_kana']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pumpAndSettle();
     expect(ev.targets, ['えき|駅']);
@@ -214,6 +224,7 @@ void main() {
   testWidgets('nichts gehört (-1): kein Versuch, Wort nicht wackelig',
       (tester) async {
     final r = await pump(tester, _FakeEvaluator([-1.0]), ['lex_ja_ame']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pumpAndSettle();
     expect(find.text('Ich habe nichts gehört.'), findsOneWidget);
@@ -226,6 +237,7 @@ void main() {
   testWidgets('Erkennung wirft: kein Versuch, Hinweis statt Absturz',
       (tester) async {
     final r = await pump(tester, _ThrowingEvaluator(), ['lex_ja_ame']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
@@ -240,6 +252,7 @@ void main() {
     final ev = _GatedEvaluator();
     final r = await pump(tester, ev, ['lex_ja_ame']);
     final mic = find.byKey(const ValueKey('wirtin-mic'));
+    await tester.ensureVisible(mic);
     await tester.tap(mic);
     await tester.pump();
     expect(tester.widget<FilledButton>(mic).onPressed, isNull); // gesperrt
@@ -258,9 +271,11 @@ void main() {
   testWidgets('Nachsprechen: geschafft → Weiter frei; zweimal nicht → Wort '
       'wackelig, es geht trotzdem weiter', (tester) async {
     final r = await pump(tester, _FakeEvaluator([0.2, 0.2]), ['lex_ja_ame']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pumpAndSettle();
     expect(r.slow.length, 2); // einmal beim Öffnen, einmal nach dem Fehlversuch
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
@@ -270,6 +285,7 @@ void main() {
 
   testWidgets('ein Fehlversuch, dann Weiter → wackelig', (tester) async {
     final r = await pump(tester, _FakeEvaluator([0.2]), ['lex_ja_ame']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
@@ -279,7 +295,7 @@ void main() {
 
   testWidgets('Vorlesen schlägt fehl (kein TTS): Station läuft trotzdem weiter',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     Set<String>? done;
@@ -301,6 +317,7 @@ void main() {
     ));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('wirtin-word')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-tile-0')));
     await tester.tap(find.byKey(const ValueKey('wirtin-tile-0')));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
@@ -317,5 +334,86 @@ void main() {
     await settleLoad(tester);
     expect(r.positions, contains(2));
     expect(r.wobbly, isEmpty);
+  });
+
+  StationFrame frame(WidgetTester t) =>
+      t.widget<StationFrame>(find.byType(StationFrame));
+  String bubble(WidgetTester t) =>
+      t.widget<Text>(find.byKey(const ValueKey('cafe-station-voice'))).data!;
+  const opener = 'Setz dich. Das hier hattest du in der Folge:';
+
+  testWidgets('Stimmung: fragend -> zufrieden bei Erfolg', (tester) async {
+    await pump(tester, _FakeEvaluator([0.9]), ['lex_ja_ame']);
+    expect(bubble(tester), opener);
+    expect(frame(tester).mood, CafeMood.fragend);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pumpAndSettle();
+    expect(bubble(tester), 'Genau so.');
+    expect(frame(tester).mood, CafeMood.zufrieden);
+  });
+
+  testWidgets('Stimmung: abwinkend nach Fehlversuch, fragend beim zweiten Mikro',
+      (tester) async {
+    final ev = _GatedEvaluator();
+    await pump(tester, ev, ['lex_ja_ame']);
+    final mic = find.byKey(const ValueKey('wirtin-mic'));
+    await tester.ensureVisible(mic);
+    await tester.tap(mic);
+    await tester.pump();
+    expect(frame(tester).mood, CafeMood.fragend); // hört zu
+    ev.release(0.1);
+    await tester.pumpAndSettle();
+    expect(bubble(tester), startsWith('Fast.'));
+    expect(frame(tester).mood, CafeMood.abwinkend);
+    await tester.ensureVisible(mic);
+    await tester.tap(mic);
+    await tester.pump();
+    expect(frame(tester).mood, CafeMood.fragend);
+    ev.release(0.1);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('nichts gehört -> abwinkend, zählt nicht', (tester) async {
+    final r = await pump(tester, _FakeEvaluator([-1.0]), ['lex_ja_ame']);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pumpAndSettle();
+    expect(bubble(tester), 'Ich habe nichts gehört.');
+    expect(frame(tester).mood, CafeMood.abwinkend);
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await settleLoad(tester);
+    expect(r.wobbly, isEmpty);
+  });
+
+  testWidgets('Variante bleibt über beide Versuche, nächstes Wort kann wechseln',
+      (tester) async {
+    const key = 'besuch-1';
+    await pump(tester, _FakeEvaluator([0.1, 0.1]),
+        ['lex_ja_ame', 'lex_ja_eki'], visitKey: key);
+    final v1 = frame(tester).variant;
+    expect(v1, portraitVariant('lex_ja_ame', key, 5));
+    for (var i = 0; i < 2; i++) {
+      await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
+      await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+      await tester.pumpAndSettle();
+      expect(frame(tester).variant, v1);
+    }
+    await tester.tap(find.byKey(const ValueKey('cafe-station-next')));
+    await settleLoad(tester);
+    expect(frame(tester).variant, portraitVariant('lex_ja_eki', key, 5));
+  });
+
+  testWidgets('Stimme wird vor dem Mikro gestoppt und spricht das Feedback',
+      (tester) async {
+    final fake = FakeVoiceSource()..german = true;
+    final voice = CafeVoice(source: fake, isEnabled: () async => true);
+    await pump(tester, _FakeEvaluator([0.9]), ['lex_ja_ame'], voice: voice);
+    await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
+    await tester.pumpAndSettle();
+    expect(fake.log, containsAllInOrder([
+      'speak:[$opener|de] wirtin', 'stop', 'speak:[Genau so.|de] wirtin',
+    ]));
   });
 }
