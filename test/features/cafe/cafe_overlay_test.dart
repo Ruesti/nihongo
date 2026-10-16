@@ -80,4 +80,49 @@ void main() {
     await t.tap(find.byKey(const ValueKey('cafe-back')));
     expect(n, 1);
   });
+
+  testWidgets('Inhalt der Fläche bekommt ein dunkles Theme mit weißer Schrift',
+      (t) async {
+    setSize(t, const Size(400, 1400));
+    Color? headline, textButton, outlined;
+    Brightness? brightness;
+    await t.pumpWidget(MaterialApp(
+      theme: ThemeData(
+        textTheme: const TextTheme(
+            headlineMedium: TextStyle(color: Color(0xFF1A1410))),
+        // wie AppTheme: dunkle Schrift für TextButtons
+        textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF6B5F52))),
+      ),
+      home: Scaffold(
+        body: CafeOverlay(
+          bubble: const GuestBubble(
+              name: 'Wirtin', line: 'x', tail: TailDirection.up),
+          child: Builder(builder: (context) {
+            final theme = Theme.of(context);
+            headline = theme.textTheme.headlineMedium!.color;
+            brightness = theme.colorScheme.brightness;
+            textButton = theme.textButtonTheme.style!.foregroundColor!
+                .resolve(const {});
+            outlined = theme.outlinedButtonTheme.style!.foregroundColor!
+                .resolve(const {});
+            return Text('x', style: theme.textTheme.headlineMedium);
+          }),
+        ),
+      ),
+    ));
+    expect(headline, Colors.white);
+    expect(brightness, Brightness.dark);
+    expect(textButton, cafeOnDarkAccent);
+    expect(outlined, cafeOnDarkAccent);
+  });
+
+  test('Tasten-Akzent hat auf der Fläche Kontrast ≥ 4,5:1', () {
+    // Ungünstigster Fall: Fläche (80 % #1A1D21) über einem weißen Bild.
+    final bg = Color.alphaBlend(const Color(0xCC1A1D21), Colors.white);
+    final l1 = cafeOnDarkAccent.computeLuminance();
+    final l2 = bg.computeLuminance();
+    expect((l1 + 0.05) / (l2 + 0.05), greaterThanOrEqualTo(4.5));
+  });
 }

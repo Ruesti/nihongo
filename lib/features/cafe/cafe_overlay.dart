@@ -12,6 +12,58 @@ TailDirection tailFor(Orientation o) =>
     o == Orientation.portrait ? TailDirection.up : TailDirection.left;
 
 const _bubbleFill = Color(0xF2FFF8E7);
+
+/// Grund der Fläche und hinter Bildern (dunkel).
+const cafeDark = Color(0xFF1A1D21);
+const _overlayFill = Color(0xCC1A1D21);
+
+/// Helles Rosa für Ränder/Schrift von Tasten und Kacheln auf der dunklen
+/// Fläche (Kontrast ≥ 4,5:1 auch über einem hellen Bild).
+const cafeOnDarkAccent = Color(0xFFFFB4A8);
+const _appRed = Color(0xFFB5191C); // AppColors.red
+
+/// Dunkles Theme für den Inhalt der Fläche: das App-Theme ist hell (Tinte
+/// auf Papier) und wäre auf der dunklen Fläche kaum lesbar.
+ThemeData cafeOverlayTheme(ThemeData base) {
+  final scheme = ColorScheme.fromSeed(
+    seedColor: _appRed,
+    brightness: Brightness.dark,
+  ).copyWith(
+    surface: cafeDark,
+    onSurface: Colors.white,
+    primary: cafeOnDarkAccent,
+    onPrimary: cafeDark,
+  );
+  final keyStyle = ButtonStyle(
+    foregroundColor: WidgetStateProperty.resolveWith((states) =>
+        states.contains(WidgetState.disabled)
+            ? Colors.white38
+            : cafeOnDarkAccent),
+    side: WidgetStateProperty.resolveWith((states) => BorderSide(
+        color: states.contains(WidgetState.disabled)
+            ? Colors.white24
+            : cafeOnDarkAccent)),
+  );
+  return base.copyWith(
+    brightness: Brightness.dark,
+    colorScheme: scheme,
+    textTheme: base.textTheme
+        .apply(bodyColor: Colors.white, displayColor: Colors.white),
+    iconTheme: const IconThemeData(color: Colors.white),
+    // Eigene Vordergrundfarbe zuerst; Schrift/Abstände aus dem App-Theme.
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(foregroundColor: keyStyle.foregroundColor)
+          .merge(base.textButtonTheme.style),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(style: keyStyle),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: _appRed,
+        foregroundColor: Colors.white,
+      ),
+    ),
+  );
+}
 const _bubbleBorder = Color(0xFF444444);
 const _tailSize = 12.0;
 
@@ -34,20 +86,32 @@ class CafeOverlay extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final landscape = MediaQuery.orientationOf(context) == Orientation.landscape;
 
+    final darkTheme = cafeOverlayTheme(Theme.of(context));
+    Widget dark(Widget w) => Theme(
+          data: darkTheme,
+          child: DefaultTextStyle.merge(
+            style: const TextStyle(color: Colors.white),
+            child: w,
+          ),
+        );
+
     Widget panel({required MainAxisSize mainAxisSize, required bool expand}) {
       final scroll = SingleChildScrollView(child: child);
       return DecoratedBox(
         key: const ValueKey('cafe-overlay'),
-        decoration: const BoxDecoration(color: Color(0xCC1A1D21)),
+        decoration: const BoxDecoration(color: _overlayFill),
         child: DefaultTextStyle.merge(
           style: const TextStyle(color: Colors.white),
           child: Column(
             mainAxisSize: mainAxisSize,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Die Blase bleibt hell (eigene Farben), der Rest wird dunkel.
               bubble,
-              expand ? Expanded(child: scroll) : Flexible(child: scroll),
-              ?bottom,
+              expand
+                  ? Expanded(child: dark(scroll))
+                  : Flexible(child: dark(scroll)),
+              if (bottom != null) dark(bottom!),
             ],
           ),
         ),
