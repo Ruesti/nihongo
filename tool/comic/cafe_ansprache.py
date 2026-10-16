@@ -5,6 +5,9 @@ Datenschicht für die 60 Gästeporträts (4 Gäste x 3 Stimmungen x 5 Varianten,
 je in zwei Formaten). Kein ComfyUI-Aufruf, nur Texte und Namen.
 Spec: docs/superpowers/specs/2026-10-15-cafe-ansprache-design.md §2.
 """
+import os
+
+import folge01_manga
 from cafe_motifs import CAFE, GIRL, LAND, LORA_STRENGTH, MAN, NEG, PHOTO, YW  # noqa: F401
 from folge01_motifs import NEG_MANGA, STY
 
@@ -114,3 +117,38 @@ def manga_prompt(gast):
         raise ValueError(f"unbekannter Gast: {gast!r}")
     g = GUESTS[gast]
     return STY + ", " + g["figure"] + ", " + g["place"], NEG_MANGA
+
+
+def load_picks(path):
+    """Liest die Picks (Runde 1): Zeilen `{gast}_{fmt}_{n}=/pfad/foto.png`, n = 1..VARIANTS.
+    `#` und Leerzeilen zählen nicht, `~` wird aufgelöst. Gibt Schlüssel → Pfad zurück.
+    ValueError (mit der Zeile) bei falschem Schlüssel, doppelter Nummer oder fehlender Datei."""
+    picks = {}
+    with open(os.path.expanduser(path), encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, _, value = line.partition("=")
+            key, value = key.strip(), os.path.expanduser(value.strip())
+            parts = key.split("_")
+            if (len(parts) != 3 or parts[0] not in GUESTS or parts[1] not in FORMATS
+                    or not parts[2].isdigit() or not 1 <= int(parts[2]) <= VARIANTS):
+                raise ValueError("Schlüssel ungültig (erwartet {gast}_{fmt}_{n}): %s" % line)
+            if key in picks:
+                raise ValueError("Nummer doppelt in derselben Zelle: %s" % line)
+            if not os.path.isfile(value):
+                raise ValueError("Datei fehlt: %s (Zeile: %s)" % (value, line))
+            picks[key] = value
+    return picks
+
+
+def cells_missing(picks):
+    """Zellen `{gast}_{fmt}` mit weniger als VARIANTS Picks, in Reihenfolge Gast, Format."""
+    return [f"{g}_{fmt}" for g in GUESTS for fmt in FORMATS
+            if sum(1 for n in range(1, VARIANTS + 1) if f"{g}_{fmt}_{n}" in picks) < VARIANTS]
+
+
+def load_overrides(path):
+    """Nachbesserungen je Bild; Schlüssel = voller Name `{gast}_{stimmung}_{n}_{fmt}`."""
+    return folge01_manga.load_overrides(path, allowed={"seed", "extra", "force"})

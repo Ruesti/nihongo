@@ -1,0 +1,1 @@
+# Nachbesserungen je Bild. Format: {gast}_{stimmung}_{n}_{fmt} seed=N extra=Text force   (z. B. wirtin_zufrieden_2_quer seed=5 force)
