@@ -364,8 +364,7 @@ void main() {
     await pump(tester, ev, ['lex_ja_kasa', 'lex_ja_ame'], voice: voice);
     await toSeeSpeak(tester);
     await tester.pumpAndSettle();
-    expect(fake.log.sublist(fake.log.length - 2),
-        ['stop', 'speak:[Wie heißt ‚Regen‘? Sag\'s.|de] schulkind']);
+    expect(fake.log.last, 'speak:[Wie heißt ‚Regen‘? Sag\'s.|de] schulkind');
     final stopsBefore = fake.log.where((e) => e == 'stop').length;
     await tester.tap(find.byKey(const ValueKey('schul-mic')));
     await tester.pump();

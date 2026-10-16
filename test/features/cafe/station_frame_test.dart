@@ -98,12 +98,12 @@ void main() {
       (t) async {
     setSize(t, portrait);
     await pump(t, line: 'Setz dich.');
-    expect(fake.log, ['stop', 'speak:[Setz dich.|de] wirtin']);
+    expect(fake.log, ['speak:[Setz dich.|de] wirtin']);
     await pump(t, line: 'Genau so.');
-    expect(fake.log.last, 'speak:[Genau so.|de] wirtin');
-    expect(fake.log.length, 4);
+    // Neue Zeile reiht sich ein, ohne die alte hart anzuhalten.
+    expect(fake.log, ['speak:[Setz dich.|de] wirtin', 'speak:[Genau so.|de] wirtin']);
     await pump(t, line: 'Genau so.');
-    expect(fake.log.length, 4);
+    expect(fake.log.length, 2);
     await t.pumpWidget(const SizedBox());
     expect(fake.log.last, 'stop');
   });

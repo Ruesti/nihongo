@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/tts_queue.dart';
 import '../../core/tts_service.dart';
 import 'cafe_occupancy.dart';
 import 'voice_segments.dart';
@@ -39,9 +40,19 @@ abstract class SpeechEngine {
   Future<void> setPitch(double v);
   Future<void> setRate(double v);
 
-  /// Spricht den Text und kehrt erst nach dem Ende der Ausgabe zurück.
+  /// Spricht den Text und kehrt erst nach dem Ende der Ausgabe zurück
+  /// (setzt [setAwaitCompletion] mit true voraus).
   Future<void> speakAndWait(String text);
+
+  /// Ob `speak` bis zum Ende der Ausgabe wartet (dauerhafte Einstellung).
+  Future<void> setAwaitCompletion(bool on);
+
+  /// Hält alles an: laufende Ausgabe und wartende Aufträge.
   Future<void> stop();
+
+  /// Führt [job] exklusiv aus: Aufträge laufen nacheinander (FIFO) und
+  /// teilen sich den einen Sprachmotor nie gleichzeitig.
+  Future<T> exclusive<T>(Future<T> Function() job);
 
   /// Namen der installierten Stimmen, deren Sprache mit [langPrefix] beginnt.
   Future<List<String>> voiceNamesFor(String langPrefix);
@@ -50,68 +61,99 @@ abstract class SpeechEngine {
 
 /// Quelle der Gästestimme (heute: Gerätestimme).
 abstract class VoiceSource {
+  /// Reiht die Zeile sofort (synchron beim Aufruf) in die Warteschlange ein.
+  /// Kommt sie dran, wird zuerst [ready] gefragt (z. B. „noch eingeschaltet,
+  /// noch die jüngste Zeile?") und ob Deutsch da ist; sonst entfällt sie.
   Future<void> speak(
     List<VoiceSegment> segments,
     GuestVoiceProfile profile,
-    CafeGuest guest,
-  );
+    CafeGuest guest, {
+    Future<bool> Function()? ready,
+  });
   Future<void> stop();
 
   /// Ob eine deutsche Stimme zur Verfügung steht.
   Future<bool> hasGerman();
 }
 
-/// Spricht die Stücke nacheinander über die Gerätestimme.
+/// Spricht die Stücke nacheinander über die Gerätestimme — eine Zeile ist
+/// ein Auftrag in der Warteschlange des Sprachmotors (nach einem laufenden
+/// Wort, vor später angefragtem Wortaudio).
 class DeviceTtsSource implements VoiceSource {
   DeviceTtsSource(this._engine);
 
   final SpeechEngine _engine;
   int _run = 0;
-  bool _speaking = false;
-  bool? _german;
+  bool _german = false; // nur ein „ja" wird gemerkt
 
+  /// Prüft in der Warteschlange (setLanguage darf kein laufendes Wort
+  /// umstellen); ein „nein" wird beim nächsten Mal neu geprüft.
   @override
-  Future<bool> hasGerman() async => _german ??=
-      await _engine.setLanguage('de-DE') &&
-      (await _engine.voiceNamesFor('de')).isNotEmpty;
+  Future<bool> hasGerman() async {
+    if (_german) return true;
+    try {
+      return await _engine.exclusive(_probeGerman);
+    } on TtsJobCancelled {
+      return false;
+    }
+  }
 
+  /// Die eigentliche Prüfung; nur innerhalb eines Auftrags aufrufen.
+  Future<bool> _probeGerman() async {
+    if (_german) return true;
+    _german = await _engine.setLanguage('de-DE') &&
+        (await _engine.voiceNamesFor('de')).isNotEmpty;
+    return _german;
+  }
+
+  /// Hart anhalten: laufendes Stück abbrechen, wartende Zeilen verwerfen.
   @override
   Future<void> stop() async {
     _run++;
-    _speaking = false;
     await _engine.stop();
   }
 
+  /// Eine neuere Zeile hält die ältere nicht hart an: das laufende Stück
+  /// spricht zu Ende, ihre noch nicht begonnenen Stücke entfallen.
   @override
   Future<void> speak(
     List<VoiceSegment> segments,
     GuestVoiceProfile profile,
-    CafeGuest guest,
-  ) async {
+    CafeGuest guest, {
+    Future<bool> Function()? ready,
+  }) async {
     final run = ++_run;
-    // Läuft noch eine ältere Ausgabe, wird sie hart unterbrochen.
-    if (_speaking) await _engine.stop();
-    if (run != _run) return;
-    _speaking = true;
     try {
-      final germanVoice = await _germanVoiceFor(guest);
-      for (final seg in segments) {
+      await _engine.exclusive(() async {
         if (run != _run) return;
-        final de = seg.lang == VoiceLang.de;
-        await _engine.setLanguage(de ? 'de-DE' : 'ja-JP');
+        if (ready != null && !await ready()) return;
         if (run != _run) return;
-        if (de && germanVoice != null) {
-          await _engine.setVoiceByName(germanVoice);
-          if (run != _run) return;
+        if (!await _probeGerman()) return;
+        if (run != _run) return;
+        await _engine.setAwaitCompletion(true);
+        try {
+          final germanVoice = await _germanVoiceFor(guest);
+          for (final seg in segments) {
+            if (run != _run) return;
+            final de = seg.lang == VoiceLang.de;
+            await _engine.setLanguage(de ? 'de-DE' : 'ja-JP');
+            if (run != _run) return;
+            if (de && germanVoice != null) {
+              await _engine.setVoiceByName(germanVoice);
+              if (run != _run) return;
+            }
+            await _engine.setPitch(profile.pitch);
+            if (run != _run) return;
+            await _engine.setRate(profile.rate);
+            if (run != _run) return;
+            await _engine.speakAndWait(seg.text);
+          }
+        } finally {
+          await _engine.setAwaitCompletion(false);
         }
-        await _engine.setPitch(profile.pitch);
-        if (run != _run) return;
-        await _engine.setRate(profile.rate);
-        if (run != _run) return;
-        await _engine.speakAndWait(seg.text);
-      }
-    } finally {
-      if (run == _run) _speaking = false;
+      });
+    } on TtsJobCancelled {
+      // vor dem Start verworfen (stop): nichts zu tun
     }
   }
 
@@ -158,6 +200,9 @@ class CafeVoice {
   final VoiceSource? _source;
   final Future<bool> Function()? _isEnabled;
 
+  /// true bei [CafeVoice.silent] (dann gibt es auch keinen Lautsprecher).
+  bool get isSilent => _source == null;
+
   // Expando statt Feld, damit die Konstruktoren const bleiben können.
   static final _ids = Expando<int>('CafeVoice.current');
   int get _current => _ids[this] ?? 0;
@@ -167,22 +212,43 @@ class CafeVoice {
   /// aufgerufen wurde (vor dem ersten Warten), und gehört dem Aufrufer.
   int get currentId => _current;
 
-  /// Spricht die Zeile und liefert deren Nummer (0 bei stumm).
+  /// Spricht die Zeile und liefert deren Nummer (0 bei stumm). Die Zeile
+  /// steht schon beim Aufruf (synchron) in der Warteschlange — Wortaudio, das
+  /// danach angefragt wird, kommt nach ihr. Eine laufende ältere Zeile wird
+  /// nicht hart angehalten (siehe [DeviceTtsSource.speak]); [stop] dagegen
+  /// verhindert auch den Start einer Zeile, die noch wartet.
   Future<int> say(CafeGuest guest, String line) async {
     final source = _source;
     if (source == null) return 0;
     final id = ++_current;
     try {
-      if (!await _isEnabled!()) return id;
-      if (!await source.hasGerman()) return id;
       final segments = splitSegments(line);
       if (segments.isEmpty) return id;
-      await source.stop();
-      await source.speak(segments, profileFor(guest), guest);
+      // Nach jedem Warten neu prüfen: ein stop() dazwischen gewinnt.
+      Future<bool> ready() async {
+        if (id != _current) return false;
+        if (!await _isEnabled!()) return false;
+        return id == _current;
+      }
+
+      await source.speak(segments, profileFor(guest), guest, ready: ready);
     } catch (e) {
       debugPrint('CafeVoice.say: $e'); // Stimme ist nur Zierde
     }
     return id;
+  }
+
+  /// Ob die Stimme gerade spricht, wenn man sie lässt: eingeschaltet und
+  /// eine deutsche Stimme vorhanden. Stumm → false.
+  Future<bool> isActive() async {
+    final source = _source;
+    if (source == null) return false;
+    try {
+      return await _isEnabled!() && await source.hasGerman();
+    } catch (e) {
+      debugPrint('CafeVoice.isActive: $e');
+      return false;
+    }
   }
 
   /// Stoppt nur, wenn die Zeile [id] noch die jüngste ist; sonst gehört die
@@ -191,9 +257,14 @@ class CafeVoice {
     if (id == _current) await stop();
   }
 
+  /// Hält hart an (vor dem Mikro, beim Schließen, beim Ausschalten): auch
+  /// eine Zeile, die noch nicht begonnen hat, entfällt.
   Future<void> stop() async {
+    final source = _source;
+    if (source == null) return;
+    _current = _current + 1;
     try {
-      await _source?.stop();
+      await source.stop();
     } catch (e) {
       debugPrint('CafeVoice.stop: $e');
     }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nihongo_app/core/tts_queue.dart';
 import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
 import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/cafe/voice_segments.dart';
@@ -12,7 +13,8 @@ void main() {
   late FakeSpeechEngine engine;
   late DeviceTtsSource src;
   setUp(() {
-    engine = FakeSpeechEngine();
+    // Eine deutsche Stimme: die Quelle prüft das vor jeder Zeile.
+    engine = FakeSpeechEngine()..voices = {'de': ['de-DE-x-a']};
     src = DeviceTtsSource(engine);
   });
 
@@ -20,13 +22,14 @@ void main() {
     await src.speak(splitSegments('Hör zu: あめ. Jetzt du.'),
         profileFor(CafeGuest.schulkind), CafeGuest.schulkind);
     expect(engine.log, [
+      'lang:de-DE', // Prüfung: Deutsch vorhanden
       'lang:de-DE', 'pitch:1.3', 'rate:0.6', 'speak:Hör zu:',
       'lang:ja-JP', 'pitch:1.3', 'rate:0.6', 'speak:あめ',
       'lang:de-DE', 'pitch:1.3', 'rate:0.6', 'speak:Jetzt du.',
     ]);
   });
 
-  test('neue Anfrage überholt die alte', () async {
+  test('neue Anfrage überholt die alte, ohne hart anzuhalten', () async {
     final gate = Completer<void>();
     engine.hold = (t) => t == 'Eins' ? gate : (Completer<void>()..complete());
     final p = profileFor(CafeGuest.wirtin);
@@ -40,7 +43,7 @@ void main() {
     await Future.wait([first, second]);
     final spoken = engine.log.where((e) => e.startsWith('speak:')).toList();
     expect(spoken, ['speak:Eins', 'speak:Drei']);
-    expect(engine.log, contains('stop'));
+    expect(engine.log, isNot(contains('stop')));
   });
 
   test('Überholen während setPitch: altes Stück wird nicht gesprochen',
@@ -76,14 +79,96 @@ void main() {
   });
 
   test('hasGerman true mit Sprache und Stimme, wird gemerkt', () async {
-    engine.voices = {'de': ['de-DE-x-a']};
     expect(await src.hasGerman(), isTrue);
     expect(await src.hasGerman(), isTrue);
     expect(engine.log.where((e) => e == 'lang:de-DE').length, 1);
   });
 
   test('hasGerman false bei Sprache ohne Stimmen', () async {
+    engine.voices = {};
     expect(await src.hasGerman(), isFalse);
+  });
+
+  test('hasGerman: ein „nein" wird beim nächsten Mal neu geprüft', () async {
+    engine.voices = {};
+    expect(await src.hasGerman(), isFalse);
+    engine.voices = {'de': ['de-DE-x-a']};
+    expect(await src.hasGerman(), isTrue);
+    expect(engine.log.where((e) => e == 'lang:de-DE').length, 2);
+  });
+
+  test('zwei überlappende Zeilen: FIFO, kein stop dazwischen', () async {
+    engine.queue = TtsQueue();
+    final gate = Completer<void>();
+    engine.hold = (t) => t == 'Eins.' ? gate : (Completer<void>()..complete());
+    final v = CafeVoice(source: src, isEnabled: () async => true);
+    final a = v.say(CafeGuest.wirtin, 'Eins.');
+    await Future<void>.delayed(Duration.zero);
+    final b = v.say(CafeGuest.schulkind, 'Zwei.');
+    for (var i = 0; i < 5; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    // Zwei wartet in der Schlange, bis Eins zu Ende gesprochen ist.
+    expect(engine.log.where((e) => e.startsWith('speak:')), ['speak:Eins.']);
+    gate.complete();
+    await Future.wait([a, b]);
+    expect(engine.log.where((e) => e.startsWith('speak:')),
+        ['speak:Eins.', 'speak:Zwei.']);
+    expect(engine.log, isNot(contains('stop')));
+  });
+
+  test('say reiht synchron ein: ein danach angefragtes Wort kommt nach der Zeile',
+      () async {
+    engine.queue = TtsQueue();
+    final v = CafeVoice(source: src, isEnabled: () async => true);
+    final line = v.say(CafeGuest.wirtin, 'Setz dich.');
+    final word = engine.exclusive(() async => engine.log.add('word'));
+    await Future.wait([line, word]);
+    final events =
+        engine.log.where((e) => e == 'word' || e.startsWith('speak:')).toList();
+    expect(events, ['speak:Setz dich.', 'word']);
+  });
+
+  test('stop während say noch wartet: die Zeile beginnt nicht', () async {
+    final fake = FakeVoiceSource();
+    final enabled = Completer<bool>();
+    final v = CafeVoice(source: fake, isEnabled: () => enabled.future);
+    final p = v.say(CafeGuest.wirtin, 'Setz dich.');
+    await v.stop();
+    enabled.complete(true);
+    await p;
+    expect(fake.log, ['stop']);
+  });
+
+  test('stop verwirft eine Zeile, die in der Schlange wartet', () async {
+    engine.queue = TtsQueue();
+    final gate = Completer<void>();
+    engine.hold = (t) => t == 'Eins.' ? gate : (Completer<void>()..complete());
+    final v = CafeVoice(source: src, isEnabled: () async => true);
+    final a = v.say(CafeGuest.wirtin, 'Eins.');
+    await Future<void>.delayed(Duration.zero);
+    final b = v.say(CafeGuest.wirtin, 'Zwei.');
+    for (var i = 0; i < 5; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    await v.stop();
+    gate.complete();
+    await Future.wait([a, b]);
+    expect(engine.log.where((e) => e.startsWith('speak:')), ['speak:Eins.']);
+  });
+
+  test('isActive: an + Deutsch → true; aus, ohne Deutsch, stumm → false',
+      () async {
+    final fake = FakeVoiceSource();
+    expect(await CafeVoice(source: fake, isEnabled: () async => true).isActive(),
+        isTrue);
+    expect(
+        await CafeVoice(source: fake, isEnabled: () async => false).isActive(),
+        isFalse);
+    fake.german = false;
+    expect(await CafeVoice(source: fake, isEnabled: () async => true).isActive(),
+        isFalse);
+    expect(await const CafeVoice.silent().isActive(), isFalse);
   });
 
   test('alter Mann bekommt die männliche Stimme', () async {
@@ -108,7 +193,7 @@ void main() {
     expect(engine.log, contains('voice:de-b'));
   });
 
-  test('CafeVoice: aus → nichts; kein Deutsch → nichts; sonst stop, speak',
+  test('CafeVoice: aus → nichts; kein Deutsch → nichts; sonst speak',
       () async {
     final fake = FakeVoiceSource();
     final v = CafeVoice(source: fake, isEnabled: () async => false);
@@ -120,7 +205,7 @@ void main() {
     expect(fake.log, isEmpty);
     fake.german = true;
     await v2.say(CafeGuest.wirtin, 'Setz dich.');
-    expect(fake.log, ['stop', 'speak:[Setz dich.|de] wirtin']);
+    expect(fake.log, ['speak:[Setz dich.|de] wirtin']);
   });
 
   test('CafeVoice.stopIf: veraltete Nummer stoppt nicht, aktuelle schon',

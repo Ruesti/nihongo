@@ -410,14 +410,14 @@ void main() {
     final voice = CafeVoice(source: fake, isEnabled: () async => true);
     final ev = _GatedEvaluator();
     await pump(tester, ev, ['lex_ja_ame'], voice: voice);
-    expect(fake.log, ['stop', 'speak:[$opener|de] wirtin']);
+    expect(fake.log, ['speak:[$opener|de] wirtin']);
     await tester.ensureVisible(find.byKey(const ValueKey('wirtin-mic')));
     await tester.tap(find.byKey(const ValueKey('wirtin-mic')));
     await tester.pump();
     // Erkennung steht noch aus: das stop kam also vor evaluate.
     expect(ev.calls, 1);
     expect(fake.log.last, 'stop');
-    expect(fake.log.where((e) => e == 'stop').length, 2);
+    expect(fake.log.where((e) => e == 'stop').length, 1);
     ev.release(0.9);
     await tester.pumpAndSettle();
     expect(fake.log.last, 'speak:[Genau so.|de] wirtin');

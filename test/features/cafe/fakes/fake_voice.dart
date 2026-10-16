@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:nihongo_app/core/tts_queue.dart';
 import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
 import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/cafe/voice_segments.dart';
@@ -47,6 +48,17 @@ class FakeSpeechEngine implements SpeechEngine {
   @override
   Future<void> stop() async => log.add('stop');
 
+  /// Wenn gesetzt, laufen Aufträge wie im echten Dienst durch diese
+  /// Warteschlange; sonst führt `exclusive` den Auftrag einfach aus.
+  TtsQueue? queue;
+
+  @override
+  Future<T> exclusive<T>(Future<T> Function() job) =>
+      queue?.run(job) ?? job();
+
+  @override
+  Future<void> setAwaitCompletion(bool on) async {}
+
   @override
   Future<List<String>> voiceNamesFor(String langPrefix) async =>
       voices[langPrefix] ?? const [];
@@ -55,16 +67,25 @@ class FakeSpeechEngine implements SpeechEngine {
   Future<void> setVoiceByName(String name) async => log.add('voice:$name');
 }
 
-/// Test-Quelle: Protokoll `stop` und `speak:[T|de,T|ja] gast`.
+/// Test-Quelle: Protokoll `stop` und `speak:[T|de,T|ja] gast`. Mit [sink]
+/// landet jede Zeile zusätzlich als `line:<Zeile>` in einer gemeinsamen
+/// Ereignisliste — im Moment des Einreihens (synchron beim Aufruf), wie der
+/// Platz in der echten FIFO-Warteschlange (Reihenfolge Zeile ↔ Wortaudio).
 class FakeVoiceSource implements VoiceSource {
+  FakeVoiceSource({this.sink});
+
   final List<String> log = [];
+  final List<String>? sink;
   bool german = true;
   bool throwOnSpeak = false;
 
   @override
   Future<void> speak(List<VoiceSegment> segments, GuestVoiceProfile profile,
-      CafeGuest guest) async {
+      CafeGuest guest, {Future<bool> Function()? ready}) async {
     if (throwOnSpeak) throw StateError('boom');
+    sink?.add('line:${segments.map((e) => e.text).join(' ')}');
+    if (ready != null && !await ready()) return;
+    if (!german) return;
     final s = segments.map((e) => '${e.text}|${e.lang.name}').join(',');
     log.add('speak:[$s] ${guest.name}');
   }
