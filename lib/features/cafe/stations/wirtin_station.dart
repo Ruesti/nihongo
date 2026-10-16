@@ -254,6 +254,10 @@ class _WirtinStationState extends State<WirtinStation> {
     _loadCurrent();
   }
 
+  /// Schrift auf der immer dunklen Fläche: ausdrücklich weiß, damit kein
+  /// Stil aus dem hellen App-Theme dunkle Tinte mitbringt.
+  static const _onOverlay = Colors.white;
+
   static const _opener = 'Setz dich. Das hier hattest du in der Folge:';
 
   /// Stimmung: fragend, solange eine Antwort erwartet wird (auch beim
@@ -302,13 +306,14 @@ class _WirtinStationState extends State<WirtinStation> {
               Text(w.surface,
                   key: const ValueKey('wirtin-kanji'),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 56)),
+                  style: const TextStyle(fontSize: 56, color: _onOverlay)),
             GestureDetector(
               onTap: () => _say(widget.speak, w.reading),
               child: Text(w.reading,
                   key: const ValueKey('wirtin-word'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: w.hasKanji ? 28 : 44)),
+                  style: TextStyle(
+                      fontSize: w.hasKanji ? 28 : 44, color: _onOverlay)),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -333,16 +338,19 @@ class _WirtinStationState extends State<WirtinStation> {
             Text(w.meaning,
                 key: const ValueKey('wirtin-meaning'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20)),
+                style: const TextStyle(fontSize: 20, color: _onOverlay)),
             if (w.usage != null) ...[
               const SizedBox(height: 12),
-              Text(w.usage!, key: const ValueKey('wirtin-usage')),
+              Text(w.usage!,
+                  key: const ValueKey('wirtin-usage'),
+                  style: const TextStyle(color: _onOverlay)),
             ],
             if (w.grammar != null) ...[
               const SizedBox(height: 8),
               Text(w.grammar!,
                   key: const ValueKey('wirtin-grammar'),
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
+                  style: const TextStyle(
+                      fontStyle: FontStyle.italic, color: _onOverlay)),
             ],
             const SizedBox(height: 16),
             Row(

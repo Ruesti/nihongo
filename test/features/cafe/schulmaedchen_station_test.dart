@@ -409,6 +409,11 @@ void main() {
     await toSeeSpeak(tester);
     expect(tester.widget<Text>(find.byKey(const ValueKey('schul-meaning'))).data,
         'Regen');
+    // Auf der dunklen Fläche weiß, nicht in der Tinte des hellen App-Themes.
+    expect(
+        tester.widget<Text>(find.byKey(const ValueKey('schul-meaning')))
+            .style?.color,
+        Colors.white);
     expect(bubble(tester), 'Wie heißt ‚Regen‘? Sag\'s.');
     expect(find.byKey(const ValueKey('schul-kana')), findsNothing);
     expect(find.byKey(const ValueKey('schul-panel')), findsOneWidget);
@@ -426,6 +431,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(r.spoken.last, 'あめ');
     expect(find.byKey(const ValueKey('schul-kana')), findsOneWidget);
+    expect(
+        tester.widget<Text>(find.byKey(const ValueKey('schul-kana')))
+            .style?.color,
+        Colors.white);
     expect(bubble(tester), 'Nee. Hör zu: あめ. Jetzt du.');
     expect(frame(tester).mood, CafeMood.abwinkend);
     await tester.tap(find.byKey(const ValueKey('schul-mic')));

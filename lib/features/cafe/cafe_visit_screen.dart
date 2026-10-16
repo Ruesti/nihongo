@@ -93,6 +93,15 @@ class _CafeVisitScreenState extends State<CafeVisitScreen> {
     super.initState();
     _light = widget.light ?? lightFor(DateTime.now());
     widget.systemUi.enterImmersive();
+    // Im Tab-Pfad (Seite ohne Übergang) meldet die Route kein Einblenden,
+    // und der Aufruf in initState greift dort nicht — deshalb nach dem
+    // ersten Frame noch einmal.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        widget.systemUi.enterImmersive();
+      } catch (_) {}
+    });
     _load();
   }
 

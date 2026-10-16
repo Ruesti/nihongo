@@ -403,6 +403,13 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
     return CafeMood.fragend;
   }
 
+  /// Große Schrift auf der dunklen Fläche: der Stil kommt aus dem hellen
+  /// App-Theme (dieser Kontext liegt über der Fläche) und brächte dunkle
+  /// Tinte mit — deshalb ausdrücklich weiß.
+  TextStyle _onOverlay(BuildContext context) =>
+      (Theme.of(context).textTheme.headlineMedium ?? const TextStyle())
+          .copyWith(color: Colors.white);
+
   @override
   Widget build(BuildContext context) {
     final w = _word;
@@ -454,14 +461,14 @@ class _SchulmaedchenStationState extends State<SchulmaedchenStation> {
                 w.meaning,
                 key: const ValueKey('schul-meaning'),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: _onOverlay(context),
               ),
               if (_showKana && !_writeInstead)
                 Text(
                   w.reading,
                   key: const ValueKey('schul-kana'),
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: _onOverlay(context),
                 ),
               if (w.panel != null && w.bubble != null)
                 // Miniatur: Seitenverhältnis fest, höchstens 40 % der Fläche.

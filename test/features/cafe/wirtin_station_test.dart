@@ -176,6 +176,11 @@ void main() {
       'liest beim Öffnen ganz und langsam vor', (tester) async {
     final r = await pump(tester, _FakeEvaluator([1.0]), ['lex_ja_ame']);
     expect(find.byKey(const ValueKey('wirtin-word')), findsOneWidget);
+    // Auf der immer dunklen Fläche weiß (nicht die Tinte des App-Themes).
+    for (final k in ['wirtin-word', 'wirtin-meaning', 'wirtin-grammar']) {
+      expect(tester.widget<Text>(find.byKey(ValueKey(k))).style?.color,
+          Colors.white, reason: k);
+    }
     expect(find.byKey(const ValueKey('wirtin-kanji')), findsNothing);
     expect(find.byKey(const ValueKey('wirtin-tile-0')), findsOneWidget);
     expect(find.byKey(const ValueKey('wirtin-tile-1')), findsOneWidget);
