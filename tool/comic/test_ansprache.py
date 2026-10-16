@@ -351,5 +351,70 @@ class Stages(FakeRun):
         self.assertIn("ANSPRACHE_DONE", self.log.getvalue())
 
 
+class Finish(FakeRun):
+    """Finish und Auswahl der Manga-Ausgaben; Fake-Run liefert PNGs in (falscher) Größe."""
+
+    def setUp(self):
+        super().setUp()
+        self.src = Path(self.img)
+
+    def _png_run(self, size):
+        from PIL import Image
+
+        def run(graph, prefix, out_dir, client_id="x"):
+            os.makedirs(out_dir, exist_ok=True)
+            dest = os.path.join(out_dir, "%s_00001_.png" % prefix)
+            with Image.new("RGB", size, (200, 100, 50)) as im:
+                im.save(dest)
+            self.prefixes.append(prefix)
+            return [dest]
+        return run
+
+    def test_finish_names_and_quality(self):
+        from PIL import Image
+        cc.run = self._png_run((1080, 1936))
+        paths = ca.finish({"wirtin_fragend_1_hoch": self.src}, out=self.out)
+        self.assertEqual(paths[0].name, "wirtin_fragend_1_hoch.jpg")
+        with Image.open(paths[0]) as im:
+            self.assertEqual(im.size, (1080, 1936))
+            self.assertEqual(im.format, "JPEG")
+        self.assertEqual(self.prefixes, ["fin_wirtin_fragend_1_hoch"])
+        self.assertTrue(os.path.exists(os.path.join(cc.COMFY_INPUT, "ansf_wirtin_fragend_1_hoch.png")))
+
+    def test_finish_skips_up_to_date(self):
+        cc.run = self._png_run((1920, 1072))
+        ca.finish({"wirtin_fragend_1_quer": self.src}, out=self.out)
+        dest = self.out / "wirtin_fragend_1_quer.jpg"
+        os.utime(dest, (os.path.getmtime(self.src) + 100,) * 2)
+        ca.finish({"wirtin_fragend_1_quer": self.src}, out=self.out)
+        self.assertEqual(len(self.prefixes), 1)
+
+    def test_finish_wrong_size_raises(self):
+        cc.run = self._png_run((1000, 1000))
+        with self.assertRaisesRegex(AssertionError, "wirtin_fragend_1_hoch.*1080"):
+            ca.finish({"wirtin_fragend_1_hoch": self.src}, out=self.out)
+
+    def test_final_picks_missing_lists_names(self):
+        manga = Path(self.d) / "manga"
+        manga.mkdir()
+        (manga / "wirtin_fragend_1_quer_00001_.png").write_bytes(b"x")
+        with self.assertRaisesRegex(ValueError, "schulkind_abwinkend_5_hoch"):
+            ca.final_picks(manga)
+        got = ca.final_picks(manga, allow_missing=True)
+        self.assertEqual(list(got), ["wirtin_fragend_1_quer"])
+
+    def test_final_picks_complete_takes_newest(self):
+        manga = Path(self.d) / "manga"
+        manga.mkdir()
+        for name in ca.all_names():
+            (manga / (name + "_00001_.png")).write_bytes(b"x")
+        newer = manga / "wirtin_fragend_1_quer_00002_.png"
+        newer.write_bytes(b"y")
+        os.utime(newer, (4e9, 4e9))
+        got = ca.final_picks(manga)
+        self.assertEqual(len(got), 120)
+        self.assertEqual(Path(got["wirtin_fragend_1_quer"]).name, newer.name)
+
+
 if __name__ == "__main__":
     unittest.main()

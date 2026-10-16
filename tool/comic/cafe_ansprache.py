@@ -389,6 +389,54 @@ def runde2(picks_path, overrides_path=None):
     return sheets
 
 
+# --- Finish ------------------------------------------------------------------
+
+def final_picks(manga_dir=ROOT / "manga", allow_missing=False):
+    """Alle 120 Namen -> neueste Manga-Datei; ValueError mit den fehlenden Namen, außer allow_missing."""
+    found, missing = {}, []
+    for name in all_names():
+        path = _newest(name, manga_dir)
+        if path:
+            found[name] = Path(path)
+        else:
+            missing.append(name)
+    if missing and not allow_missing:
+        raise ValueError("Manga-Bilder fehlen (%d): %s" % (len(missing), ", ".join(missing)))
+    return found
+
+
+def _up_to_date(dest, src):
+    return os.path.exists(dest) and os.path.getmtime(dest) > os.path.getmtime(src)
+
+
+def finish(sources, out=ROOT / "final"):
+    """Vergrößert je Name (4x-UltraSharp, dann Zielgröße) und speichert JPEG q88; gibt die JPEG-Pfade zurück.
+    Falsche Größe = AssertionError mit Name; aktuelle JPEGs werden übersprungen."""
+    from PIL import Image
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    done = []
+    for name, src in sources.items():
+        fmt = name.rsplit("_", 1)[-1]
+        if fmt not in TARGET:
+            raise ValueError("%s: Format muss quer oder hoch sein" % name)
+        w, h = TARGET[fmt]
+        dest = out / (name + ".jpg")
+        if _up_to_date(dest, src):
+            print("SKIP", name, flush=True)
+            done.append(dest)
+            continue
+        input_name = "ansf_%s.png" % name
+        shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
+        got = cc.run(cc.upscale_graph(input_name, "fin_" + name, w, h), "fin_" + name, out.parent / "final_png")
+        with Image.open(got[0]) as im:
+            assert im.size == (w, h), "%s: %s statt %s" % (name, im.size, (w, h))
+            im.convert("RGB").save(dest, "JPEG", quality=88, optimize=True)
+        print("OK", name, (w, h), flush=True)
+        done.append(dest)
+    return done
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     stage, args = (argv[0] if argv else ""), argv[1:]
@@ -398,9 +446,8 @@ def main(argv=None):
         runde1()
     elif stage == "runde2" and 1 <= len(args) <= 2:
         runde2(*args)
-    elif stage == "finish":
-        print("finish: Task 6")
-        raise SystemExit(1)
+    elif stage == "finish" and len(args) == 2:
+        finish(final_picks(Path(args[0]).expanduser()), out=Path(args[1]).expanduser())
     else:
         raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish PICKS OUT")
     print("ANSPRACHE_DONE", flush=True)
