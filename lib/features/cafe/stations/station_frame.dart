@@ -132,7 +132,10 @@ class _StationFrameState extends State<StationFrame> {
               name: stationTitles[widget.station]!,
               line: widget.line,
               tail: tailFor(orientation),
-              trailing: widget.bubbleTrailing,
+              trailing: widget.bubbleTrailing ??
+                  (widget.voice != null
+                      ? CafeVoiceToggle(voice: widget.voice)
+                      : null),
             ),
             bottom: Row(
               children: [

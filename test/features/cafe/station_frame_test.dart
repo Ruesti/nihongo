@@ -6,6 +6,7 @@ import 'package:nihongo_app/features/cafe/cafe_visit.dart';
 import 'package:nihongo_app/features/cafe/cafe_occupancy.dart';
 import 'package:nihongo_app/features/cafe/cafe_voice.dart';
 import 'package:nihongo_app/features/cafe/stations/station_frame.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fakes/fake_voice.dart';
 
@@ -150,5 +151,22 @@ void main() {
             .widget<FilledButton>(find.byKey(const ValueKey('cafe-station-next')))
             .onPressed,
         isNull);
+  });
+
+  testWidgets('Lautsprecher in der Blase schaltet um und stoppt', (t) async {
+    SharedPreferences.setMockInitialValues({});
+    setSize(t, portrait);
+    await pump(t);
+    await t.pumpAndSettle();
+    Icon icon() => t.widget<Icon>(find.descendant(
+        of: find.byKey(const ValueKey('cafe-voice-toggle')),
+        matching: find.byType(Icon)));
+    expect(icon().icon, Icons.volume_up);
+    await t.tap(find.byKey(const ValueKey('cafe-voice-toggle')));
+    await t.pumpAndSettle();
+    expect(icon().icon, Icons.volume_off);
+    final p = await SharedPreferences.getInstance();
+    expect(p.getBool(CafeVoicePrefs.key), false);
+    expect(fake.log.last, 'stop');
   });
 }

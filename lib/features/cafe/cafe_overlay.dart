@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'cafe_voice.dart';
+
 /// Richtung der Sprechblasen-Spitze: nach oben (hoch) oder nach links (quer).
 enum TailDirection { up, left }
 
@@ -213,6 +215,48 @@ class CafeBackChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Lautsprecher in der Sprechblase: schaltet die Gästestimme an/aus und
+/// bricht beim Ausschalten eine laufende Zeile ab.
+class CafeVoiceToggle extends StatefulWidget {
+  final CafeVoice? voice;
+  final CafeVoicePrefs? prefs;
+  const CafeVoiceToggle({super.key, this.voice, this.prefs});
+
+  @override
+  State<CafeVoiceToggle> createState() => _CafeVoiceToggleState();
+}
+
+class _CafeVoiceToggleState extends State<CafeVoiceToggle> {
+  late final CafeVoicePrefs _prefs = widget.prefs ?? CafeVoicePrefs();
+  bool _enabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefs.isEnabled().then((v) {
+      if (mounted) setState(() => _enabled = v);
+    });
+  }
+
+  Future<void> _toggle() async {
+    final next = !_enabled;
+    setState(() => _enabled = next);
+    await _prefs.setEnabled(next);
+    if (!next) await widget.voice?.stop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      key: const ValueKey('cafe-voice-toggle'),
+      tooltip: _enabled ? 'Gäste sprechen' : 'Gäste still',
+      visualDensity: VisualDensity.compact,
+      icon: Icon(_enabled ? Icons.volume_up : Icons.volume_off),
+      onPressed: _toggle,
     );
   }
 }

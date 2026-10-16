@@ -9,6 +9,7 @@ import '../../core/purchases_service.dart';
 import '../../core/theme.dart';
 import '../../core/tts_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../cafe/cafe_voice.dart';
 import '../language_select/language_select_screen.dart';
 
 final _apiKeyProvider = FutureProvider<String?>((ref) => ApiKeyService.get());
@@ -82,6 +83,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _SectionHeader(title: 'Furigana'),
           const SizedBox(height: 8),
           _FuriganaCard(),
+          const SizedBox(height: 24),
+          _SectionHeader(title: 'Gäste im Café'),
+          const SizedBox(height: 8),
+          const GuestVoiceCard(),
           const SizedBox(height: 24),
           _SectionHeader(title: 'Käufe'),
           const SizedBox(height: 8),
@@ -276,6 +281,61 @@ class _FuriganaCardState extends State<_FuriganaCard> {
           setState(() => _enabled = val);
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('furigana_enabled', val);
+        },
+      ),
+    );
+  }
+}
+
+/// Schalter „Gäste sprechen“ (Café-Stimme an/aus). Fehlt dem Gerät eine
+/// deutsche Stimme, steht das als Untertitel dabei.
+class GuestVoiceCard extends StatefulWidget {
+  /// Prüft asynchron, ob eine deutsche Stimme da ist; für Tests einspeisbar.
+  final Future<bool> Function()? hasGerman;
+  const GuestVoiceCard({super.key, this.hasGerman});
+
+  @override
+  State<GuestVoiceCard> createState() => _GuestVoiceCardState();
+}
+
+class _GuestVoiceCardState extends State<GuestVoiceCard> {
+  final _prefs = CafeVoicePrefs();
+  bool _enabled = true;
+  bool _noGerman = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefs.isEnabled().then((v) {
+      if (mounted) setState(() => _enabled = v);
+    });
+    _checkGerman();
+  }
+
+  Future<void> _checkGerman() async {
+    try {
+      final check = widget.hasGerman ??
+          DeviceTtsSource(TtsService.instance).hasGerman;
+      final ok = await check();
+      if (mounted && !ok) setState(() => _noGerman = true);
+    } catch (_) {
+      // Plattformfehler: einfach ohne Untertitel.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: SwitchListTile(
+        key: const ValueKey('settings-cafe-voice'),
+        title: const Text('Gäste sprechen'),
+        subtitle: _noGerman
+            ? const Text('Auf diesem Gerät ist keine deutsche Stimme installiert.')
+            : null,
+        value: _enabled,
+        onChanged: (val) async {
+          setState(() => _enabled = val);
+          await _prefs.setEnabled(val);
         },
       ),
     );
