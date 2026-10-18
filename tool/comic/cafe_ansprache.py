@@ -36,6 +36,16 @@ GUESTS = {
         "figure": LAND,
         "place": "behind the wooden counter of the cafe",
         "note": "warm",
+        "poses": [
+            "wiping the counter with a cloth and looking up",
+            "both hands on the counter, leaning forward",
+            "holding a small tray with a cup",
+            "arms folded over the apron",
+            "pouring tea from a pot into a cup",
+            "standing beside a booth with a notepad in hand",
+            "one hand on her hip, the other on the counter",
+            "sitting on a stool at the end of the counter, turned to the camera",
+        ],
         "moods": {
             "zufrieden": "change her expression to a warm satisfied smile with a slight nod" + _KEEP,
             "abwinkend": "change her expression to a kind but disappointed look, head slightly tilted, "
@@ -46,6 +56,16 @@ GUESTS = {
         "figure": GIRL,
         "place": "in a green vinyl booth with school notebooks on the table",
         "note": "cheeky, chin forward",
+        "poses": [
+            "chin resting on both hands over an open notebook",
+            "holding up a pencil, mid-thought",
+            "kneeling on the bench with her arms on the backrest",
+            "standing next to the table with her hands behind her back",
+            "both hands wrapped around a mug of cocoa",
+            "leaning back with her arms crossed",
+            "waving an open notebook",
+            "head tilted, one hand raised like asking in class",
+        ],
         "moods": {
             "zufrieden": "change her expression to a big cheeky grin, one fist raised in triumph" + _KEEP,
             "abwinkend": "change her expression to rolled eyes and a flat mouth, "
@@ -56,6 +76,16 @@ GUESTS = {
         "figure": MAN,
         "place": "at the window table with a folded newspaper",
         "note": "grumpy, glancing over the newspaper",
+        "poses": [
+            "newspaper lowered to the table, glasses in one hand",
+            "standing by the table with the folded newspaper under his arm",
+            "leaning back with the newspaper open",
+            "elbows on the table, hands clasped",
+            "pointing at an article in the newspaper",
+            "holding a cup of coffee",
+            "sitting sideways with one arm over the chair back",
+            "standing at the window with the newspaper rolled in one hand",
+        ],
         "moods": {
             "zufrieden": "change his expression to a satisfied grunt, a small nod, eyes a little softer" + _KEEP,
             "abwinkend": "change his expression to a frown with furrowed brow, the newspaper lowered" + _KEEP,
@@ -65,6 +95,16 @@ GUESTS = {
         "figure": YW,
         "place": "at a formica table with a cup of coffee",
         "note": "friendly but indifferent",
+        "poses": [
+            "both hands around the coffee cup",
+            "stirring the coffee and looking up",
+            "chin on one hand, elbow on the table",
+            "leaning back with one arm over the backrest",
+            "standing with the cup in her hand",
+            "phone face-down on the table, hands folded",
+            "turned sideways on the bench with one knee up",
+            "leaning in with both forearms on the table",
+        ],
         "moods": {
             "zufrieden": "change her expression to a brief genuine smile" + _KEEP,
             "abwinkend": "change her expression to a shrug with raised shoulders and a flat mouth" + _KEEP,
@@ -76,6 +116,17 @@ GUESTS = {
 _KERN = ("waist-up portrait photo, close medium shot, the figure fills the frame, "
          "direct eye contact, looks straight into the camera lens and speaks to the viewer, "
          "mouth slightly open, eyebrows raised in a question, face sharp and large, alone")
+# Acht Varianten des fragenden Ausdrucks; Variante v nimmt _EXPRESSIONS[v] und poses[v]
+_EXPRESSIONS = (
+    "eyebrows raised, waiting for an answer",
+    "head tilted, curious",
+    "a slight puzzled frown",
+    "mouth open mid-sentence",
+    "attentive, with a slight smile",
+    "one eyebrow raised, skeptical",
+    "mildly surprised, eyes wide",
+    "patient, chin lifted",
+)
 _FORMAT_SATZ = {
     "quer": ", horizontal composition, the figure in the left third of the frame close to the camera, the counter and booths blurred to the right",
     "hoch": ", vertical portrait orientation filling the whole frame, the face in the upper third, the counter edge at the bottom",
@@ -104,15 +155,17 @@ def all_names():
             for n in range(1, VARIANTS + 1) for f in FORMATS]
 
 
-def t2i_prompt(gast, fmt):
-    """Positiv- und Negativ-Prompt für die Stimmung fragend."""
+def t2i_prompt(gast, fmt, variant=0):
+    """Positiv- und Negativ-Prompt für die Stimmung fragend; variant (modulo 8) wählt Haltung und Ausdruck."""
     if gast not in GUESTS:
         raise ValueError(f"unbekannter Gast: {gast!r}")
     if fmt not in FORMATS:
         raise ValueError(f"unbekanntes Format: {fmt!r}")
     g = GUESTS[gast]
     # der Auslöser "shotengai_style, " kommt von cc.t2i_graph selbst
-    pos = (_KERN + ", " + g["figure"] + ", " + g["note"] + ", " + g["place"]
+    v = variant % len(_EXPRESSIONS)
+    pos = (_KERN + ", " + g["figure"] + ", " + _EXPRESSIONS[v] + ", " + g["poses"][v]
+           + ", " + g["note"] + ", " + g["place"]
            + ", in " + CAFE + _FORMAT_SATZ[fmt] + PHOTO)
     return pos, NEG + _NEG_EXTRA
 
@@ -230,8 +283,8 @@ def _parse_key(key):
 
 def render_fragend(guests, fmts, seeds, out=ROOT / "foto"):
     """Runde 1: Text-zu-Bild je Gast/Format/Seed; vorhandene Ausgaben werden übersprungen."""
-    def make(gast, fmt, seed, prefix):
-        pos, neg = t2i_prompt(gast, fmt)
+    def make(gast, fmt, seed, prefix, variant):
+        pos, neg = t2i_prompt(gast, fmt, variant)
         w, h = FORMATS[fmt]
         return lambda: cc.run(cc.t2i_graph(pos, neg, seed, prefix, LORA_STRENGTH, w, h), prefix, out)
     jobs = []
@@ -242,7 +295,7 @@ def render_fragend(guests, fmts, seeds, out=ROOT / "foto"):
                 if _skip_existing(prefix, out):
                     print("SKIP", prefix, flush=True)
                     continue
-                jobs.append((prefix, make(gast, fmt, seed, prefix)))
+                jobs.append((prefix, make(gast, fmt, seed, prefix, seeds.index(seed))))
     return _run_all(jobs)
 
 
@@ -404,8 +457,11 @@ def gate(seeds=(911, 912)):
     return _manga_sheet("gate", labelled, manga, sheets)
 
 
-def runde1(seeds=tuple(range(921, 929))):
-    """Runde 1: alle Gäste/Formate/Seeds als Foto; ein Bogen je Zelle (4 Spalten)."""
+def runde1(seeds=tuple(range(921, 929)), suffixed=False):
+    """Runde 1: alle Gäste/Formate/Seeds als Foto; ein Bogen je Zelle (4 Spalten).
+    suffixed (bei --seeds): Bogenname bekommt _s{erster}-{letzter}, damit die Standardbögen bleiben."""
+    seeds = tuple(seeds)
+    suffix = "_s%d-%d" % (seeds[0], seeds[-1]) if suffixed else ""
     foto, sheets_dir = ROOT / "foto", ROOT / "sheets"
     render_fragend(list(GUESTS), list(FORMATS), seeds, out=foto)
     sheets = []
@@ -413,7 +469,7 @@ def runde1(seeds=tuple(range(921, 929))):
         for fmt in FORMATS:
             labelled = [("s%d" % seed, "%s_fragend_%s_s%d" % (gast, fmt, seed)) for seed in seeds]
             items = _cells(labelled, lambda pre: _newest(pre, foto), sheets_dir)
-            sheets.append(make_sheet("r1_%s_%s" % (gast, fmt), items, 4, out=sheets_dir))
+            sheets.append(make_sheet("r1_%s_%s%s" % (gast, fmt, suffix), items, 4, out=sheets_dir))
     return sheets
 
 
@@ -486,17 +542,29 @@ def finish(sources, out=ROOT / "final"):
     return done
 
 
+def _parse_seeds(args):
+    """`--seeds 931,932` -> (931, 932)."""
+    seeds = tuple(int(x) for x in args[1].split(",") if x.strip())
+    if not seeds:
+        raise SystemExit("--seeds braucht mindestens eine Zahl")
+    return seeds
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     stage, args = (argv[0] if argv else ""), argv[1:]
     if stage not in ("gate", "runde1", "runde2", "finish") or (
+            stage == "runde1" and args and (len(args) != 2 or args[0] != "--seeds")) or (
             stage == "runde2" and not 1 <= len(args) <= 2) or (stage == "finish" and len(args) != 2):
-        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish MANGA_DIR OUT")
+        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 [--seeds 931,932,...] | runde2 PICKS [OVERRIDES] | finish MANGA_DIR OUT")
     try:
         if stage == "gate":
             gate()
         elif stage == "runde1":
-            runde1()
+            if args:
+                runde1(_parse_seeds(args), suffixed=True)
+            else:
+                runde1()
         elif stage == "runde2":
             runde2(*args)
         else:

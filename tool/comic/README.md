@@ -230,6 +230,9 @@ Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×92
 
 Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `edit`, `manga`, `sheets`), damit Runde 2 keine Gate-Bilder wiederverwendet; der Bogen liegt unter `~/comfy_cafe_ansprache/gate/sheets/gate.png`. Fehlt ein Bild, steht `WARN fehlt: <Label>` im Log und ein dunkler Platzhalter (`_placeholder.png`) hält das Raster ausgerichtet. Schlägt `sheet.py` fehl, bricht die Stufe ab (`ANSPRACHE_FAILED`, kein `ANSPRACHE_DONE`).
 
+**Haltung und Ausdruck je Seed:** `t2i_prompt(gast, fmt, variant)` nimmt je Seed (Position in der Seed-Liste, modulo 8) eine der 8 Haltungen (`GUESTS[...]["poses"]`) und einen der 8 fragenden Ausdrücke (`_EXPRESSIONS`), damit die acht Kandidaten nicht gleich aussehen.
+`runde1 --seeds 931,932,...` rendert eine eigene Seed-Liste (Standard 921–928); die Bögen heißen dann `r1_{gast}_{fmt}_s{erster}-{letzter}.png` und überschreiben die Standardbögen nicht.
+
 **Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
 
 **Overrides-Datei:** eine Zeile je Bild, `{gast}_{stimmung}_{n}_{fmt} seed=7 extra=Text force` (kein Anführungszeichen, der Parser behält sie wörtlich); erlaubt sind nur `seed`, `extra`, `force`; ein unbekannter Schlüssel (Tippfehler) bricht mit Fehler ab. Eine Zeile gilt für den Edit- UND den Manga-Durchgang dieses Namens: `seed=` ändert beide Seeds, `extra=` kommt in beide Prompts.

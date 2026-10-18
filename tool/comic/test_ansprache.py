@@ -41,6 +41,19 @@ class Prompts(unittest.TestCase):
         self.assertIn("looking away", neg)
         self.assertIn(cm.NEG, neg)
 
+    def test_t2i_variant_selects_pose_and_expression(self):
+        pos, _ = ca.t2i_prompt("schulkind", "quer", 3)
+        self.assertIn(ca.GUESTS["schulkind"]["poses"][3], pos)
+        self.assertIn(ca._EXPRESSIONS[3], pos)
+        self.assertNotEqual(ca.t2i_prompt("schulkind", "quer", 0), ca.t2i_prompt("schulkind", "quer", 1))
+        self.assertEqual(ca.t2i_prompt("schulkind", "quer", 11), ca.t2i_prompt("schulkind", "quer", 3))
+
+    def test_poses_and_expressions_complete(self):
+        for g, d in ca.GUESTS.items():
+            self.assertEqual(len(d["poses"]), 8, g)
+            self.assertEqual(len(set(d["poses"])), 8, g)
+        self.assertEqual(len(set(ca._EXPRESSIONS)), 8)
+
     def test_edit_prompts_all_moods(self):
         for g in ca.GUESTS:
             for m in ("zufrieden", "abwinkend"):
@@ -181,6 +194,12 @@ class Render(FakeRun):
         ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
         self.assertEqual(self.encoded[0].count("shotengai_style"), 1)
         self.assertTrue(self.encoded[0].startswith("shotengai_style, waist-up portrait photo"))
+
+    def test_render_fragend_variant_per_seed(self):
+        ca.render_fragend(["wirtin"], ["quer"], (1, 2), out=self.out)
+        self.assertEqual(len(self.positives), 2)
+        self.assertNotEqual(self.positives[0], self.positives[1])
+        self.assertIn(ca.GUESTS["wirtin"]["poses"][1], self.positives[1])
 
     def test_render_edits_changed_source_rerenders(self):
         other = os.path.join(self.d, "anders.png")
@@ -373,6 +392,19 @@ class Stages(FakeRun):
         self.assertEqual(len(self.sheet_items["r1_wirtin_quer"]), 3)
         self.assertEqual([l for l, _ in self.sheet_items["r1_wirtin_quer"]], ["s1", "s2", "s3"])
         self.assertIn("foto", str(self.sheet_items["r1_wirtin_quer"][0][1]))
+
+    def test_runde1_explicit_seeds_sheet_names(self):
+        ca.runde1(seeds=(931, 932), suffixed=True)
+        self.assertIn("r1_wirtin_quer_s931-932", self.sheet_items)
+        self.assertNotIn("r1_wirtin_quer", self.sheet_items)
+
+    def test_main_runde1_seeds_option(self):
+        calls = []
+        saved = ca.runde1
+        ca.runde1 = lambda seeds=None, suffixed=False: calls.append((seeds, suffixed))
+        self.addCleanup(setattr, ca, "runde1", saved)
+        ca.main(["runde1", "--seeds", "931,932"])
+        self.assertEqual(calls, [((931, 932), True)])
 
     def test_runde2_sheet_per_guest(self):
         ca.runde2(self.picks_two_guests)
