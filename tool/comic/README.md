@@ -225,13 +225,17 @@ Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×92
 |---|---|---|
 | `gate` | Wirtin quer/hoch × 2 Seeds: Foto → Edits → Manga | `gate/sheets/gate.png` (3 Spalten: fragend, zufrieden, abwinkend) |
 | `runde1` | alle Gäste × Formate × 8 Seeds, nur Fotos | `r1_{gast}_{fmt}.png` (4 Spalten, Label `s{seed}`) |
-| `runde2 PICKS [OVERRIDES]` | Edits + Manga aus den Picks | `r2_{gast}.png` (3 Spalten, Zeilen n=1..5 × quer/hoch) |
+| `runde2 PICKS [OVERRIDES] [--denoise X]` | Edits + Manga aus den Picks | `r2_{gast}.png` (3 Spalten, Zeilen n=1..5 × quer/hoch) |
 | `finish MANGA_DIR OUT` | Vergrößern auf 1920×1072 (quer) / 1080×1936 (hoch), JPEG q88 optimiert nach `OUT`, Zwischen-PNGs in `<OUT>/../final_png`; danach `python3 tool/comic/gen_portraits_dart.py` (schreibt `lib/features/cafe/cafe_portrait_library.g.dart`) | |
 
 Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `edit`, `manga`, `sheets`), damit Runde 2 keine Gate-Bilder wiederverwendet; der Bogen liegt unter `~/comfy_cafe_ansprache/gate/sheets/gate.png`. Fehlt ein Bild, steht `WARN fehlt: <Label>` im Log und ein dunkler Platzhalter (`_placeholder.png`) hält das Raster ausgerichtet. Schlägt `sheet.py` fehl, bricht die Stufe ab (`ANSPRACHE_FAILED`, kein `ANSPRACHE_DONE`).
 
 **Haltung und Ausdruck je Seed:** `t2i_prompt(gast, fmt, variant)` nimmt je Seed (Position in der Seed-Liste, modulo 8) eine der 8 Haltungen (`GUESTS[...]["poses"]`) und einen der 8 fragenden Ausdrücke (`_EXPRESSIONS`), damit die acht Kandidaten nicht gleich aussehen.
 `runde1 --seeds 931,932,...` rendert eine eigene Seed-Liste (Standard 921–928); die Bögen heißen dann `r1_{gast}_{fmt}_s{erster}-{letzter}.png` und überschreiben die Standardbögen nicht.
+
+**Manga-Durchgang kennt die Stimmung:** `manga_prompt(gast, stimmung)` hängt Ausdruck (`MANGA_MOODS`) und Geste (`GUESTS[...]["gestures"]`) an, sonst löscht der Durchgang die Mimik aus dem Foto; das Schulmädchen bekommt Kinderproportionen.
+Der Seed ist 831 + Versatz je Stimmung (fragend 0, zufrieden 1, abwinkend 2); `runde2 PICKS [OVERRIDES] --denoise 0.6` ändert das Denoise (Standard 0,7).
+`_sources.json` merkt je Name Quelle und Fingerprint (SHA1 aus Prompt, Denoise, Seed; bei Edits aus der Anweisung): ändert sich einer, wird neu gerendert; alte Einträge (nur Pfad) rendern einmal neu.
 
 **Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
 

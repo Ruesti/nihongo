@@ -5,9 +5,10 @@ Inhalt: Datenschicht (Gäste, Stimmungen, Dateinamen, Prompts), Picks- und Overr
 Render-Stufen über ComfyUI (Foto fragend, Edits zufrieden/abwinkend, Manga-Durchgang), Kontaktbögen,
 die Stufen gate/runde1/runde2, finish (Vergrößern + JPEG) und die Kommandozeile `main`.
 Spec: docs/superpowers/specs/2026-10-15-cafe-ansprache-design.md §2.
-Aufruf: python3 cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] | finish MANGA_DIR OUT
+Aufruf: python3 cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] [--denoise 0.6] | finish MANGA_DIR OUT
 """
 import glob
+import hashlib
 import json
 import os
 import shutil
@@ -29,7 +30,17 @@ TARGET = {"quer": (1920, 1072), "hoch": (1080, 1936)}
 VARIANTS = 5
 
 # Fester Schluss jeder Edit-Anweisung
-_KEEP = ", keep the same person, clothes, pose, lighting, background and framing"
+_KEEP = ", keep the same person, clothes, lighting, background and framing"  # ohne "pose": Gesten ändern die Haltung
+
+# Stimmungsbeschreibung für den Manga-Durchgang (sonst löscht er den Ausdruck aus dem Foto)
+MANGA_MOODS = {
+    "fragend": "asking expression, eyebrows raised, mouth slightly open, looking at the viewer",
+    "zufrieden": "beaming happy smile showing teeth, eyes crinkled with joy",
+    "abwinkend": "displeased frown, eyebrows drawn together, mouth corners turned down, head slightly turned away",
+}
+
+# Kinderproportionen, sonst wirkt das Schulmädchen im Manga-Durchgang erwachsen
+_GIRL_CHILD = GIRL + ", child proportions with a large head, narrow shoulders and small hands"
 
 GUESTS = {
     "wirtin": {
@@ -47,13 +58,17 @@ GUESTS = {
             "sitting on a stool at the end of the counter, turned to the camera",
         ],
         "moods": {
-            "zufrieden": "change her expression to a warm satisfied smile with a slight nod" + _KEEP,
-            "abwinkend": "change her expression to a kind but disappointed look, head slightly tilted, "
-                         "one hand raised in a small dismissive wave" + _KEEP,
+            "zufrieden": "change her expression to a warm broad smile showing teeth, eyes crinkled with joy, nodding, hands clasped in front of the apron" + _KEEP,
+            "abwinkend": "change her expression to a disappointed frown, mouth corners down, eyebrows drawn together, head tilted and slightly turned away, one hand flat on the counter pushing an imaginary thing away" + _KEEP,
+        },
+        # Gesten je Stimmung für den Manga-Durchgang (fragend hat keine)
+        "gestures": {
+            "zufrieden": "nodding, hands clasped in front of the apron",
+            "abwinkend": "one hand flat on the counter, pushing an imaginary thing away",
         },
     },
     "schulkind": {
-        "figure": GIRL,
+        "figure": _GIRL_CHILD,
         "place": "in a green vinyl booth with school notebooks on the table",
         "note": "cheeky, chin forward",
         "poses": [
@@ -67,9 +82,13 @@ GUESTS = {
             "head tilted, one hand raised like asking in class",
         ],
         "moods": {
-            "zufrieden": "change her expression to a big cheeky grin, one fist raised in triumph" + _KEEP,
-            "abwinkend": "change her expression to rolled eyes and a flat mouth, "
-                         "one hand waving the idea away" + _KEEP,
+            "zufrieden": "change her expression to a big open-mouthed grin with eyes squeezed shut in delight, one fist pumped up in triumph" + _KEEP,
+            "abwinkend": "change her expression to a sulky pout with the lower lip pushed out, eyebrows drawn together, arms crossed tightly, head turned away" + _KEEP,
+        },
+        # Gesten je Stimmung für den Manga-Durchgang (fragend hat keine)
+        "gestures": {
+            "zufrieden": "one fist pumped up in triumph",
+            "abwinkend": "arms crossed tightly, sulky pout with the lower lip pushed out",
         },
     },
     "vielredner": {
@@ -87,8 +106,13 @@ GUESTS = {
             "standing at the window with the newspaper rolled in one hand",
         ],
         "moods": {
-            "zufrieden": "change his expression to a satisfied grunt, a small nod, eyes a little softer" + _KEEP,
-            "abwinkend": "change his expression to a frown with furrowed brow, the newspaper lowered" + _KEEP,
+            "zufrieden": "change his expression to a broad satisfied grin, eyes narrowed, chin lifted, giving a thumbs-up" + _KEEP,
+            "abwinkend": "change his expression to a deep frown with eyebrows drawn together and mouth corners down, the newspaper lowered flat on the table, shaking his head" + _KEEP,
+        },
+        # Gesten je Stimmung für den Manga-Durchgang (fragend hat keine)
+        "gestures": {
+            "zufrieden": "chin lifted, giving a thumbs-up",
+            "abwinkend": "newspaper lowered flat on the table, shaking his head",
         },
     },
     "gleichaltrige": {
@@ -106,8 +130,13 @@ GUESTS = {
             "leaning in with both forearms on the table",
         ],
         "moods": {
-            "zufrieden": "change her expression to a brief genuine smile" + _KEEP,
-            "abwinkend": "change her expression to a shrug with raised shoulders and a flat mouth" + _KEEP,
+            "zufrieden": "change her expression to a genuine wide smile showing teeth, eyes warm, giving a small thumbs-up" + _KEEP,
+            "abwinkend": "change her expression to an unimpressed look with a raised eyebrow and flat mouth, shrugging with both shoulders up and palms turned upward" + _KEEP,
+        },
+        # Gesten je Stimmung für den Manga-Durchgang (fragend hat keine)
+        "gestures": {
+            "zufrieden": "giving a small thumbs-up",
+            "abwinkend": "shrugging with both shoulders up and palms turned upward",
         },
     },
 }
@@ -179,11 +208,16 @@ def edit_prompt(gast, stimmung):
     return GUESTS[gast]["moods"][stimmung]
 
 
-def manga_prompt(gast):
+def manga_prompt(gast, stimmung="fragend"):
+    """Manga-Prompt mit Stimmung und Geste; ohne Stimmung = fragend (wie bisher)."""
     if gast not in GUESTS:
         raise ValueError(f"unbekannter Gast: {gast!r}")
+    if stimmung not in MANGA_MOODS:
+        raise ValueError(f"unbekannte Stimmung: {stimmung!r}")
     g = GUESTS[gast]
-    return STY + ", " + g["figure"] + ", " + g["place"], NEG_MANGA
+    gesture = g["gestures"].get(stimmung)
+    return (STY + ", " + g["figure"] + ", " + MANGA_MOODS[stimmung]
+            + (", " + gesture if gesture else "") + ", " + g["place"], NEG_MANGA)
 
 
 def load_picks(path):
@@ -242,17 +276,29 @@ def _load_sources(out):
         return {}
 
 
-def _record_source(out, name, src):
-    """Merkt sich je Ausgabename den absoluten Quellpfad (Quellwechsel erzwingt Neurender)."""
+def _fingerprint(*parts):
+    """SHA1 über die Bestandteile eines Auftrags (Prompt, Denoise, Seed ...)."""
+    return hashlib.sha1("|".join(str(p) for p in parts).encode("utf-8")).hexdigest()
+
+
+def _record_source(out, name, src, fp=None):
+    """Merkt sich je Ausgabename Quellpfad und Fingerprint (Wechsel erzwingt Neurender)."""
     data = _load_sources(out)
-    data[name] = os.path.abspath(str(src))
+    data[name] = {"src": os.path.abspath(str(src)), "fp": fp}
     Path(out).mkdir(parents=True, exist_ok=True)
     _sources_path(out).write_text(json.dumps(data, indent=1, sort_keys=True), encoding="utf-8")
 
 
-def _source_changed(out, name, src):
+def _source_changed(out, name, src, fp=None):
+    """True bei anderer Quelle oder anderem Fingerprint; alter Klartext-Eintrag = Fingerprint unbekannt."""
     old = _load_sources(out).get(name)
-    return old is not None and old != os.path.abspath(str(src))
+    if old is None:
+        return False
+    if isinstance(old, str):  # alter Eintrag: nur Quellpfad, Fingerprint unbekannt -> einmal neu
+        return old != os.path.abspath(str(src)) or fp is not None
+    if old.get("src") != os.path.abspath(str(src)):
+        return True
+    return fp is not None and old.get("fp") != fp
 
 
 def _with_extra(text, opts):
@@ -299,6 +345,10 @@ def render_fragend(guests, fmts, seeds, out=ROOT / "foto"):
     return _run_all(jobs)
 
 
+def _edit_fp(gast, mood, opts):
+    return _fingerprint(_with_extra(edit_prompt(gast, mood), opts))
+
+
 def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
     """Runde 2: je Pick zwei Edits (zufrieden, abwinkend) aus dem Foto der Stimmung fragend."""
     overrides = overrides or {}
@@ -311,7 +361,7 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
                                   opts.get("seed", seed), prefix, negative=NEG)
             got = cc.run(graph, prefix, out)
             if got:
-                _record_source(out, prefix, src)
+                _record_source(out, prefix, src, _edit_fp(gast, mood, opts))
             return got
         return job
     jobs = []
@@ -324,7 +374,7 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
         for mood in ("zufrieden", "abwinkend"):
             prefix = name_for(gast, mood, int(n), fmt)
             opts = overrides.get(prefix, {})
-            if _source_changed(out, prefix, src):
+            if _source_changed(out, prefix, src, _edit_fp(gast, mood, opts)):
                 opts = {**opts, "force": True}
             if folge01_manga.should_skip(prefix, str(out), opts):
                 print("SKIP", prefix, flush=True)
@@ -333,33 +383,49 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
     return _run_all(jobs)
 
 
-def render_manga(sources, out=ROOT / "manga", overrides=None):
-    """Runde 3: Manga-Durchgang je Foto; sources = Name `{gast}_{stimmung}_{n}_{fmt}` -> Pfad."""
+_MOOD_SEED = {"fragend": 0, "zufrieden": 1, "abwinkend": 2}
+
+
+def _manga_job(name, opts, denoise, seed_base):
+    """(Positiv, Negativ, Seed, Fingerprint) für einen Manga-Namen; ValueError bei ungültigem Namen."""
+    parts = name.split("_")
+    if len(parts) != 4 or parts[0] not in GUESTS or parts[1] not in MANGA_MOODS:
+        raise ValueError("unbekannter Gast oder Stimmung")
+    pos, neg = manga_prompt(parts[0], parts[1])
+    pos = _with_extra(pos, opts)
+    seed = opts.get("seed", seed_base + _MOOD_SEED[parts[1]])
+    return pos, neg, seed, _fingerprint(pos, denoise, seed)
+
+
+def render_manga(sources, out=ROOT / "manga", overrides=None, denoise=0.7, seed_base=831):
+    """Runde 3: Manga-Durchgang je Foto; sources = Name `{gast}_{stimmung}_{n}_{fmt}` -> Pfad.
+    Prompt kennt die Stimmung, Seed = seed_base + Stimmungsversatz (fragend 0, zufrieden 1, abwinkend 2)."""
     overrides = overrides or {}
 
-    def make(name, src, gast, opts):
+    def make(name, src, pos, neg, seed, fp):
         def job():
             input_name = "ansm_%s.png" % name
             shutil.copy(src, os.path.join(cc.COMFY_INPUT, input_name))
-            pos, neg = manga_prompt(gast)
-            graph = cc.manga_graph(input_name, _with_extra(pos, opts), neg, opts.get("seed", 831), name)
+            graph = cc.manga_graph(input_name, pos, neg, seed, name, denoise=denoise)
             got = cc.run(graph, name, out)
             if got:
-                _record_source(out, name, src)
+                _record_source(out, name, src, fp)
             return got
         return job
     jobs = []
     for name, src in sources.items():
-        if name.split("_")[0] not in GUESTS:
-            print("ERR %s: %r" % (name, ValueError("unbekannter Gast")), flush=True)
-            continue
         opts = overrides.get(name, {})
-        if _source_changed(out, name, src):
+        try:
+            pos, neg, seed, fp = _manga_job(name, opts, denoise, seed_base)
+        except ValueError as e:
+            print("ERR %s: %r" % (name, e), flush=True)
+            continue
+        if _source_changed(out, name, src, fp):
             opts = {**opts, "force": True}
         if folge01_manga.should_skip(name, str(out), opts):
             print("SKIP", name, flush=True)
             continue
-        jobs.append((name, make(name, src, name.split("_")[0], opts)))
+        jobs.append((name, make(name, src, pos, neg, seed, fp)))
     return _run_all(jobs)
 
 
@@ -473,13 +539,13 @@ def runde1(seeds=tuple(range(921, 929)), suffixed=False):
     return sheets
 
 
-def runde2(picks_path, overrides_path=None):
+def runde2(picks_path, overrides_path=None, denoise=0.7):
     """Runde 2: Edits + Manga aus den Picks; ein Bogen je Gast (3 Spalten)."""
     picks = load_picks(picks_path)
     overrides = load_overrides(overrides_path) if overrides_path else None
     edit, manga, sheets_dir = ROOT / "edit", ROOT / "manga", ROOT / "sheets"
     render_edits(picks, out=edit, overrides=overrides)
-    render_manga({**fragend_sources(picks), **edit_outputs(edit)}, out=manga, overrides=overrides)
+    render_manga({**fragend_sources(picks), **edit_outputs(edit)}, out=manga, overrides=overrides, denoise=denoise)
     guests = {k.split("_")[0] for k in picks}
     sheets = []
     for gast in GUESTS:
@@ -553,10 +619,18 @@ def _parse_seeds(args):
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     stage, args = (argv[0] if argv else ""), argv[1:]
+    denoise = 0.7
+    if stage == "runde2" and "--denoise" in args:  # --denoise X an beliebiger Stelle nach der Stufe
+        i = args.index("--denoise")
+        try:
+            denoise = float(args[i + 1])
+        except (IndexError, ValueError):
+            raise SystemExit("--denoise braucht eine Zahl")
+        args = args[:i] + args[i + 2:]
     if stage not in ("gate", "runde1", "runde2", "finish") or (
             stage == "runde1" and args and (len(args) != 2 or args[0] != "--seeds")) or (
             stage == "runde2" and not 1 <= len(args) <= 2) or (stage == "finish" and len(args) != 2):
-        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 [--seeds 931,932,...] | runde2 PICKS [OVERRIDES] | finish MANGA_DIR OUT")
+        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 [--seeds 931,932,...] | runde2 PICKS [OVERRIDES] [--denoise 0.6] | finish MANGA_DIR OUT")
     try:
         if stage == "gate":
             gate()
@@ -566,7 +640,7 @@ def main(argv=None):
             else:
                 runde1()
         elif stage == "runde2":
-            runde2(*args)
+            runde2(*args, denoise=denoise)
         else:
             finish(final_picks(Path(args[0]).expanduser()), out=Path(args[1]).expanduser())
     except Exception as e:  # noqa: BLE001

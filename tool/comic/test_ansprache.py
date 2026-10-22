@@ -67,6 +67,30 @@ class Prompts(unittest.TestCase):
         self.assertIn(cm.GIRL, pos)
         self.assertEqual(neg, fm.NEG_MANGA)
 
+    def test_manga_prompt_mood_and_gesture(self):
+        pos, _ = ca.manga_prompt("vielredner", "abwinkend")
+        self.assertIn(ca.MANGA_MOODS["abwinkend"], pos)
+        self.assertIn("newspaper lowered flat on the table", pos)
+        self.assertTrue(pos.endswith(ca.GUESTS["vielredner"]["place"]))
+
+    def test_manga_prompt_default_is_fragend(self):
+        self.assertEqual(ca.manga_prompt("wirtin"), ca.manga_prompt("wirtin", "fragend"))
+        self.assertIn(ca.MANGA_MOODS["fragend"], ca.manga_prompt("wirtin")[0])
+        self.assertNotIn("gestures", ca.manga_prompt("wirtin")[0])
+
+    def test_schulkind_child_proportions(self):
+        self.assertIn("child proportions", ca.GUESTS["schulkind"]["figure"])
+        self.assertIn("child proportions", ca.t2i_prompt("schulkind", "quer")[0])
+        self.assertIn("child proportions", ca.manga_prompt("schulkind")[0])
+        self.assertIn(cm.GIRL, ca.GUESTS["schulkind"]["figure"])
+
+    def test_edit_prompts_new_keep_without_pose(self):
+        self.assertNotIn("pose", ca._KEEP)
+        for g in ca.GUESTS:
+            for m in ("zufrieden", "abwinkend"):
+                self.assertTrue(ca.edit_prompt(g, m).endswith(ca._KEEP), (g, m))
+                self.assertNotIn("pose,", ca.edit_prompt(g, m))
+
 
 class PicksAndOverrides(unittest.TestCase):
     def setUp(self):
@@ -148,7 +172,7 @@ class FakeRun(unittest.TestCase):
         with open(self.img, "wb") as f:
             f.write(b"png")
         self.prefixes, self.sizes, self.seeds, self.positives, self.inputs = [], [], [], [], []
-        self.encoded = []
+        self.encoded, self.denoises = [], []
         self._saved = (cc.COMFY_INPUT, cc.run)
         cc.COMFY_INPUT = os.path.join(self.d, "input")
         os.makedirs(cc.COMFY_INPUT)
@@ -162,6 +186,7 @@ class FakeRun(unittest.TestCase):
             for lat in first("EmptySD3LatentImage"):
                 self.sizes.append({"w": lat["width"], "h": lat["height"]})
             self.seeds.append(first("KSampler")[0]["seed"])
+            self.denoises.append(first("KSampler")[0]["denoise"])
             node = graph[first("KSampler")[0]["positive"][0]]
             if node["class_type"] == "ControlNetApplyAdvanced":  # Manga: Zügel sitzt vor dem Sampler
                 node = graph[node["inputs"]["positive"][0]]
@@ -213,7 +238,8 @@ class Render(FakeRun):
         self.assertEqual(self.prefixes[2:], ["wirtin_zufrieden_2_quer", "wirtin_abwinkend_2_quer"])
         with open(self.out / "_sources.json", encoding="utf-8") as f:
             rec = json.load(f)
-        self.assertEqual(rec, {"wirtin_zufrieden_2_quer": other, "wirtin_abwinkend_2_quer": other})
+        self.assertEqual({k: v["src"] for k, v in rec.items()},
+                         {"wirtin_zufrieden_2_quer": other, "wirtin_abwinkend_2_quer": other})
         ca.render_edits({pick: other}, out=self.out)
         self.assertEqual(len(self.prefixes), 4)
 
@@ -227,7 +253,55 @@ class Render(FakeRun):
         self.assertEqual(len(self.prefixes), 1)
         ca.render_manga({name: other}, out=self.out)
         self.assertEqual(len(self.prefixes), 2)
-        self.assertEqual(ca._load_sources(self.out)[name], other)
+        self.assertEqual(ca._load_sources(self.out)[name]["src"], other)
+
+    def test_render_manga_seed_and_prompt_per_mood(self):
+        src = {ca.name_for("wirtin", m, 1, "quer"): self.img for m in ca.MOODS}
+        ca.render_manga(src, out=self.out, denoise=0.6)
+        self.assertEqual(self.seeds, [831, 832, 833])
+        self.assertEqual(len(set(self.positives)), 3)
+        self.assertEqual(self.denoises, [0.6] * 3)
+        self.assertIn(ca.MANGA_MOODS["zufrieden"], self.positives[1])
+        self.assertIn(ca.GUESTS["wirtin"]["gestures"]["abwinkend"], self.positives[2])
+
+    def test_render_manga_seed_base_and_override(self):
+        ca.render_manga({"wirtin_zufrieden_1_quer": self.img}, out=self.out, seed_base=100)
+        self.assertEqual(self.seeds, [101])
+        ca.render_manga({"wirtin_zufrieden_1_quer": self.img}, out=self.out,
+                        overrides={"wirtin_zufrieden_1_quer": {"seed": 7, "force": True}})
+        self.assertEqual(self.seeds[-1], 7)
+
+    def test_render_manga_fingerprint(self):
+        src = {"wirtin_fragend_1_quer": self.img}
+        ca.render_manga(src, out=self.out, denoise=0.7)
+        ca.render_manga(src, out=self.out, denoise=0.7)
+        self.assertEqual(len(self.prefixes), 1)  # gleicher Fingerprint: übersprungen
+        ca.render_manga(src, out=self.out, denoise=0.6)
+        self.assertEqual(len(self.prefixes), 2)  # gleiche Quelle, anderes Denoise
+        self.assertEqual(self.denoises[-1], 0.6)
+        ca.render_manga(src, out=self.out, denoise=0.6, seed_base=5)
+        self.assertEqual(len(self.prefixes), 3)  # anderer Seed
+        rec = ca._load_sources(self.out)["wirtin_fragend_1_quer"]
+        self.assertEqual(rec["src"], self.img)
+        self.assertEqual(len(rec["fp"]), 40)
+
+    def test_old_plain_string_record_rerenders_once(self):
+        name = "wirtin_fragend_1_quer"
+        ca.render_manga({name: self.img}, out=self.out)
+        data = {name: self.img}  # alter Eintrag: nur Pfad
+        (self.out / "_sources.json").write_text(json.dumps(data), encoding="utf-8")
+        ca.render_manga({name: self.img}, out=self.out)
+        self.assertEqual(len(self.prefixes), 2)
+        ca.render_manga({name: self.img}, out=self.out)
+        self.assertEqual(len(self.prefixes), 2)
+
+    def test_edit_fingerprint_rerenders_on_extra(self):
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out)
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out)
+        self.assertEqual(len(self.prefixes), 2)
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out,
+                        overrides={"wirtin_zufrieden_1_quer": {"extra": "eyes open"}})
+        self.assertEqual(self.prefixes[2:], ["wirtin_zufrieden_1_quer"])
 
     def test_render_fragend_skips_existing(self):
         ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
@@ -414,6 +488,19 @@ class Stages(FakeRun):
                          [f"{m} {n} {f}" for n in range(1, 6) for f in ("quer", "hoch")
                           for m in ("fragend", "zufrieden", "abwinkend")])
         self.assertIn("manga", str(items[0][1]))
+
+    def test_main_runde2_denoise_option(self):
+        calls = []
+        saved = ca.runde2
+        ca.runde2 = lambda *a, **kw: calls.append((a, kw))
+        self.addCleanup(setattr, ca, "runde2", saved)
+        ca.main(["runde2", "p.txt", "--denoise", "0.6"])
+        ca.main(["runde2", "--denoise", "0.5", "p.txt", "ov.txt"])
+        self.assertEqual(calls, [(("p.txt",), {"denoise": 0.6}), (("p.txt", "ov.txt"), {"denoise": 0.5})])
+
+    def test_runde2_denoise_reaches_manga(self):
+        ca.runde2(self.picks_two_guests, denoise=0.55)
+        self.assertEqual(self.denoises[-1], 0.55)
 
     def test_runde2_overrides_reach_edits(self):
         ov = os.path.join(self.d, "ov.txt")
