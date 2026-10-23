@@ -211,6 +211,44 @@ Episode, Titelbild und Tippflächen verdrahten, dann:
 flutter test test/features/story/folge_01_layout_test.dart test/features/story/folge_01_panel_assets_test.dart test/features/story/folge_01_regen_test.dart
 ```
 
+## Café-Ansprache (Bilder für die Ansprache-Spec)
+
+Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×928, hoch 928×1664), je 5 Varianten. Code: `cafe_ansprache.py`, Test: `test_ansprache.py`. Ausgabe liegt unter `~/comfy_cafe_ansprache/` (`foto`, `edit`, `manga`, `final`, `sheets`).
+
+**Modelle:** Foto: Checkpoint `qwen-image-Q4_K_M.gguf` + LoRA `shotengai_style_ckpt6.safetensors` mit Stärke 0,3. Mood-Edits: `Qwen-Image-Edit-2509-Q4_K_M.gguf` + `Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors` (4 Schritte). Manga-Durchgang: ControlNet `Qwen-Image-InstantX-ControlNet-Union.safetensors` mit DepthAnythingV2, LoRA 1,5, denoise 0,7. Finish: `4x-UltraSharp.pth`.
+
+**Rezept:** Foto per Text-zu-Bild (Stimmung „fragend“, Blick in die Kamera) mit Stil-LoRA, daraus zwei Edits (zufrieden, abwinkend; Edit-Seed 21), danach je Bild der Manga-Durchgang (Seed 831 + 0/1/2 je Stimmung: fragend/zufrieden/abwinkend). Seeds: Gate 911/912, Runde 1 921–928.
+
+**Stufen** (jede endet bei Erfolg mit der Zeile `ANSPRACHE_DONE`; vorhandene Ausgaben werden übersprungen; ändert sich das Quellfoto eines Namens, wird er neu gerendert, gemerkt in `<Ausgabeordner>/_sources.json`). Fehler je Bild stehen als `ERR` im Log und brechen nicht ab; dagegen brechen `load_picks`, `final_picks`, `sheet.py` und Größenfehler im finish die Stufe ab und schreiben `ANSPRACHE_FAILED: <Typ>: <Meldung>`:
+
+| Stufe | Wirkung | Bogen |
+|---|---|---|
+| `gate` | Wirtin quer/hoch × 2 Seeds: Foto → Edits → Manga | `gate/sheets/gate.png` (3 Spalten: fragend, zufrieden, abwinkend) |
+| `runde1` | alle Gäste × Formate × 8 Seeds, nur Fotos | `r1_{gast}_{fmt}.png` (4 Spalten, Label `s{seed}`) |
+| `runde2 PICKS [OVERRIDES] [--denoise X]` | Edits + Manga aus den Picks | `r2_{gast}.png` (3 Spalten, Zeilen n=1..5 × quer/hoch) |
+| `finish MANGA_DIR OUT` | Vergrößern auf 1920×1072 (quer) / 1080×1936 (hoch), JPEG q88 optimiert nach `OUT`, Zwischen-PNGs in `<OUT>/../final_png`; danach `python3 tool/comic/gen_portraits_dart.py` (schreibt `lib/features/cafe/cafe_portrait_library.g.dart`) | |
+
+Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `edit`, `manga`, `sheets`), damit Runde 2 keine Gate-Bilder wiederverwendet; der Bogen liegt unter `~/comfy_cafe_ansprache/gate/sheets/gate.png`. Fehlt ein Bild, steht `WARN fehlt: <Label>` im Log und ein dunkler Platzhalter (`_placeholder.png`) hält das Raster ausgerichtet. Schlägt `sheet.py` fehl, bricht die Stufe ab (`ANSPRACHE_FAILED`, kein `ANSPRACHE_DONE`).
+
+**Haltung und Ausdruck je Seed:** `t2i_prompt(gast, fmt, variant)` nimmt je Seed (Position in der Seed-Liste, modulo 8) eine der 8 Haltungen (`GUESTS[...]["poses"]`) und einen der 8 fragenden Ausdrücke (`_EXPRESSIONS`), damit die acht Kandidaten nicht gleich aussehen.
+`runde1 --seeds 931,932,...` rendert eine eigene Seed-Liste (Standard 921–928); die Bögen heißen dann `r1_{gast}_{fmt}_s{erster}-{letzter}.png` und überschreiben die Standardbögen nicht.
+`--gast schulkind[,wirtin]` und `--fmt quer[,hoch]` (beliebige Reihenfolge nach der Stufe) rendern nur diese Gäste bzw. Formate und bauen nur deren Bögen; ein Gast kann in `GUESTS` ein Zusatz-Negativ `neg` haben (Schulkind: gegen Teenager-Look), das `t2i_prompt` und `manga_prompt` anhängen.
+
+**Manga-Durchgang kennt die Stimmung:** `manga_prompt(gast, stimmung)` hängt Ausdruck (`MANGA_MOODS`) und Geste (`GUESTS[...]["gestures"]`) an, sonst löscht der Durchgang die Mimik aus dem Foto; das Schulmädchen bekommt Kinderproportionen.
+Der Seed ist 831 + Versatz je Stimmung (fragend 0, zufrieden 1, abwinkend 2); `runde2 PICKS [OVERRIDES] --denoise 0.6` ändert das Denoise (Standard 0,7).
+`_sources.json` merkt je Name Quelle und Fingerprint (SHA1 aus Prompt, Denoise, Seed; bei Edits aus Anweisung, Zusatz und wirksamem Seed, also Override oder Standard 21; ein anderer Seed rendert den Edit auch ohne `force` neu): ändert sich einer, wird neu gerendert; alte Einträge (nur Pfad) rendern einmal neu.
+
+**Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
+
+**Overrides-Datei:** eine Zeile je Bild, `{gast}_{stimmung}_{n}_{fmt} seed=7 extra=Text force` (kein Anführungszeichen, der Parser behält sie wörtlich); erlaubt sind nur `seed`, `extra`, `force`; ein unbekannter Schlüssel (Tippfehler) bricht mit Fehler ab. Eine Zeile gilt für den Edit- UND den Manga-Durchgang dieses Namens: `seed=` ändert beide Seeds, `extra=` kommt in beide Prompts.
+
+**Lauf:**
+
+    cd tool/comic && python3 cafe_ansprache.py gate        # lokal, wenn ComfyUI läuft
+    ssh pc 'setsid nohup bash ~/f01tool/run_ansprache.sh runde1 > ~/f01tool/ansprache.log 2>&1 </dev/null &'
+
+Das Skript `run_ansprache.sh` wartet auf `localhost:8188`, startet die Stufe und schreibt am Ende `RUN_ANSPRACHE_EXIT <rc>` und beendet sich mit diesem Wert. Erfolg nur, wenn die GANZE Zeile `ANSPRACHE_DONE` im Log steht (`grep -x ANSPRACHE_DONE`); `ANSPRACHE_FAILED:` oder ein `RUN_ANSPRACHE_EXIT` ungleich 0 heißt Fehler.
+
 ## Regeln und Fallen
 
 - **Vor jedem Neu-Render die alte Ausgabe löschen.** Die Skripte überspringen einen Key, sobald

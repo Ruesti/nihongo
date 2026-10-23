@@ -93,5 +93,31 @@ class OutpaintGraph(unittest.TestCase):
         self.assertEqual((pad["top"], pad["bottom"], pad["feathering"]), (0, 128, 96))
 
 
+class EditGraph(unittest.TestCase):
+    def test_edit_graph_has_no_relight_lora(self):
+        g = cc.edit_graph("in.png", "smile", 7, "pfx")
+        loras = [n for n in g.values() if n["class_type"] == "LoraLoaderModelOnly"]
+        self.assertEqual(len(loras), 1)
+        self.assertIn("Lightning", loras[0]["inputs"]["lora_name"])
+        self.assertAlmostEqual(loras[0]["inputs"]["strength_model"], 1.0)
+        ks = g[_node(g, "KSampler")]["inputs"]
+        self.assertEqual((ks["steps"], ks["cfg"], ks["seed"]), (4, 1.0, 7))
+        self.assertAlmostEqual(ks["denoise"], 1.0)
+        self.assertEqual(g[_node(g, "SaveImage")]["inputs"]["filename_prefix"], "pfx")
+        self.assertAlmostEqual(g[_node(g, "ModelSamplingAuraFlow")]["inputs"]["shift"], 3.0)
+        self.assertEqual(g[_node(g, "LoadImage")]["inputs"]["image"], "in.png")
+        # Modellkette: Lader -> Lightning -> AuraFlow -> Sampler
+        self.assertEqual(g[_node(g, "ModelSamplingAuraFlow")]["inputs"]["model"], [_node(g, "LoraLoaderModelOnly"), 0])
+        self.assertEqual(ks["model"], [_node(g, "ModelSamplingAuraFlow"), 0])
+
+    def test_edit_graph_negative_text(self):
+        g = cc.edit_graph("in.png", "smile", 7, "pfx", negative="anime")
+        encs = [n for n in g.values() if n["class_type"] == "TextEncodeQwenImageEditPlus"]
+        self.assertEqual(sorted(e["inputs"]["prompt"] for e in encs), ["anime", "smile"])
+        ks = g[_node(g, "KSampler")]["inputs"]
+        self.assertEqual(g[ks["negative"][0]]["inputs"]["prompt"], "anime")
+        self.assertEqual(g[ks["positive"][0]]["inputs"]["prompt"], "smile")
+
+
 if __name__ == "__main__":
     unittest.main()
