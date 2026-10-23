@@ -85,8 +85,10 @@ Regeln für jedes Bild:
 2. **zufrieden** und **abwinkend** je als **Bearbeitung des fertigen fragend-Fotos**
    mit dem Edit-Modell (Prompt: nur Gesichtsausdruck, Kopfhaltung, Hand ändern; Kleidung,
    Licht, Hintergrund, Bildausschnitt gleich), danach derselbe Manga-Durchgang. So
-   bleibt beim Wechsel im Bildschirm dieselbe Person in derselben Haltung, nur das
-   Gesicht ändert sich.
+   bleibt beim Wechsel im Bildschirm dieselbe Person; bei zufrieden/abwinkend ändern
+   sich der Gesichtsausdruck UND eine gasttypische Geste (Daumen hoch, Faust, Arme
+   verschränkt, Schulterzucken, Zeitung flach), Person, Kleidung, Licht und
+   Bildausschnitt bleiben (Entscheidung 22.10.).
 3. **Bögen** über `make_sheets.py`/`sheet.py`: je Gast und Stimmung ein Bogen mit
    Nummer, Seed und Format. Picks und Streichungen in `picks_ansprache.txt`,
    Nachbesserungen in `overrides_ansprache.txt` (Muster wie `picks_foto.txt`).

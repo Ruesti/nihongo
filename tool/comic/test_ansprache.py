@@ -312,6 +312,20 @@ class Render(FakeRun):
                         overrides={"wirtin_zufrieden_1_quer": {"extra": "eyes open"}})
         self.assertEqual(self.prefixes[2:], ["wirtin_zufrieden_1_quer"])
 
+    def test_edit_fingerprint_includes_seed(self):
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out)
+        n = len(self.prefixes)
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out,
+                        overrides={"wirtin_zufrieden_1_quer": {"seed": 21}})  # wirksamer Seed gleich
+        self.assertEqual(len(self.prefixes), n)
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out,
+                        overrides={"wirtin_zufrieden_1_quer": {"seed": 77}})  # ohne force
+        self.assertEqual(self.prefixes[n:], ["wirtin_zufrieden_1_quer"])
+        self.assertEqual(self.seeds[-1], 77)
+        ca.render_edits({"wirtin_quer_1": self.img}, out=self.out,
+                        overrides={"wirtin_zufrieden_1_quer": {"seed": 77}})
+        self.assertEqual(len(self.prefixes), n + 1)
+
     def test_render_fragend_skips_existing(self):
         ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
         ca.render_fragend(["wirtin"], ["quer"], [911], out=self.out)
@@ -505,6 +519,15 @@ class Stages(FakeRun):
         ca.main(["runde1", "--fmt", "quer,hoch", "--gast", "schulkind", "--seeds", "1"])
         self.assertEqual(calls, [((931, 932), True, ("schulkind",), ("quer",)),
                                  ((1,), True, ("schulkind",), ("quer", "hoch"))])
+
+    def test_main_runde1_empty_or_unknown_filter_aborts(self):
+        for argv, needle in ((["--gast", ","], "--gast"), (["--gast", ""], "--gast"),
+                             (["--fmt", ","], "--fmt"), (["--gast", "nixda"], "nixda"),
+                             (["--fmt", "quadrat"], "quadrat")):
+            with self.assertRaises(SystemExit) as cm_:
+                ca.main(["runde1"] + argv)
+            self.assertIn(needle, str(cm_.exception), argv)
+        self.assertEqual(self.prefixes, [])  # nichts gerendert
 
     def test_main_runde1_seeds_option(self):
         calls = []

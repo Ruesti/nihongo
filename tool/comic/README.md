@@ -217,7 +217,7 @@ Fragend/zufrieden/abwinkend-Bilder für 4 Gäste in zwei Formaten (quer 1664×92
 
 **Modelle:** Foto: Checkpoint `qwen-image-Q4_K_M.gguf` + LoRA `shotengai_style_ckpt6.safetensors` mit Stärke 0,3. Mood-Edits: `Qwen-Image-Edit-2509-Q4_K_M.gguf` + `Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors` (4 Schritte). Manga-Durchgang: ControlNet `Qwen-Image-InstantX-ControlNet-Union.safetensors` mit DepthAnythingV2, LoRA 1,5, denoise 0,7. Finish: `4x-UltraSharp.pth`.
 
-**Rezept:** Foto per Text-zu-Bild (Stimmung „fragend“, Blick in die Kamera) mit Stil-LoRA, daraus zwei Edits (zufrieden, abwinkend; Edit-Seed 21), danach je Bild der Manga-Durchgang (Seed 831). Seeds: Gate 911/912, Runde 1 921–928.
+**Rezept:** Foto per Text-zu-Bild (Stimmung „fragend“, Blick in die Kamera) mit Stil-LoRA, daraus zwei Edits (zufrieden, abwinkend; Edit-Seed 21), danach je Bild der Manga-Durchgang (Seed 831 + 0/1/2 je Stimmung: fragend/zufrieden/abwinkend). Seeds: Gate 911/912, Runde 1 921–928.
 
 **Stufen** (jede endet bei Erfolg mit der Zeile `ANSPRACHE_DONE`; vorhandene Ausgaben werden übersprungen; ändert sich das Quellfoto eines Namens, wird er neu gerendert, gemerkt in `<Ausgabeordner>/_sources.json`). Fehler je Bild stehen als `ERR` im Log und brechen nicht ab; dagegen brechen `load_picks`, `final_picks`, `sheet.py` und Größenfehler im finish die Stufe ab und schreiben `ANSPRACHE_FAILED: <Typ>: <Meldung>`:
 
@@ -236,7 +236,7 @@ Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `ed
 
 **Manga-Durchgang kennt die Stimmung:** `manga_prompt(gast, stimmung)` hängt Ausdruck (`MANGA_MOODS`) und Geste (`GUESTS[...]["gestures"]`) an, sonst löscht der Durchgang die Mimik aus dem Foto; das Schulmädchen bekommt Kinderproportionen.
 Der Seed ist 831 + Versatz je Stimmung (fragend 0, zufrieden 1, abwinkend 2); `runde2 PICKS [OVERRIDES] --denoise 0.6` ändert das Denoise (Standard 0,7).
-`_sources.json` merkt je Name Quelle und Fingerprint (SHA1 aus Prompt, Denoise, Seed; bei Edits aus der Anweisung): ändert sich einer, wird neu gerendert; alte Einträge (nur Pfad) rendern einmal neu.
+`_sources.json` merkt je Name Quelle und Fingerprint (SHA1 aus Prompt, Denoise, Seed; bei Edits aus Anweisung, Zusatz und wirksamem Seed, also Override oder Standard 21; ein anderer Seed rendert den Edit auch ohne `force` neu): ändert sich einer, wird neu gerendert; alte Einträge (nur Pfad) rendern einmal neu.
 
 **Picks-Datei:** eine Zeile `{gast}_{fmt}_{n}=/pfad/foto.png` (n = 1..5, `~` erlaubt, `#` Kommentar). Pro Gast und Format fünf Zeilen.
 

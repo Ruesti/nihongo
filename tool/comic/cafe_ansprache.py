@@ -5,7 +5,7 @@ Inhalt: Datenschicht (Gäste, Stimmungen, Dateinamen, Prompts), Picks- und Overr
 Render-Stufen über ComfyUI (Foto fragend, Edits zufrieden/abwinkend, Manga-Durchgang), Kontaktbögen,
 die Stufen gate/runde1/runde2, finish (Vergrößern + JPEG) und die Kommandozeile `main`.
 Spec: docs/superpowers/specs/2026-10-15-cafe-ansprache-design.md §2.
-Aufruf: python3 cafe_ansprache.py gate | runde1 | runde2 PICKS [OVERRIDES] [--denoise 0.6] | finish MANGA_DIR OUT
+Aufruf: python3 cafe_ansprache.py gate | runde1 [--seeds ..] [--gast ..] [--fmt ..] | runde2 PICKS [OVERRIDES] [--denoise 0.6] | finish MANGA_DIR OUT
 """
 import glob
 import hashlib
@@ -354,8 +354,9 @@ def render_fragend(guests, fmts, seeds, out=ROOT / "foto"):
     return _run_all(jobs)
 
 
-def _edit_fp(gast, mood, opts):
-    return _fingerprint(_with_extra(edit_prompt(gast, mood), opts))
+def _edit_fp(gast, mood, opts, seed):
+    """Fingerprint eines Edits: Anweisung + Zusatz + wirksamer Seed (Override oder Standard), wie beim Manga-Fp."""
+    return _fingerprint(_with_extra(edit_prompt(gast, mood), opts), opts.get("seed", seed))
 
 
 def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
@@ -370,7 +371,7 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
                                   opts.get("seed", seed), prefix, negative=NEG)
             got = cc.run(graph, prefix, out)
             if got:
-                _record_source(out, prefix, src, _edit_fp(gast, mood, opts))
+                _record_source(out, prefix, src, _edit_fp(gast, mood, opts, seed))
             return got
         return job
     jobs = []
@@ -383,7 +384,7 @@ def render_edits(picks, seed=21, out=ROOT / "edit", overrides=None):
         for mood in ("zufrieden", "abwinkend"):
             prefix = name_for(gast, mood, int(n), fmt)
             opts = overrides.get(prefix, {})
-            if _source_changed(out, prefix, src, _edit_fp(gast, mood, opts)):
+            if _source_changed(out, prefix, src, _edit_fp(gast, mood, opts, seed)):
                 opts = {**opts, "force": True}
             if folge01_manga.should_skip(prefix, str(out), opts):
                 print("SKIP", prefix, flush=True)
@@ -639,9 +640,9 @@ def _parse_list_opt(args, flag):
     if flag not in args:
         return None, args
     i = args.index(flag)
-    if i + 1 >= len(args) or not args[i + 1].strip():
+    vals = tuple(x.strip() for x in args[i + 1].split(",") if x.strip()) if i + 1 < len(args) else ()
+    if not vals:
         raise SystemExit("%s braucht mindestens einen Wert" % flag)
-    vals = tuple(x.strip() for x in args[i + 1].split(",") if x.strip())
     return vals, args[:i] + args[i + 2:]
 
 
@@ -660,6 +661,10 @@ def main(argv=None):
     if stage == "runde1":  # --gast / --fmt an beliebiger Stelle nach der Stufe
         gaeste, args = _parse_list_opt(args, "--gast")
         formate, args = _parse_list_opt(args, "--fmt")
+        for flag, vals, known in (("--gast", gaeste, GUESTS), ("--fmt", formate, FORMATS)):
+            for v in vals or ():  # vor dem ersten Render prüfen, nicht erst in runde1
+                if v not in known:
+                    raise SystemExit("%s: unbekannter Wert %r (erlaubt: %s)" % (flag, v, ", ".join(known)))
     if stage not in ("gate", "runde1", "runde2", "finish") or (
             stage == "runde1" and args and (len(args) != 2 or args[0] != "--seeds")) or (
             stage == "runde2" and not 1 <= len(args) <= 2) or (stage == "finish" and len(args) != 2):
