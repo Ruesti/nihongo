@@ -65,7 +65,8 @@ class Prompts(unittest.TestCase):
         pos, neg = ca.manga_prompt("schulkind")
         self.assertTrue(pos.startswith(fm.STY))
         self.assertIn(cm.GIRL, pos)
-        self.assertEqual(neg, fm.NEG_MANGA)
+        self.assertEqual(neg, fm.NEG_MANGA + ", " + ca.GUESTS["schulkind"]["neg"])
+        self.assertEqual(ca.manga_prompt("wirtin")[1], fm.NEG_MANGA)
 
     def test_manga_prompt_mood_and_gesture(self):
         pos, _ = ca.manga_prompt("vielredner", "abwinkend")
@@ -79,9 +80,17 @@ class Prompts(unittest.TestCase):
         self.assertNotIn("gestures", ca.manga_prompt("wirtin")[0])
 
     def test_schulkind_child_proportions(self):
-        self.assertIn("child proportions", ca.GUESTS["schulkind"]["figure"])
-        self.assertIn("child proportions", ca.t2i_prompt("schulkind", "quer")[0])
-        self.assertIn("child proportions", ca.manga_prompt("schulkind")[0])
+        self.assertIn("nine-year-old", ca.GUESTS["schulkind"]["figure"])
+        self.assertIn("nine-year-old", ca.t2i_prompt("schulkind", "quer")[0])
+        self.assertIn("nine-year-old", ca.manga_prompt("schulkind")[0])
+        pos = ca.t2i_prompt("schulkind", "quer", 0)[0]
+        self.assertLess(pos.index("nine-year-old"), pos.index(ca.GUESTS["schulkind"]["poses"][0]))
+
+    def test_per_guest_negative(self):
+        self.assertIn("teenager", ca.t2i_prompt("schulkind", "quer", 0)[1])
+        self.assertNotIn("teenager", ca.t2i_prompt("wirtin", "quer", 0)[1])
+        self.assertIn("teenager", ca.manga_prompt("schulkind", "fragend")[1])
+        self.assertNotIn("teenager", ca.manga_prompt("wirtin", "fragend")[1])
         self.assertIn(cm.GIRL, ca.GUESTS["schulkind"]["figure"])
 
     def test_edit_prompts_new_keep_without_pose(self):
@@ -472,10 +481,35 @@ class Stages(FakeRun):
         self.assertIn("r1_wirtin_quer_s931-932", self.sheet_items)
         self.assertNotIn("r1_wirtin_quer", self.sheet_items)
 
+    def test_runde1_gast_filter(self):
+        ca.runde1(seeds=(1, 2), gaeste=("schulkind",))
+        self.assertEqual(sorted(self.sheet_items), ["r1_schulkind_hoch", "r1_schulkind_quer"])
+        self.assertTrue(self.positives)
+        for p in self.positives:
+            self.assertIn(cm.GIRL, p)
+            self.assertNotIn(ca.GUESTS["wirtin"]["figure"], p)
+
+    def test_runde1_fmt_filter(self):
+        ca.runde1(seeds=(1,), gaeste=("schulkind",), formate=("quer",))
+        self.assertEqual(sorted(self.sheet_items), ["r1_schulkind_quer"])
+        for p in self.positives:
+            self.assertIn(ca._FORMAT_SATZ["quer"], p)
+            self.assertNotIn(ca._FORMAT_SATZ["hoch"], p)
+
+    def test_main_runde1_gast_fmt_options(self):
+        calls = []
+        saved = ca.runde1
+        ca.runde1 = lambda seeds=None, suffixed=False, gaeste=None, formate=None: calls.append((seeds, suffixed, gaeste, formate))
+        self.addCleanup(setattr, ca, "runde1", saved)
+        ca.main(["runde1", "--seeds", "931,932", "--gast", "schulkind", "--fmt", "quer"])
+        ca.main(["runde1", "--fmt", "quer,hoch", "--gast", "schulkind", "--seeds", "1"])
+        self.assertEqual(calls, [((931, 932), True, ("schulkind",), ("quer",)),
+                                 ((1,), True, ("schulkind",), ("quer", "hoch"))])
+
     def test_main_runde1_seeds_option(self):
         calls = []
         saved = ca.runde1
-        ca.runde1 = lambda seeds=None, suffixed=False: calls.append((seeds, suffixed))
+        ca.runde1 = lambda seeds=None, suffixed=False, **kw: calls.append((seeds, suffixed))
         self.addCleanup(setattr, ca, "runde1", saved)
         ca.main(["runde1", "--seeds", "931,932"])
         self.assertEqual(calls, [((931, 932), True)])
@@ -592,6 +626,18 @@ class Finish(FakeRun):
         got = ca.final_picks(manga)
         self.assertEqual(len(got), 120)
         self.assertEqual(Path(got["wirtin_fragend_1_quer"]).name, newer.name)
+
+    def test_final_picks_newest_by_mtime_not_counter(self):
+        manga = Path(self.d) / "manga"
+        manga.mkdir()
+        old = manga / "schulkind_fragend_1_quer_00002_.png"  # höherer Zähler, aber älter
+        new = manga / "schulkind_fragend_1_quer_00001_.png"
+        old.write_bytes(b"a")
+        new.write_bytes(b"b")
+        os.utime(old, (1e9, 1e9))
+        os.utime(new, (2e9, 2e9))
+        got = ca.final_picks(manga, allow_missing=True)
+        self.assertEqual(Path(got["schulkind_fragend_1_quer"]).name, new.name)
 
 
 if __name__ == "__main__":

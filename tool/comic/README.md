@@ -232,6 +232,7 @@ Das Gate hat einen eigenen Unterbaum `~/comfy_cafe_ansprache/gate/` (`foto`, `ed
 
 **Haltung und Ausdruck je Seed:** `t2i_prompt(gast, fmt, variant)` nimmt je Seed (Position in der Seed-Liste, modulo 8) eine der 8 Haltungen (`GUESTS[...]["poses"]`) und einen der 8 fragenden Ausdrücke (`_EXPRESSIONS`), damit die acht Kandidaten nicht gleich aussehen.
 `runde1 --seeds 931,932,...` rendert eine eigene Seed-Liste (Standard 921–928); die Bögen heißen dann `r1_{gast}_{fmt}_s{erster}-{letzter}.png` und überschreiben die Standardbögen nicht.
+`--gast schulkind[,wirtin]` und `--fmt quer[,hoch]` (beliebige Reihenfolge nach der Stufe) rendern nur diese Gäste bzw. Formate und bauen nur deren Bögen; ein Gast kann in `GUESTS` ein Zusatz-Negativ `neg` haben (Schulkind: gegen Teenager-Look), das `t2i_prompt` und `manga_prompt` anhängen.
 
 **Manga-Durchgang kennt die Stimmung:** `manga_prompt(gast, stimmung)` hängt Ausdruck (`MANGA_MOODS`) und Geste (`GUESTS[...]["gestures"]`) an, sonst löscht der Durchgang die Mimik aus dem Foto; das Schulmädchen bekommt Kinderproportionen.
 Der Seed ist 831 + Versatz je Stimmung (fragend 0, zufrieden 1, abwinkend 2); `runde2 PICKS [OVERRIDES] --denoise 0.6` ändert das Denoise (Standard 0,7).

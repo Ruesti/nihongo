@@ -40,7 +40,9 @@ MANGA_MOODS = {
 }
 
 # Kinderproportionen, sonst wirkt das Schulmädchen im Manga-Durchgang erwachsen
-_GIRL_CHILD = GIRL + ", child proportions with a large head, narrow shoulders and small hands"
+_CHILD = ("a little nine-year-old child, childlike round face with chubby cheeks, head large in proportion to her small body, "
+          "tiny narrow shoulders, short arms and small hands, sitting low so the table reaches her chest")
+_GIRL_CHILD = GIRL + ", " + _CHILD
 
 GUESTS = {
     "wirtin": {
@@ -71,6 +73,8 @@ GUESTS = {
         "figure": _GIRL_CHILD,
         "place": "in a green vinyl booth with school notebooks on the table",
         "note": "cheeky, chin forward",
+        # Zusatz-Negativ: das Fotomodell macht sonst eine Teenagerin daraus
+        "neg": "teenager, high school student, young woman, adult, mature face, long legs, tall",
         "poses": [
             "chin resting on both hands over an open notebook",
             "holding up a pencil, mid-thought",
@@ -184,6 +188,11 @@ def all_names():
             for n in range(1, VARIANTS + 1) for f in FORMATS]
 
 
+def _guest_neg(g):
+    """Gastspezifisches Zusatz-Negativ als ', ...' oder leer."""
+    return ", " + g["neg"] if g.get("neg") else ""
+
+
 def t2i_prompt(gast, fmt, variant=0):
     """Positiv- und Negativ-Prompt für die Stimmung fragend; variant (modulo 8) wählt Haltung und Ausdruck."""
     if gast not in GUESTS:
@@ -196,7 +205,7 @@ def t2i_prompt(gast, fmt, variant=0):
     pos = (_KERN + ", " + g["figure"] + ", " + _EXPRESSIONS[v] + ", " + g["poses"][v]
            + ", " + g["note"] + ", " + g["place"]
            + ", in " + CAFE + _FORMAT_SATZ[fmt] + PHOTO)
-    return pos, NEG + _NEG_EXTRA
+    return pos, NEG + _NEG_EXTRA + _guest_neg(g)
 
 
 def edit_prompt(gast, stimmung):
@@ -217,7 +226,7 @@ def manga_prompt(gast, stimmung="fragend"):
     g = GUESTS[gast]
     gesture = g["gestures"].get(stimmung)
     return (STY + ", " + g["figure"] + ", " + MANGA_MOODS[stimmung]
-            + (", " + gesture if gesture else "") + ", " + g["place"], NEG_MANGA)
+            + (", " + gesture if gesture else "") + ", " + g["place"], NEG_MANGA + _guest_neg(g))
 
 
 def load_picks(path):
@@ -523,16 +532,25 @@ def gate(seeds=(911, 912)):
     return _manga_sheet("gate", labelled, manga, sheets)
 
 
-def runde1(seeds=tuple(range(921, 929)), suffixed=False):
+def runde1(seeds=tuple(range(921, 929)), suffixed=False, gaeste=None, formate=None):
     """Runde 1: alle Gäste/Formate/Seeds als Foto; ein Bogen je Zelle (4 Spalten).
-    suffixed (bei --seeds): Bogenname bekommt _s{erster}-{letzter}, damit die Standardbögen bleiben."""
+    suffixed (bei --seeds): Bogenname bekommt _s{erster}-{letzter}, damit die Standardbögen bleiben.
+    gaeste / formate (bei --gast / --fmt): nur diese Gäste bzw. Formate rendern und als Bogen ausgeben."""
     seeds = tuple(seeds)
+    gaeste = list(gaeste) if gaeste else list(GUESTS)
+    formate = list(formate) if formate else list(FORMATS)
+    for g in gaeste:
+        if g not in GUESTS:
+            raise ValueError(f"unbekannter Gast: {g!r}")
+    for f in formate:
+        if f not in FORMATS:
+            raise ValueError(f"unbekanntes Format: {f!r}")
     suffix = "_s%d-%d" % (seeds[0], seeds[-1]) if suffixed else ""
     foto, sheets_dir = ROOT / "foto", ROOT / "sheets"
-    render_fragend(list(GUESTS), list(FORMATS), seeds, out=foto)
+    render_fragend(gaeste, formate, seeds, out=foto)
     sheets = []
-    for gast in GUESTS:
-        for fmt in FORMATS:
+    for gast in gaeste:
+        for fmt in formate:
             labelled = [("s%d" % seed, "%s_fragend_%s_s%d" % (gast, fmt, seed)) for seed in seeds]
             items = _cells(labelled, lambda pre: _newest(pre, foto), sheets_dir)
             sheets.append(make_sheet("r1_%s_%s%s" % (gast, fmt, suffix), items, 4, out=sheets_dir))
@@ -616,6 +634,17 @@ def _parse_seeds(args):
     return seeds
 
 
+def _parse_list_opt(args, flag):
+    """Entfernt `flag a,b` aus args; Rückgabe (Tupel oder None, Rest)."""
+    if flag not in args:
+        return None, args
+    i = args.index(flag)
+    if i + 1 >= len(args) or not args[i + 1].strip():
+        raise SystemExit("%s braucht mindestens einen Wert" % flag)
+    vals = tuple(x.strip() for x in args[i + 1].split(",") if x.strip())
+    return vals, args[:i] + args[i + 2:]
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     stage, args = (argv[0] if argv else ""), argv[1:]
@@ -627,18 +656,27 @@ def main(argv=None):
         except (IndexError, ValueError):
             raise SystemExit("--denoise braucht eine Zahl")
         args = args[:i] + args[i + 2:]
+    gaeste = formate = None
+    if stage == "runde1":  # --gast / --fmt an beliebiger Stelle nach der Stufe
+        gaeste, args = _parse_list_opt(args, "--gast")
+        formate, args = _parse_list_opt(args, "--fmt")
     if stage not in ("gate", "runde1", "runde2", "finish") or (
             stage == "runde1" and args and (len(args) != 2 or args[0] != "--seeds")) or (
             stage == "runde2" and not 1 <= len(args) <= 2) or (stage == "finish" and len(args) != 2):
-        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 [--seeds 931,932,...] | runde2 PICKS [OVERRIDES] [--denoise 0.6] | finish MANGA_DIR OUT")
+        raise SystemExit("Aufruf: cafe_ansprache.py gate | runde1 [--seeds 931,932,...] [--gast schulkind[,wirtin]] [--fmt quer[,hoch]] | runde2 PICKS [OVERRIDES] [--denoise 0.6] | finish MANGA_DIR OUT")
     try:
         if stage == "gate":
             gate()
         elif stage == "runde1":
+            kw = {}
+            if gaeste:
+                kw["gaeste"] = gaeste
+            if formate:
+                kw["formate"] = formate
             if args:
-                runde1(_parse_seeds(args), suffixed=True)
+                runde1(_parse_seeds(args), suffixed=True, **kw)
             else:
-                runde1()
+                runde1(**kw)
         elif stage == "runde2":
             runde2(*args, denoise=denoise)
         else:
